@@ -108,6 +108,33 @@ export default class MainScene extends Phaser.Scene {
     });
 
     this.scene.launch('UIScene');
+
+    // --- NEW: Listen for the React Reward Selection ---
+    this.rewardListener = (e) => {
+      const reward = e.detail.reward;
+      
+      // Apply the basic stat changes based on the placeholder cards
+      if (reward === 'heal') {
+        this.player.hp = this.player.maxHp;
+        this.scene.get('UIScene').updateHP(this.player.hp, this.player.maxHp);
+      } else if (reward === 'max_hp') {
+        this.player.maxHp += 20;
+        this.player.hp += 20;
+        this.scene.get('UIScene').updateHP(this.player.hp, this.player.maxHp);
+      } else if (reward === 'speed') {
+        this.player.baseSpeed += 20;
+      }
+
+      // Unfreeze the engine
+      this.scene.resume('MainScene');
+    };
+
+    window.addEventListener('VS_APPLY_REWARD', this.rewardListener);
+
+    // Clean up the event listener if the scene restarts
+    this.events.on('destroy', () => {
+      window.removeEventListener('VS_APPLY_REWARD', this.rewardListener);
+    });
   }
 
   update(time, delta) {

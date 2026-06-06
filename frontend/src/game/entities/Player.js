@@ -46,19 +46,32 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   
   gainXP(amount) {
     this.xp += amount;
+    
+    if (this.scene && this.scene.scene.get('UIScene')) {
+      this.scene.scene.get('UIScene').updateXP(this.xp, this.xpToNextLevel, this.level);
+    }
+
     if (this.xp >= this.xpToNextLevel) {
       this.level++;
       this.xp -= this.xpToNextLevel;
       this.xpToNextLevel = Math.floor(this.xpToNextLevel * 1.5); 
       
-      // Nerf: Only heal 20% of max HP, capped at maxHp
       const healAmount = this.maxHp * 0.2;
       this.hp = Math.min(this.maxHp, this.hp + healAmount); 
       
-      // Force the UI to update the red health bar immediately to show the small heal
       if (this.scene && this.scene.scene.get('UIScene')) {
         this.scene.scene.get('UIScene').updateHP(this.hp, this.maxHp);
+        this.scene.scene.get('UIScene').updateXP(this.xp, this.xpToNextLevel, this.level);
       }
+
+      // --- NEW: The Level-Up Trigger ---
+      // Pause the MainScene (freezes all game logic, but leaves the screen visible)
+      this.scene.scene.pause('MainScene');
+      
+      // Tell React to open the Level Up menu
+      window.dispatchEvent(new CustomEvent('VS_LEVEL_UP', {
+        detail: { level: this.level }
+      }));
     }
   }
 

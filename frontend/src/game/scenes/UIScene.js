@@ -16,7 +16,7 @@ export default class UIScene extends Phaser.Scene {
     this.xpBarFill.fillStyle(0x3b82f6, 1); // Blue fill
     this.xpBarFill.fillRect(0, 0, this.scale.width * 0.1, 10); // 10% full for testing
 
-    // 2. Health Bar (Top left, below XP bar)
+    // 2. Health Bar
     this.add.text(20, 25, 'HP', { font: '16px monospace', fill: '#ef4444' });
     
     this.hpBarBg = this.add.graphics();
@@ -24,8 +24,15 @@ export default class UIScene extends Phaser.Scene {
     this.hpBarBg.fillRect(50, 25, 200, 16);
 
     this.hpBarFill = this.add.graphics();
-    this.hpBarFill.fillStyle(0xef4444, 1); // Red fill
-    this.hpBarFill.fillRect(50, 25, 200, 16); // 100% full for testing
+    this.hpBarFill.fillStyle(0xef4444, 1);
+    this.hpBarFill.fillRect(50, 25, 200, 16);
+
+    // --- NEW: HP Number Text ---
+    // Centered exactly in the middle of the 200px wide bar (50 + 100)
+    this.hpText = this.add.text(150, 33, '100 / 100', {
+      font: 'bold 12px sans-serif',
+      fill: '#ffffff',
+    }).setOrigin(0.5);
 
     // 3. Pause Menu Overlay (Hidden by default)
     this.pauseContainer = this.add.container(0, 0);
@@ -90,8 +97,12 @@ export default class UIScene extends Phaser.Scene {
     
     this.hpBarFill.clear();
     this.hpBarFill.fillStyle(0xef4444, 1); 
-    // Redraw the bar based on the percentage (200 is the max width)
     this.hpBarFill.fillRect(50, 25, 200 * percentage, 16);
+
+    // --- NEW: Update the text string ---
+    if (this.hpText) {
+      this.hpText.setText(`${Math.floor(current)} / ${max}`);
+    }
   }
 
   updateXP(current, max, level) {
