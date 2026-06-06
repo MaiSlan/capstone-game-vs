@@ -118,16 +118,16 @@ export default class MainScene extends Phaser.Scene {
 
     this.scene.launch('UIScene');
 
-    // --- NEW: Listen for the React Reward Selection ---
     this.rewardListener = (e) => {
-      const reward = e.detail.reward;
+      const reward = e.detail.reward; // This is now an object!
       
-      if (reward === 'heal') {
+      if (reward.type === 'consumable' && reward.id === 'heal') {
         this.player.hp = this.player.maxHp;
         this.scene.get('UIScene').updateHP(this.player.hp, this.player.maxHp);
-      } else {
-        // If it's not a heal, treat it as a weapon/item ID and add it!
-        this.player.addOrUpgradeWeapon(reward);
+      } else if (reward.type === 'weapon') {
+        this.player.addOrUpgradeWeapon(reward.id);
+      } else if (reward.type === 'item') {
+        this.player.addOrUpgradeItem(reward.id); // We will build this next
       }
 
       this.scene.resume('MainScene');

@@ -40,6 +40,29 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     });
   }
 
+  addOrUpgradeItem(itemId) {
+    const existingItem = this.items.find(i => i.id === itemId);
+    
+    if (existingItem) {
+      if (existingItem.level < 5) {
+        existingItem.level++;
+        // Apply stacking buffs for upgrades
+        if (itemId === 'speed_boots') this.baseSpeed += 10;
+        if (itemId === 'vitality_ring') { this.maxHp += 10; this.hp += 10; }
+      }
+    } else if (this.items.length < this.maxItems) {
+      this.items.push({ id: itemId, level: 1 });
+      // Apply initial buff
+      if (itemId === 'speed_boots') this.baseSpeed += 20;
+      if (itemId === 'vitality_ring') { this.maxHp += 25; this.hp += 25; }
+    }
+
+    // Tell UI to redraw with BOTH arrays
+    if (this.scene && this.scene.scene.get('UIScene')) {
+      this.scene.scene.get('UIScene').updateInventory(this.weapons, this.items);
+    }
+  }
+
   addOrUpgradeWeapon(weaponId) {
     const existingWeapon = this.weapons.find(w => w.id === weaponId);
     
@@ -49,9 +72,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.weapons.push({ id: weaponId, level: 1 });
     }
 
-    // Tell the UI to redraw the inventory
     if (this.scene && this.scene.scene.get('UIScene')) {
-      this.scene.scene.get('UIScene').updateInventory(this.weapons);
+      this.scene.scene.get('UIScene').updateInventory(this.weapons, this.items);
     }
   }
 

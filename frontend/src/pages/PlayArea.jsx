@@ -6,14 +6,32 @@ import PhaserEngine from '../game/PhaserEngine';
 export default function PlayArea({ selectedCharacter }) {
   const fullScreenRef = useRef(null);
   const navigate = useNavigate();
-  
   const [isGameOver, setIsGameOver] = useState(false);
   const [finalLevel, setFinalLevel] = useState(1);
   const [gameInstanceKey, setGameInstanceKey] = useState(0);
-
-  // --- NEW: Level Up State ---
   const [isLevelUp, setIsLevelUp] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(1);
+  const [currentChoices, setCurrentChoices] = useState([]);
+
+  const REWARD_DB = {
+    weapons: {
+      witch: [
+        { id: 'magic_book', type: 'weapon', title: 'Swirling Book', desc: 'An ancient tome that orbits you.', icon: '📖' },
+        // You can add more witch weapons here later
+      ],
+      viking: [
+        { id: 'lance', type: 'weapon', title: 'Piercing Lance', desc: 'Fires a heavy forward lance.', icon: '🗡️' },
+        // You can add more viking weapons here later
+      ]
+    },
+    items: {
+      common: [
+        { id: 'speed_boots', type: 'item', title: 'Speed Boots', desc: 'Passively increases movement speed.', icon: '👢' },
+        { id: 'vitality_ring', type: 'item', title: 'Vitality Ring', desc: 'Increases Max HP by 25.', icon: '💍' },
+        { id: 'heal', type: 'consumable', title: 'Health Potion', desc: 'Instantly restores all HP.', icon: '🧪' }
+      ]
+    }
+  };
 
   useEffect(() => {
     const handleGameOver = (e) => {
@@ -22,9 +40,25 @@ export default function PlayArea({ selectedCharacter }) {
       if (document.fullscreenElement) document.exitFullscreen();
     };
 
-    // --- NEW: Listen for Level Up ---
     const handleLevelUp = (e) => {
-      setCurrentLevel(e.detail.level);
+      const lvl = e.detail.level;
+      setCurrentLevel(lvl);
+      
+      let pool = [];
+      // Every 5th level gives Weapons (for the specific character)
+      if (lvl % 5 === 0) {
+        pool = [...REWARD_DB.weapons[selectedCharacter]];
+        // Fallback if they own all weapons maxed out (for later): Add a heal
+        if (pool.length === 0) pool.push(REWARD_DB.items.common.find(i => i.id === 'heal'));
+      } else {
+        // Normal levels give Items/Skills
+        pool = [...REWARD_DB.items.common];
+      }
+
+      // Shuffle the pool and pick up to 3 cards
+      const shuffled = pool.sort(() => 0.5 - Math.random());
+      setCurrentChoices(shuffled.slice(0, 3));
+      
       setIsLevelUp(true);
     };
 
@@ -35,7 +69,7 @@ export default function PlayArea({ selectedCharacter }) {
       window.removeEventListener('VS_GAME_OVER', handleGameOver);
       window.removeEventListener('VS_LEVEL_UP', handleLevelUp);
     };
-  }, []);
+  }, [selectedCharacter]);
 
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
@@ -50,12 +84,9 @@ export default function PlayArea({ selectedCharacter }) {
     setGameInstanceKey(prev => prev + 1); 
   };
 
-  // --- NEW: Send choice back to engine ---
-  const selectReward = (rewardId) => {
+  const selectReward = (reward) => {
     setIsLevelUp(false);
-    window.dispatchEvent(new CustomEvent('VS_APPLY_REWARD', { 
-      detail: { reward: rewardId } 
-    }));
+    window.dispatchEvent(new CustomEvent('VS_APPLY_REWARD', { detail: { reward } }));
   };
 
   // Placeholder rewards (We will connect these to your weapon/item arrays later)
@@ -99,11 +130,11 @@ export default function PlayArea({ selectedCharacter }) {
             <p className="text-zinc-300 mb-8 font-mono">Select an augmentation</p>
             
             <div className="flex gap-6">
-              {TEMP_REWARDS.map((reward) => (
+              {currentChoices.map((reward) => (
                 <div 
                   key={reward.id}
-                  onClick={() => selectReward(reward.id)}
-                  className="w-56 h-72 bg-zinc-900 border-2 border-zinc-700 hover:border-emerald-500 rounded-xl p-6 cursor-pointer flex flex-col items-center text-center transition-all duration-200 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
+                  onClick={() => selectReward(reward)}
+                  className="w-56 h-72 bg-zinc-900 border-2 border-zinc-700 hover:border-emerald-500 rounded-xl p-6 cursor-pointer flex flex-col items-center text-center transition-all duration-200 hover:-translate-y-2"
                 >
                   <div className="text-6xl mb-6 mt-4">{reward.icon}</div>
                   <h3 className="text-xl font-bold text-white mb-2">{reward.title}</h3>

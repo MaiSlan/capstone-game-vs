@@ -32,24 +32,23 @@ export default class UIScene extends Phaser.Scene {
     // --- NEW: Inventory Slots ---
     this.inventoryContainer = this.add.container(50, 48); // Positioned right under the HP bar
     this.weaponBoxes = [];
+    this.itemBoxes = [];
     
     for (let i = 0; i < 5; i++) {
-      // Draw 5 empty square outlines
-      const box = this.add.graphics();
-      box.lineStyle(2, 0x3f3f46, 1); // Zinc-700
-      box.strokeRect(i * 32, 0, 28, 28); // 28x28 boxes with a 4px gap
-      
-      // We will create text placeholders for the weapons until you get icons
-      const weaponInitial = this.add.text(i * 32 + 14, 14, '', {
-        font: 'bold 14px sans-serif', fill: '#a855f7'
-      }).setOrigin(0.5);
+      // 1. Weapon Boxes (Top Row)
+      const wBox = this.add.graphics(); wBox.lineStyle(2, 0x3f3f46, 1); wBox.strokeRect(i * 32, 0, 28, 28);
+      const wInit = this.add.text(i * 32 + 14, 14, '', { font: 'bold 14px sans-serif', fill: '#a855f7' }).setOrigin(0.5);
+      const wLvl = this.add.text(i * 32 + 26, 26, '', { font: '10px sans-serif', fill: '#ffffff' }).setOrigin(1, 1);
+      this.inventoryContainer.add([wBox, wInit, wLvl]);
+      this.weaponBoxes.push({ initial: wInit, level: wLvl });
 
-      const levelPip = this.add.text(i * 32 + 26, 26, '', {
-        font: '10px sans-serif', fill: '#ffffff'
-      }).setOrigin(1, 1);
-
-      this.inventoryContainer.add([box, weaponInitial, levelPip]);
-      this.weaponBoxes.push({ initial: weaponInitial, level: levelPip });
+      // 2. Item Boxes (Bottom Row - Shifted down by 32px)
+      const iBox = this.add.graphics(); iBox.lineStyle(2, 0x3f3f46, 1); iBox.strokeRect(i * 32, 32, 28, 28);
+      // Give items a different color (emerald/green) so they stand out from weapons
+      const iInit = this.add.text(i * 32 + 14, 46, '', { font: 'bold 14px sans-serif', fill: '#10b981' }).setOrigin(0.5);
+      const iLvl = this.add.text(i * 32 + 26, 58, '', { font: '10px sans-serif', fill: '#ffffff' }).setOrigin(1, 1);
+      this.inventoryContainer.add([iBox, iInit, iLvl]);
+      this.itemBoxes.push({ initial: iInit, level: iLvl });
     }
     
     // 3. Pause Menu Overlay (Hidden by default)
@@ -81,7 +80,7 @@ export default class UIScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-ESC', () => {
       this.togglePause();
     });
-    
+
     // 5. Global Timer (Top Center)
     this.timerText = this.add.text(this.scale.width / 2, 25, '00:00', {
       font: 'bold 24px monospace',
@@ -111,24 +110,30 @@ export default class UIScene extends Phaser.Scene {
     }
   }
 
-  updateInventory(weaponsArray) {
-    if (!this.weaponBoxes) return;
-    // Loop through the 5 boxes and fill them based on the player's actual weapons
+  updateInventory(weaponsArray, itemsArray = []) {
+    if (!this.weaponBoxes || !this.itemBoxes) return; 
+
     for (let i = 0; i < 5; i++) {
+      // Weapons
       if (i < weaponsArray.length) {
-        const weapon = weaponsArray[i];
-        // Take the first letter of the weapon ID (e.g., 'm' for magic_orb) and uppercase it
-        this.weaponBoxes[i].initial.setText(weapon.id.charAt(0).toUpperCase());
-        // Show the level in the bottom right corner of the box
-        this.weaponBoxes[i].level.setText(weapon.level);
+        this.weaponBoxes[i].initial.setText(weaponsArray[i].id.charAt(0).toUpperCase());
+        this.weaponBoxes[i].level.setText(weaponsArray[i].level);
       } else {
-        // Clear empty slots
         this.weaponBoxes[i].initial.setText('');
         this.weaponBoxes[i].level.setText('');
       }
+
+      // Items
+      if (i < itemsArray.length) {
+        this.itemBoxes[i].initial.setText(itemsArray[i].id.charAt(0).toUpperCase());
+        this.itemBoxes[i].level.setText(itemsArray[i].level);
+      } else {
+        this.itemBoxes[i].initial.setText('');
+        this.itemBoxes[i].level.setText('');
+      }
     }
   }
-
+  
   togglePause() {
     this.isPaused = !this.isPaused;
     
