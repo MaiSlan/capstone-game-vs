@@ -3,6 +3,7 @@ import Player from '../Player';
 export default class Witch extends Player {
   constructor(scene, x, y) {
     super(scene, x, y, 'witch_sprite', 220);
+    this.addOrUpgradeWeapon('magic_orb');
     this.heroName = "Witch";
     this.lastFired = 0;
   }

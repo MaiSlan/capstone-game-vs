@@ -18,22 +18,40 @@ export default class UIScene extends Phaser.Scene {
 
     // 2. Health Bar
     this.add.text(20, 25, 'HP', { font: '16px monospace', fill: '#ef4444' });
+    this.hpBarBg = this.add.graphics(); this.hpBarBg.fillStyle(0x18181b, 1); this.hpBarBg.fillRect(50, 25, 200, 16);
+    this.hpBarFill = this.add.graphics(); this.hpBarFill.fillStyle(0xef4444, 1); this.hpBarFill.fillRect(50, 25, 200, 16);
+    this.hpText = this.add.text(150, 33, '100 / 100', { font: 'bold 12px sans-serif', fill: '#ffffff' }).setOrigin(0.5);
     
-    this.hpBarBg = this.add.graphics();
-    this.hpBarBg.fillStyle(0x18181b, 1);
-    this.hpBarBg.fillRect(50, 25, 200, 16);
+    // --- NEW: Level Indicator ---
+    // Top right, below the XP bar
+    this.levelText = this.add.text(this.scale.width - 20, 25, 'LVL: 1', {
+      font: 'bold 18px monospace',
+      fill: '#3b82f6', // Blue to match XP
+    }).setOrigin(1, 0);
 
-    this.hpBarFill = this.add.graphics();
-    this.hpBarFill.fillStyle(0xef4444, 1);
-    this.hpBarFill.fillRect(50, 25, 200, 16);
+    // --- NEW: Inventory Slots ---
+    this.inventoryContainer = this.add.container(50, 48); // Positioned right under the HP bar
+    this.weaponBoxes = [];
+    
+    for (let i = 0; i < 5; i++) {
+      // Draw 5 empty square outlines
+      const box = this.add.graphics();
+      box.lineStyle(2, 0x3f3f46, 1); // Zinc-700
+      box.strokeRect(i * 32, 0, 28, 28); // 28x28 boxes with a 4px gap
+      
+      // We will create text placeholders for the weapons until you get icons
+      const weaponInitial = this.add.text(i * 32 + 14, 14, '', {
+        font: 'bold 14px sans-serif', fill: '#a855f7'
+      }).setOrigin(0.5);
 
-    // --- NEW: HP Number Text ---
-    // Centered exactly in the middle of the 200px wide bar (50 + 100)
-    this.hpText = this.add.text(150, 33, '100 / 100', {
-      font: 'bold 12px sans-serif',
-      fill: '#ffffff',
-    }).setOrigin(0.5);
+      const levelPip = this.add.text(i * 32 + 26, 26, '', {
+        font: '10px sans-serif', fill: '#ffffff'
+      }).setOrigin(1, 1);
 
+      this.inventoryContainer.add([box, weaponInitial, levelPip]);
+      this.weaponBoxes.push({ initial: weaponInitial, level: levelPip });
+    }
+    
     // 3. Pause Menu Overlay (Hidden by default)
     this.pauseContainer = this.add.container(0, 0);
     this.pauseContainer.setVisible(false);
@@ -74,6 +92,29 @@ export default class UIScene extends Phaser.Scene {
       backgroundColor: '#00000088',
       padding: { x: 10, y: 5 }
     }).setOrigin(0.5);
+  }
+
+  updateLevelText(level) {
+    if (this.levelText) {
+      this.levelText.setText(`LVL: ${level}`);
+    }
+  }
+
+  updateInventory(weaponsArray) {
+    // Loop through the 5 boxes and fill them based on the player's actual weapons
+    for (let i = 0; i < 5; i++) {
+      if (i < weaponsArray.length) {
+        const weapon = weaponsArray[i];
+        // Take the first letter of the weapon ID (e.g., 'm' for magic_orb) and uppercase it
+        this.weaponBoxes[i].initial.setText(weapon.id.charAt(0).toUpperCase());
+        // Show the level in the bottom right corner of the box
+        this.weaponBoxes[i].level.setText(weapon.level);
+      } else {
+        // Clear empty slots
+        this.weaponBoxes[i].initial.setText('');
+        this.weaponBoxes[i].level.setText('');
+      }
+    }
   }
 
   togglePause() {

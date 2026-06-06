@@ -12,7 +12,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
     this.baseSpeed = baseSpeed;
 
-    // --- NEW: RPG STATS ---
+    // --- RPG STATS ---
     this.maxHp = 100;
     this.hp = 100;
     this.xp = 0;
@@ -21,11 +21,33 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.isInvincible = false;
     // ----------------------
 
+    // --- INVENTORY TRACKING ---
+    this.weapons = []; // Array of { id: 'weapon_name', level: 1 }
+    this.items = [];   // Array of { id: 'item_name', level: 1 }
+    this.maxWeapons = 5;
+    this.maxItems = 5;
+    // -------------------------------
+
     this.cursors = scene.input.keyboard.createCursorKeys();
     this.wasd = scene.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W, down: Phaser.Input.Keyboard.KeyCodes.S,
       left: Phaser.Input.Keyboard.KeyCodes.A, right: Phaser.Input.Keyboard.KeyCodes.D
     });
+  }
+
+  addOrUpgradeWeapon(weaponId) {
+    const existingWeapon = this.weapons.find(w => w.id === weaponId);
+    
+    if (existingWeapon) {
+      if (existingWeapon.level < 5) existingWeapon.level++;
+    } else if (this.weapons.length < this.maxWeapons) {
+      this.weapons.push({ id: weaponId, level: 1 });
+    }
+
+    // Tell the UI to redraw the inventory
+    if (this.scene && this.scene.scene.get('UIScene')) {
+      this.scene.scene.get('UIScene').updateInventory(this.weapons);
+    }
   }
 
   takeDamage(amount, scene) {
@@ -62,15 +84,20 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       if (this.scene && this.scene.scene.get('UIScene')) {
         this.scene.scene.get('UIScene').updateHP(this.hp, this.maxHp);
         this.scene.scene.get('UIScene').updateXP(this.xp, this.xpToNextLevel, this.level);
+        
+        // --- NEW: Update Level UI ---
+        this.scene.scene.get('UIScene').updateLevelText(this.level);
       }
 
-      // --- NEW: The Level-Up Trigger ---
-      // Pause the MainScene (freezes all game logic, but leaves the screen visible)
       this.scene.scene.pause('MainScene');
       
-      // Tell React to open the Level Up menu
+      // Pass the inventory to React so the Level-Up screen knows what we already have!
       window.dispatchEvent(new CustomEvent('VS_LEVEL_UP', {
-        detail: { level: this.level }
+        detail: { 
+          level: this.level,
+          currentWeapons: this.weapons,
+          currentItems: this.items
+        }
       }));
     }
   }

@@ -5,6 +5,7 @@ export default class Viking extends Player {
   constructor(scene, x, y) {
     super(scene, x, y, 'viking_sprite', 170);
     this.heroName = "Chibi Viking";
+    this.addOrUpgradeWeapon('cleave_axe');
     this.lastSwiped = 0;
 
     // Create a perfect 90-degree quarter-circle (pizza slice) graphic

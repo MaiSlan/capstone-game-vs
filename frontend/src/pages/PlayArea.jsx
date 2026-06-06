@@ -83,7 +83,7 @@ export default function PlayArea({ selectedCharacter }) {
             <div className="flex flex-col gap-4 w-64">
               <button onClick={handleRestart} className="py-4 bg-red-700 hover:bg-red-600 rounded-xl font-bold text-white transition shadow-lg">RESTART RUN</button>
               <button onClick={() => navigate('/select')} className="py-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl font-bold text-pink-400 transition">CHANGE HERO</button>
-              <button onClick={() => navigate('/')} className="py-4 bg-zinc-900 hover:bg-zinc-800 rounded-xl font-bold text-zinc-500 transition">MAIN MENU</button>
+              <button onClick={() => navigate('/home')} className="py-4 bg-zinc-900 hover:bg-zinc-800 rounded-xl font-bold text-zinc-500 transition">MAIN MENU</button>
             </div>
           </div>
         </div>
