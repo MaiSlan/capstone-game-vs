@@ -81,10 +81,7 @@ export default class UIScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-ESC', () => {
       this.togglePause();
     });
-
-    // Handle window resize to keep UI elements correctly positioned
-    this.scale.on('resize', this.handleResize, this);
-
+    
     // 5. Global Timer (Top Center)
     this.timerText = this.add.text(this.scale.width / 2, 25, '00:00', {
       font: 'bold 24px monospace',
@@ -92,6 +89,20 @@ export default class UIScene extends Phaser.Scene {
       backgroundColor: '#00000088',
       padding: { x: 10, y: 5 }
     }).setOrigin(0.5);
+
+    // Handle window resize to keep UI elements correctly positioned
+    this.scale.on('resize', this.handleResize, this);
+    const mainScene = this.scene.get('MainScene');
+    
+    // We use a delayed call of 10 milliseconds to ensure MainScene has fully 
+    // finished mounting the player before we try to read their stats.
+    this.time.delayedCall(10, () => {
+      if (mainScene && mainScene.player) {
+        this.updateHP(mainScene.player.hp, mainScene.player.maxHp);
+        this.updateLevelText(mainScene.player.level);
+        this.updateInventory(mainScene.player.weapons);
+      }
+    });
   }
 
   updateLevelText(level) {
@@ -101,6 +112,7 @@ export default class UIScene extends Phaser.Scene {
   }
 
   updateInventory(weaponsArray) {
+    if (!this.weaponBoxes) return;
     // Loop through the 5 boxes and fill them based on the player's actual weapons
     for (let i = 0; i < 5; i++) {
       if (i < weaponsArray.length) {
