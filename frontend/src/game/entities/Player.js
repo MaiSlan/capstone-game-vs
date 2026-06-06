@@ -26,6 +26,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.items = [];   // Array of { id: 'item_name', level: 1 }
     this.maxWeapons = 5;
     this.maxItems = 5;
+    this.weaponCooldowns = {
+      lance: 0
+    };
+    this.orbitAngle = 0;
+    this.orbitals = [];
     // -------------------------------
 
     this.cursors = scene.input.keyboard.createCursorKeys();
@@ -47,6 +52,47 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     // Tell the UI to redraw the inventory
     if (this.scene && this.scene.scene.get('UIScene')) {
       this.scene.scene.get('UIScene').updateInventory(this.weapons);
+    }
+  }
+
+  processWeapons(time) {
+    // 1. Swirling Book Logic (Orbital)
+    const hasBook = this.weapons.find(w => w.id === 'magic_book');
+    if (hasBook) {
+      // If we own the book but haven't created the sprite yet, spawn it
+      if (this.orbitals.length === 0) {
+        const book = this.scene.playerProjectiles.create(this.x, this.y, 'magic_book');
+        book.isBullet = false; // Don't destroy on hit
+        book.damage = 5;       // Books do less damage but hit constantly
+        this.orbitals.push(book);
+      }
+
+      // Rotate the book around the player
+      this.orbitAngle += 0.05;
+      const radius = 60;
+      this.orbitals[0].setPosition(
+        this.x + Math.cos(this.orbitAngle) * radius,
+        this.y + Math.sin(this.orbitAngle) * radius
+      );
+    }
+
+    // 2. Piercing Lance Logic (Projectile)
+    const hasLance = this.weapons.find(w => w.id === 'lance');
+    if (hasLance && time > this.weaponCooldowns.lance) {
+      const lance = this.scene.playerProjectiles.create(this.x, this.y, 'lance');
+      lance.isBullet = false;
+      lance.damage = 15;
+      lance.pierce = 3; // Can hit 3 enemies before breaking
+
+      if (this.flipX) {
+        // Facing Right
+        this.scene.physics.velocityFromAngle(0, 400, lance.body.velocity);
+      } else {
+        // Facing Left
+        this.scene.physics.velocityFromAngle(180, 400, lance.body.velocity);
+      }
+
+      this.weaponCooldowns.lance = time + 1500; // Fires every 1.5 seconds
     }
   }
 
@@ -102,7 +148,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  update(time) {
+  update(time, enemiesGroup) {
+    if (this.hp <= 0) return;
     this.setVelocity(0);
 
     if (this.cursors.left.isDown || this.wasd.left.isDown) {
@@ -135,5 +182,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.setAngle(0);
       this.setScale(this.baseScale);
     }
+    this.processWeapons(time);
   }
 }

@@ -30,6 +30,9 @@ export default class MainScene extends Phaser.Scene {
     graphics.clear(); graphics.fillStyle(0xf97316, 1); graphics.fillRect(0, 0, 96, 96); graphics.generateTexture('tank_boss', 96, 96);
     graphics.clear(); graphics.fillStyle(0xffff00, 1); graphics.fillCircle(8, 8, 8); graphics.generateTexture('magic_bullet', 16, 16);
     graphics.clear(); graphics.fillStyle(0x06b6d4, 1); graphics.fillRect(0, 0, 12, 12); graphics.generateTexture('exp_gem', 12, 12);
+    graphics.clear(); graphics.fillStyle(0x3b82f6, 1); graphics.fillRect(0, 0, 16, 16); graphics.generateTexture('magic_book', 16, 16);
+    graphics.clear(); graphics.fillStyle(0x94a3b8, 1); graphics.fillRect(0, 0, 40, 8); graphics.generateTexture('lance', 40, 8);
+    graphics.destroy();
     graphics.destroy(); 
 
     // Groups
@@ -48,10 +51,16 @@ export default class MainScene extends Phaser.Scene {
 
     // --- UPDATED WEAPON HIT LOGIC ---
     this.physics.add.overlap(this.playerProjectiles, this.enemies, (projectile, enemy) => {
-      if (projectile.isBullet) projectile.destroy(); 
+      // Use the projectile's specific damage, or default to 10
+      enemy.hp -= (projectile.damage || 10);
       
-      // Deal 10 damage per hit
-      enemy.hp -= 10;
+      // Handle Piercing vs Normal Bullets
+      if (projectile.pierce !== undefined) {
+        projectile.pierce--;
+        if (projectile.pierce <= 0) projectile.destroy();
+      } else if (projectile.isBullet) {
+        projectile.destroy(); 
+      }
       
       if (enemy.hp <= 0) {
         // Boss drops 5 gems, normal enemies drop 1
@@ -113,19 +122,14 @@ export default class MainScene extends Phaser.Scene {
     this.rewardListener = (e) => {
       const reward = e.detail.reward;
       
-      // Apply the basic stat changes based on the placeholder cards
       if (reward === 'heal') {
         this.player.hp = this.player.maxHp;
         this.scene.get('UIScene').updateHP(this.player.hp, this.player.maxHp);
-      } else if (reward === 'max_hp') {
-        this.player.maxHp += 20;
-        this.player.hp += 20;
-        this.scene.get('UIScene').updateHP(this.player.hp, this.player.maxHp);
-      } else if (reward === 'speed') {
-        this.player.baseSpeed += 20;
+      } else {
+        // If it's not a heal, treat it as a weapon/item ID and add it!
+        this.player.addOrUpgradeWeapon(reward);
       }
 
-      // Unfreeze the engine
       this.scene.resume('MainScene');
     };
 

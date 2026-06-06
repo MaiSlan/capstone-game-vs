@@ -60,9 +60,9 @@ export default function PlayArea({ selectedCharacter }) {
 
   // Placeholder rewards (We will connect these to your weapon/item arrays later)
   const TEMP_REWARDS = [
-    { id: 'max_hp', title: 'Vitality', desc: 'Increases Max HP by 20', icon: '❤️' },
-    { id: 'speed', title: 'Swiftness', desc: 'Increases Movement Speed by 10%', icon: '⚡' },
-    { id: 'heal', title: 'Potion', desc: 'Instantly restores all HP', icon: '🧪' }
+    { id: 'lance', title: 'Piercing Lance', desc: 'Fires a heavy lance that pierces 3 enemies.', icon: '🗡️' },
+    { id: 'magic_book', title: 'Swirling Book', desc: 'An ancient tome that orbits and damages foes.', icon: '📖' },
+    { id: 'heal', title: 'Health Potion', desc: 'Instantly restores all HP to max.', icon: '🧪' }
   ];
 
   return (
