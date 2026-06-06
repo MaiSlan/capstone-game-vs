@@ -59,6 +59,14 @@ export default class UIScene extends Phaser.Scene {
 
     // Handle window resize to keep UI elements correctly positioned
     this.scale.on('resize', this.handleResize, this);
+
+    // 5. Global Timer (Top Center)
+    this.timerText = this.add.text(this.scale.width / 2, 25, '00:00', {
+      font: 'bold 24px monospace',
+      fill: '#ffffff',
+      backgroundColor: '#00000088',
+      padding: { x: 10, y: 5 }
+    }).setOrigin(0.5);
   }
 
   togglePause() {
@@ -116,5 +124,12 @@ export default class UIScene extends Phaser.Scene {
     dimBg.clear();
     dimBg.fillStyle(0x000000, 0.7);
     dimBg.fillRect(0, 0, width, height);
+  }
+
+  updateTimer(totalSeconds) {
+    if (!this.timerText) return;
+    const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+    const seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
+    this.timerText.setText(`${minutes}:${seconds}`);
   }
 }

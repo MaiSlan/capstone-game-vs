@@ -40,7 +40,7 @@ export default function CharacterSelect({ selectedCharacter, setSelectedCharacte
       </div>
 
       <div className="flex gap-4">
-        <button onClick={() => navigate('/')} className="px-6 py-3 bg-zinc-800 rounded-xl font-bold hover:bg-zinc-700 transition">BACK</button>
+        <button onClick={() => navigate('/home')} className="px-6 py-3 bg-zinc-800 rounded-xl font-bold hover:bg-zinc-700 transition">BACK</button>
         <button onClick={() => navigate('/play')} className="px-10 py-3 bg-pink-600 rounded-xl font-bold text-xl hover:bg-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.5)] transition">START RUN</button>
       </div>
     </div>

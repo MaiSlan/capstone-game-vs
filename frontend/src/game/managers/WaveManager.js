@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
-import DummyMonster from '../entities/DummyMonster';
+import DummyMonster from '../entities/monsters/DummyMonster';
+import FastBat from '../entities/monsters/FastBat';
+import TankBoss from '../entities/monsters/TankBoss';
 
 export default class WaveManager {
   constructor(scene, enemyGroup, player) {
@@ -8,37 +10,46 @@ export default class WaveManager {
     this.player = player;
     
     this.spawnTimer = 0;
-    this.spawnInterval = 2000; // Spawns a wave every 2 seconds
-    this.enemiesPerWave = 3;   // Starts with 3 enemies per wave
+    this.bossSpawnedAtMinute2 = false;
   }
 
-  update(time) {
-    if (time > this.spawnTimer) {
-      this.spawnWave();
-      this.spawnTimer = time + this.spawnInterval;
-      
-      // Slowly increase difficulty: every wave, make the next wave slightly larger
-      if (this.enemiesPerWave < 30) {
-        this.enemiesPerWave += 0.5; 
+  // time is the exact run time in seconds passed from MainScene
+  update(timeMs, runTimeSeconds) {
+    // Spawn a standard wave every 2 seconds
+    if (timeMs > this.spawnTimer) {
+      this.spawnWave(runTimeSeconds);
+      this.spawnTimer = timeMs + 2000;
+    }
+
+    // Boss Trigger: Exactly at 2 minutes (120 seconds)
+    if (runTimeSeconds >= 120 && !this.bossSpawnedAtMinute2) {
+      this.spawnBoss();
+      this.bossSpawnedAtMinute2 = true;
+    }
+  }
+
+  spawnWave(runTimeSeconds) {
+    // Scaling difficulty: Add 1 enemy to the wave every 30 seconds
+    const baseSpawnCount = 3 + Math.floor(runTimeSeconds / 30);
+    
+    for (let i = 0; i < baseSpawnCount; i++) {
+      const spawnPoint = new Phaser.Math.Vector2();
+      Phaser.Math.RandomXY(spawnPoint, 600); 
+      const spawnX = this.player.x + spawnPoint.x;
+      const spawnY = this.player.y + spawnPoint.y;
+
+      // After 60 seconds (1 minute), 30% of spawns become Fast Bats
+      if (runTimeSeconds >= 60 && Math.random() < 0.3) {
+        this.enemies.add(new FastBat(this.scene, spawnX, spawnY));
+      } else {
+        this.enemies.add(new DummyMonster(this.scene, spawnX, spawnY));
       }
     }
   }
 
-  spawnWave() {
-    // Spawn multiple enemies at once
-    const spawnCount = Math.floor(this.enemiesPerWave);
-    
-    for (let i = 0; i < spawnCount; i++) {
-      // Phaser math trick: pick a random point on a circle around the player
-      // 600 pixels is just outside the camera view
-      const spawnPoint = new Phaser.Math.Vector2();
-      Phaser.Math.RandomXY(spawnPoint, 600); 
-      
-      const spawnX = this.player.x + spawnPoint.x;
-      const spawnY = this.player.y + spawnPoint.y;
-
-      const newEnemy = new DummyMonster(this.scene, spawnX, spawnY);
-      this.enemies.add(newEnemy);
-    }
+  spawnBoss() {
+    const spawnPoint = new Phaser.Math.Vector2();
+    Phaser.Math.RandomXY(spawnPoint, 800); // Boss spawns further away
+    this.enemies.add(new TankBoss(this.scene, this.player.x + spawnPoint.x, this.player.y + spawnPoint.y));
   }
 }
