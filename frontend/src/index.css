@@ -1,59 +1,62 @@
 /* src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap');
 @import "tailwindcss";
 
-@theme {
-  /* --- GUTS / GODHAND ARCHETYPE (DARK) --- */
-  --color-guts-abyss: #050506;          /* Deep void, darker than standard black */
-  --color-guts-obsidian: #0d0d11;       /* Background for cards and slabs */
-  --color-guts-iron-dark: #1b1b1f;      /* Raw, hammered iron plate shadow */
-  --color-guts-iron-light: #4a4a54;     /* Forged steel highlight lines */
-  --color-guts-blood-dry: #260303;      /* Base coagulated blood tone */
-  --color-guts-blood-fresh: #610505;    /* Visceral crimson accent */
-
-  /* --- GRIFFITH / BAND OF THE HAWK ARCHETYPE (LIGHT) --- */
-  --color-hawk-cream: #faf7f0;          /* Warm, ancient parchment/palace marble */
-  --color-hawk-ivory: #fffefb;          /* Pure divine white highlight */
-  --color-hawk-royal-blue: #026496;     /* Deep sky/military banner blue */
-  --color-hawk-sky-glow: #e0f2fe;       /* Ethereal atmosphere aura */
-  --color-hawk-gold-dull: #926a1e;      /* Burnished, historical brass */
-  --color-hawk-gold-bright: #eab308;    /* Radiating royal crown gold */
-}
-
-/* Let Tailwind v4 read manual .dark class toggles on the HTML element */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* --- CUSTOM TEXTURE & METALLIC GRADIENT ENGINE --- */
-
-/* Burnished, layered gold texture for the Hawk of Light */
-.texture-burnished-gold {
-  background: linear-gradient(135deg, #785311 0%, #b48a36 25%, #fde047 50%, #b48a36 75%, #583c0a 100%);
+@theme {
+  --font-royal: 'Cinzel', serif;
+  --font-grim: 'Rajdhani', sans-serif;
 }
 
-/* Cold, hammered iron plating for the Black Swordsman */
-.texture-forged-iron {
-  background: linear-gradient(135deg, #0c0c0e 0%, #2a2a35 35%, #16161a 65%, #050506 100%);
+:root {
+  /* LIGHT MODE: Griffith / Royal Elements */
+  --theme-bg-base: #fdfbf7;
+  /* Divine Sunburst Pattern */
+  --theme-bg-pattern: repeating-conic-gradient(from 0deg at 50% -10%, rgba(212,175,55,0.05) 0deg 5deg, transparent 5deg 10deg);
+  --theme-title-grad: linear-gradient(135deg, #b48a36 0%, #fde047 50%, #926a1e 100%);
+  --theme-btn-bg: linear-gradient(to right, #fdf6e3, #ffffff);
+  --theme-btn-border: #d4af37;
+  --theme-btn-shadow: 0 10px 40px -10px rgba(212, 175, 55, 0.6);
+  --theme-btn-text: #78350f;
 }
 
-/* Custom text masking for metallic typography headers */
-.text-metallic-gold {
-  background: linear-gradient(135deg, #926a1e 0%, #fde047 50%, #b48a36 100%);
+.dark {
+  /* DARK MODE: Guts / Godhand Elements */
+  --theme-bg-base: #050303;
+  /* Gooey / Abyss Pattern mimicking bleeding darkness */
+  --theme-bg-pattern: 
+    radial-gradient(circle at 15% 30%, rgba(153, 27, 27, 0.15) 0%, transparent 25%),
+    radial-gradient(circle at 85% 70%, rgba(153, 27, 27, 0.1) 0%, transparent 30%),
+    radial-gradient(circle at 50% 50%, #000000 0%, #050303 100%);
+  --theme-title-grad: linear-gradient(to bottom right, #ef4444, #7f1d1d, #450a0a);
+  --theme-btn-bg: linear-gradient(to bottom, #450a0a, #1a0000);
+  --theme-btn-border: #991b1b;
+  --theme-btn-shadow: 0 10px 40px -10px rgba(220, 20, 60, 0.5), inset 0 -5px 20px rgba(255, 0, 0, 0.2);
+  --theme-btn-text: #fca5a5;
+}
+
+/* Masterclass Utility Classes */
+.theme-canvas {
+  background-color: var(--theme-bg-base);
+  background-image: var(--theme-bg-pattern);
+}
+
+.theme-title-text {
+  background: var(--theme-title-grad);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(0,0,0,0.1));
 }
 
-.text-metallic-iron {
-  background: linear-gradient(135deg, #4a4a54 0%, #a1a1aa 50%, #1b1b1f 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.theme-main-action {
+  background: var(--theme-btn-bg);
+  border: 1px solid var(--theme-btn-border);
+  box-shadow: var(--theme-btn-shadow);
+  color: var(--theme-btn-text);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-/* Sharp, medieval frame borders instead of smooth modern lines */
-.border-hawk-double {
-  border-style: double;
-  border-width: 4px;
-}
-
-.border-guts-bruised {
-  border-style: solid;
-  border-width: 2px;
+.theme-main-action:hover {
+  transform: translateY(-2px) scale(1.02);
+  filter: brightness(1.2);
 }

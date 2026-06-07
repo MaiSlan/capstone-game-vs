@@ -8,80 +8,84 @@ export default function HomePage() {
   const unlockedHeroes = ['The Witch', 'The Viking'];
 
   return (
-    <div className="min-h-screen pt-20 transition-colors duration-500 flex flex-col items-center select-none font-mono
-      bg-hawk-cream text-slate-800 
-      dark:bg-guts-abyss dark:text-zinc-400 relative overflow-hidden">
-      
+    <div className="theme-canvas min-h-screen pt-24 pb-12 transition-colors duration-700 font-royal dark:font-grim relative">
       <DashboardNavbar />
 
-      {/* Atmospheric Vignettes - Removing clean ambient circles for deep environmental overlays */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-hawk-sky-glow/40 via-transparent to-transparent pointer-events-none dark:opacity-0 transition-opacity duration-700" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-guts-blood-dry/20 via-transparent to-guts-abyss pointer-events-none opacity-0 dark:opacity-100 transition-opacity duration-700" />
-
-      <main className="w-full max-w-5xl p-8 z-10 flex flex-col gap-12 mt-6">
+      <main className="w-full max-w-6xl mx-auto px-6 z-10 flex flex-col gap-16 relative">
         
-        {/* Deep Fantasy Header Block */}
-        <header className="text-center flex flex-col items-center">
-          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-[0.3em] mb-4 transition-all duration-500 text-metallic-gold dark:text-metallic-iron">
-            TACTICAL SLAB
+        {/* Header Section */}
+        <header className="text-center flex flex-col items-center mt-10">
+          <h1 className="theme-title-text text-5xl md:text-7xl font-black uppercase tracking-widest mb-4">
+            Campaign Hub
           </h1>
-          <div className="h-1 w-32 bg-hawk-gold-dull dark:bg-guts-blood-fresh transition-colors duration-500 mb-4" />
-          <p className="text-xs italic max-w-xl transition-colors duration-500 font-serif text-slate-600 dark:text-zinc-500">
-            "In this world, is the destiny of mankind controlled by some transcendental law or hand? Is it like the hand of God hovering above?"
+          <p className="text-lg md:text-xl max-w-2xl text-amber-700/80 dark:text-red-500/70 tracking-wide font-medium">
+            <span className="dark:hidden">"Dreams breathe life into men, and can cage them in suffering."</span>
+            <span className="hidden dark:inline">"If you meet God... tell him to leave me alone."</span>
           </p>
         </header>
 
-        {/* Master CTA Button - Textured as a Forged Relic Stamp */}
+        {/* Master Action Button */}
         <div className="flex justify-center">
           <button 
             onClick={() => navigate('/select')} 
-            className="px-14 py-5 rounded font-black text-xl uppercase tracking-[0.2em] transition-all duration-300 transform active:scale-95 cursor-pointer
-              texture-burnished-gold text-hawk-cream border-2 border-hawk-ivory shadow-[4px_4px_0px_#583c0a] hover:brightness-110
-              dark:texture-forged-iron dark:text-guts-blood-fresh dark:border-guts-blood-dry dark:shadow-[6px_6px_0px_#000000] dark:hover:text-red-400"
+            className="theme-main-action px-16 py-6 rounded-full dark:rounded-sm font-bold text-2xl uppercase tracking-[0.2em]"
           >
-            ENTER THE INFESTATION
+            Commence Strike
           </button>
         </div>
 
-        {/* Stats Grid - Designed as Heavy Stone Plaques / Scorched Iron Tablets */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Stats Section - Shape-Shifting Architecture */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { label: 'RUNS ATTEMPTED', value: playerStats.runs },
-            { label: 'MAX SURVIVAL LIMIT', value: playerStats.bestTime },
-            { label: 'FOES SLAUGHTERED', value: playerStats.kills.toLocaleString() }
+            { label: 'Sorties', value: playerStats.runs },
+            { label: 'Longest Survival', value: playerStats.bestTime },
+            { label: 'Casualties', value: playerStats.kills.toLocaleString() }
           ].map((stat, i) => (
-            <div key={i} className="p-6 rounded border-hawk-double transition-all duration-500 flex flex-col items-center justify-center text-center
-              bg-hawk-ivory border-hawk-gold-dull shadow-[2px_2px_10px_rgba(146,106,30,0.1)]
-              dark:bg-guts-obsidian dark:border-guts-blood-dry dark:shadow-[inset_0_0_15px_rgba(0,0,0,0.9)]">
-              <span className="text-xs font-bold uppercase tracking-widest mb-3 text-slate-500 dark:text-zinc-600">
+            <div key={i} className="
+              relative flex flex-col items-center justify-center p-8 transition-all duration-700
+              /* LIGHT MODE: Royal Parchment / Palace Arches */
+              bg-white/80 backdrop-blur-md rounded-[2rem] rounded-tl-sm border border-amber-200/50 shadow-[0_15px_30px_-10px_rgba(212,175,55,0.15)]
+              /* DARK MODE: Visceral Monolith / Godhand Pillars */
+              dark:bg-zinc-950/90 dark:rounded-none dark:border-0 dark:border-b-4 dark:border-red-900 dark:shadow-[inset_0_-20px_40px_-20px_rgba(220,20,60,0.3)]
+            ">
+              <span className="text-sm font-bold uppercase tracking-widest mb-2 text-amber-600/70 dark:text-red-500/50">
                 {stat.label}
               </span>
-              <span className="text-3xl font-black tracking-tighter text-hawk-royal-blue dark:text-guts-blood-fresh">
+              <span className="text-4xl font-black text-slate-800 dark:text-zinc-200">
                 {stat.value}
               </span>
             </div>
           ))}
         </section>
 
-        {/* Roster Layout - Designed as an Unforgiving Slate Ledger */}
-        <section className="flex flex-col gap-4">
-          <h2 className="text-sm font-black uppercase tracking-[0.2em] border-b pb-2 transition-colors duration-500
-            border-hawk-gold-dull text-slate-800
-            dark:border-guts-blood-dry dark:text-zinc-500">
-            OPERATIONAL COMBATANTS
+        {/* Roster Section - Shape-Shifting Architecture */}
+        <section className="flex flex-col gap-6 items-center">
+          <h2 className="text-sm font-black uppercase tracking-[0.3em] text-amber-600/60 dark:text-red-600/60 flex items-center gap-4">
+            <span className="h-px w-12 bg-amber-200 dark:bg-red-900/50"></span>
+            Active Roster
+            <span className="h-px w-12 bg-amber-200 dark:bg-red-900/50"></span>
           </h2>
-          <div className="flex flex-wrap gap-4">
+          
+          <div className="flex flex-wrap justify-center gap-6">
             {unlockedHeroes.map((hero, i) => (
-              <div key={i} className="px-6 py-3.5 rounded border font-bold uppercase tracking-wider text-xs transition-all duration-500
-                bg-white border-hawk-gold-dull text-hawk-royal-blue shadow-[1px_1px_0px_#926a1e]
-                dark:bg-guts-obsidian dark:border-zinc-800 dark:text-zinc-400 dark:shadow-[2px_2px_0px_#000000]">
+              <div key={i} className="
+                px-8 py-4 font-bold uppercase tracking-widest transition-all duration-500
+                /* LIGHT MODE: Regal Banner */
+                bg-gradient-to-b from-amber-50 to-white rounded-full border border-amber-200 text-amber-900 shadow-md
+                /* DARK MODE: Scorched Iron Plate */
+                dark:bg-gradient-to-br dark:from-zinc-900 dark:to-black dark:rounded-none dark:border-l-2 dark:border-t-0 dark:border-r-0 dark:border-b-0 dark:border-red-700 dark:text-zinc-400 dark:shadow-none
+              ">
                 {hero}
               </div>
             ))}
-            <div className="px-6 py-3.5 rounded border border-dashed text-xs font-bold uppercase tracking-wider flex items-center justify-center cursor-not-allowed
-              bg-slate-200/50 border-slate-400 text-slate-400
-              dark:bg-transparent dark:border-guts-blood-dry dark:text-zinc-700">
-              + LOCKED UNIT
+            <div className="
+              px-8 py-4 uppercase tracking-widest text-sm flex items-center justify-center cursor-not-allowed transition-all duration-500
+              /* LIGHT MODE */
+              bg-transparent border-2 border-dashed border-amber-200/50 text-amber-700/40 rounded-full
+              /* DARK MODE */
+              dark:bg-transparent dark:border-zinc-800 dark:text-zinc-700 dark:rounded-none
+            ">
+              + Sealed
             </div>
           </div>
         </section>
