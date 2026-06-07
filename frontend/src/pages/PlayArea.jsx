@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GameNavbar from '../components/GameNavbar';
 import PhaserEngine from '../game/PhaserEngine';
+import { REWARD_DB } from '../data/RewardDB';
 
 export default function PlayArea({ selectedCharacter }) {
   const fullScreenRef = useRef(null);
@@ -12,26 +13,6 @@ export default function PlayArea({ selectedCharacter }) {
   const [isLevelUp, setIsLevelUp] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(1);
   const [currentChoices, setCurrentChoices] = useState([]);
-
-  const REWARD_DB = {
-    weapons: {
-      witch: [
-        { id: 'magic_book', type: 'weapon', title: 'Swirling Book', desc: 'An ancient tome that orbits you.', icon: '📖' },
-        // You can add more witch weapons here later
-      ],
-      viking: [
-        { id: 'lance', type: 'weapon', title: 'Piercing Lance', desc: 'Fires a heavy forward lance.', icon: '🗡️' },
-        // You can add more viking weapons here later
-      ]
-    },
-    items: {
-      common: [
-        { id: 'speed_boots', type: 'item', title: 'Speed Boots', desc: 'Passively increases movement speed.', icon: '👢' },
-        { id: 'vitality_ring', type: 'item', title: 'Vitality Ring', desc: 'Increases Max HP by 25.', icon: '💍' },
-        { id: 'heal', type: 'consumable', title: 'Health Potion', desc: 'Instantly restores all HP.', icon: '🧪' }
-      ]
-    }
-  };
 
   useEffect(() => {
     const handleGameOver = (e) => {
