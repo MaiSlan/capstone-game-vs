@@ -1,6 +1,59 @@
 /* src/index.css */
-
 @import "tailwindcss";
 
-/* Tell Tailwind to use the .dark class for dark mode instead of system preferences */
+@theme {
+  /* --- GUTS / GODHAND ARCHETYPE (DARK) --- */
+  --color-guts-abyss: #050506;          /* Deep void, darker than standard black */
+  --color-guts-obsidian: #0d0d11;       /* Background for cards and slabs */
+  --color-guts-iron-dark: #1b1b1f;      /* Raw, hammered iron plate shadow */
+  --color-guts-iron-light: #4a4a54;     /* Forged steel highlight lines */
+  --color-guts-blood-dry: #260303;      /* Base coagulated blood tone */
+  --color-guts-blood-fresh: #610505;    /* Visceral crimson accent */
+
+  /* --- GRIFFITH / BAND OF THE HAWK ARCHETYPE (LIGHT) --- */
+  --color-hawk-cream: #faf7f0;          /* Warm, ancient parchment/palace marble */
+  --color-hawk-ivory: #fffefb;          /* Pure divine white highlight */
+  --color-hawk-royal-blue: #026496;     /* Deep sky/military banner blue */
+  --color-hawk-sky-glow: #e0f2fe;       /* Ethereal atmosphere aura */
+  --color-hawk-gold-dull: #926a1e;      /* Burnished, historical brass */
+  --color-hawk-gold-bright: #eab308;    /* Radiating royal crown gold */
+}
+
+/* Let Tailwind v4 read manual .dark class toggles on the HTML element */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* --- CUSTOM TEXTURE & METALLIC GRADIENT ENGINE --- */
+
+/* Burnished, layered gold texture for the Hawk of Light */
+.texture-burnished-gold {
+  background: linear-gradient(135deg, #785311 0%, #b48a36 25%, #fde047 50%, #b48a36 75%, #583c0a 100%);
+}
+
+/* Cold, hammered iron plating for the Black Swordsman */
+.texture-forged-iron {
+  background: linear-gradient(135deg, #0c0c0e 0%, #2a2a35 35%, #16161a 65%, #050506 100%);
+}
+
+/* Custom text masking for metallic typography headers */
+.text-metallic-gold {
+  background: linear-gradient(135deg, #926a1e 0%, #fde047 50%, #b48a36 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-metallic-iron {
+  background: linear-gradient(135deg, #4a4a54 0%, #a1a1aa 50%, #1b1b1f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Sharp, medieval frame borders instead of smooth modern lines */
+.border-hawk-double {
+  border-style: double;
+  border-width: 4px;
+}
+
+.border-guts-bruised {
+  border-style: solid;
+  border-width: 2px;
+}

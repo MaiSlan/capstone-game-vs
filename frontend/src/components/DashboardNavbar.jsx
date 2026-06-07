@@ -3,11 +3,9 @@ import { useNavigate } from 'react-router-dom';
 
 export default function DashboardNavbar() {
   const navigate = useNavigate();
-  // Default to dark mode (Guts theme)
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   useEffect(() => {
-    // Check local storage or system preference on load
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light') {
       setIsDarkMode(false);
@@ -35,40 +33,40 @@ export default function DashboardNavbar() {
   };
 
   return (
-    <nav className="w-full h-20 flex items-center justify-between px-8 fixed top-0 z-50 transition-colors duration-500
-      bg-slate-100/90 border-b border-amber-300 shadow-[0_4px_20px_rgba(252,211,77,0.2)] text-slate-800 
-      dark:bg-zinc-950/90 dark:border-red-900 dark:shadow-[0_4px_20px_rgba(153,27,27,0.4)] dark:text-zinc-300 backdrop-blur-md">
+    <nav className="w-full h-20 flex items-center justify-between px-8 fixed top-0 z-50 transition-all duration-500
+      bg-hawk-cream border-b-4 border-hawk-gold-dull shadow-[0_4px_30px_rgba(146,106,30,0.15)] text-slate-900
+      dark:bg-guts-abyss dark:border-guts-blood-dry dark:shadow-[0_10px_40px_rgba(0,0,0,0.9)] dark:text-zinc-400 font-mono">
       
-      {/* Brand / Logo */}
+      {/* Brand Logo - Styled as an Artifact Title */}
       <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/home')}>
-        <span className="text-3xl transition-transform duration-500 hover:scale-110">
-          {isDarkMode ? '💀' : '🦅'}
+        <span className="text-3xl transition-transform duration-500 hover:rotate-12">
+          {isDarkMode ? '⚡' : '👑'}
         </span>
-        <h1 className="text-2xl font-black tracking-widest uppercase transition-colors duration-500
-          text-sky-600 drop-shadow-[0_0_8px_rgba(2,132,199,0.5)]
-          dark:text-red-600 dark:drop-shadow-[0_0_10px_rgba(220,38,38,0.8)]">
-          VS Engine
+        <h1 className="text-xl font-black uppercase tracking-[0.25em] transition-all duration-500
+          text-hawk-royal-blue drop-shadow-[1px_1px_0px_#fde047]
+          dark:text-guts-blood-fresh dark:drop-shadow-[2px_2px_0px_#000000]">
+          {isDarkMode ? 'GODHAND.ENG' : 'FALCONIA.CORE'}
         </h1>
       </div>
 
       <div className="flex items-center gap-6">
-        {/* Theme Toggle Button */}
+        {/* Toggle Button styled as an Altar Selector */}
         <button 
           onClick={toggleTheme}
-          className="flex items-center gap-2 px-4 py-2 rounded-full font-bold uppercase tracking-wider text-sm transition-all duration-300
-            bg-white border-2 border-amber-300 text-amber-500 hover:bg-amber-50 hover:shadow-[0_0_15px_rgba(252,211,77,0.5)]
-            dark:bg-zinc-900 dark:border-red-800 dark:text-red-500 dark:hover:bg-zinc-800 dark:hover:shadow-[0_0_15px_rgba(153,27,27,0.6)]"
+          className="relative px-6 py-2.5 rounded font-black text-xs uppercase tracking-widest border transition-all duration-300 active:scale-95
+            bg-white border-hawk-gold-dull text-hawk-gold-dull hover:bg-hawk-ivory hover:text-amber-700 shadow-[2px_2px_0px_#926a1e]
+            dark:bg-guts-obsidian dark:border-guts-blood-fresh dark:text-guts-blood-fresh dark:hover:bg-guts-blood-dry dark:hover:text-red-400 dark:shadow-[3px_3px_0px_#000000]"
         >
-          {isDarkMode ? 'Sacrifice (Dark)' : 'Dream (Light)'}
+          {isDarkMode ? '[ ACTIVATE ECLIPSE ]' : '[ ASCEND THRONE ]'}
         </button>
 
         <button 
           onClick={handleSignOut}
-          className="px-6 py-2 rounded-lg font-bold transition-all duration-300
-            text-slate-500 hover:text-slate-800 hover:bg-slate-200
-            dark:text-zinc-500 dark:hover:text-red-400 dark:hover:bg-red-950/30"
+          className="text-xs font-bold tracking-wider uppercase transition-colors duration-300
+            text-slate-500 hover:text-hawk-royal-blue
+            dark:text-zinc-600 dark:hover:text-guts-blood-fresh"
         >
-          SIGN OUT
+          ABANDON RUN
         </button>
       </div>
     </nav>
