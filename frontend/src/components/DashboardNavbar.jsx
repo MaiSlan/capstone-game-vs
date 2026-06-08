@@ -9,25 +9,25 @@ export default function DashboardNavbar() {
   };
 
   return (
-    <nav className="w-full h-20 flex items-center justify-between px-8 fixed top-0 z-50 
-      bg-black/90 border-b-2 border-zinc-900 shadow-[0_10px_30px_rgba(0,0,0,1)] backdrop-blur-md font-grim">
+    <nav className="nav-dentelle fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl h-16 flex items-center justify-between px-10 z-50 font-grim">
       
-      {/* Brand Logo - The Brand of Sacrifice Vibe */}
-      <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/home')}>
-        <span className="text-3xl text-red-900 group-hover:text-red-700 transition-colors">
-          ♆
+      {/* Brand Title (Red/Crimson) */}
+      <div className="flex items-center gap-3 cursor-pointer group z-10" onClick={() => navigate('/home')}>
+        <span className="text-2xl text-red-700 font-royal transition-transform group-hover:rotate-180 duration-700">
+          ✥
         </span>
-        <h1 className="text-2xl font-black uppercase tracking-[0.3em] text-zinc-400 group-hover:text-zinc-200 transition-colors">
-          GODHAND.OS
+        <h1 className="text-xl font-black uppercase tracking-[0.3em] text-red-800 group-hover:text-red-500 transition-colors">
+          QLIPHOTH
         </h1>
       </div>
 
-      <div>
+      <div className="z-10">
+        {/* Subtle pale text for the action */}
         <button 
           onClick={handleSignOut}
-          className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-600 hover:text-red-800 transition-colors duration-300"
+          className="text-xs font-medium tracking-[0.2em] uppercase text-zinc-400 hover:text-white transition-colors duration-300"
         >
-          SEVER CONNECTION
+          SEVER
         </button>
       </div>
     </nav>
