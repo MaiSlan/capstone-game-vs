@@ -1,48 +1,139 @@
 import { useNavigate } from 'react-router-dom';
+import DashboardNavbar from '../components/DashboardNavbar';
 
+// Augmented your ROSTER with the stats and quotes you liked
 const ROSTER = [
-  { id: 'witch', name: 'Witch', status: 'unlocked', color: 'border-pink-500', bg: 'bg-pink-900/20', img: 'assets/characters/witch.png' },
-  { id: 'viking', name: 'Viking', status: 'unlocked', color: 'border-blue-500', bg: 'bg-blue-900/20', img: 'assets/characters/viking.png' },
-  { id: 'locked_1', name: '???', status: 'locked', color: 'border-zinc-700', bg: 'bg-zinc-900/50', img: null },
-  { id: 'locked_2', name: '???', status: 'locked', color: 'border-zinc-700', bg: 'bg-zinc-900/50', img: null },
-  { id: 'locked_3', name: '???', status: 'locked', color: 'border-zinc-700', bg: 'bg-zinc-900/50', img: null },
+  { 
+    id: 'witch', 
+    name: 'The Witch', 
+    status: 'unlocked', 
+    img: 'assets/characters/witch.png',
+    hp: 100, 
+    speed: 200, 
+    weapon: 'Swirling Book',
+    quote: '"The abyss whispers secrets only the broken can hear."'
+  },
+  { 
+    id: 'viking', 
+    name: 'The Viking', 
+    status: 'unlocked', 
+    img: 'assets/characters/viking.png',
+    hp: 150, 
+    speed: 180, 
+    weapon: 'Piercing Lance',
+    quote: '"If Valhalla is empty, I will carve my own path through Hell."'
+  },
+  { id: 'locked_1', name: 'Sealed', status: 'locked', img: null },
+  { id: 'locked_2', name: 'Sealed', status: 'locked', img: null },
+  { id: 'locked_3', name: 'Sealed', status: 'locked', img: null },
 ];
 
 export default function CharacterSelect({ selectedCharacter, setSelectedCharacter }) {
   const navigate = useNavigate();
-  return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white p-8">
-      <h1 className="text-4xl font-bold text-pink-400 mb-8">Select Your Hero</h1>
-      
-      <div className="flex gap-6 mb-12">
-        {ROSTER.map((char) => (
-          <div 
-            key={char.id}
-            onClick={() => char.status === 'unlocked' && setSelectedCharacter(char.id)}
-            className={`w-40 h-56 rounded-xl border-4 flex flex-col items-center justify-between p-4 cursor-pointer transition-all duration-200
-              ${char.bg} ${char.color}
-              ${selectedCharacter === char.id ? 'scale-110 shadow-[0_0_20px_rgba(236,72,153,0.5)]' : 'opacity-70 hover:opacity-100'}
-              ${char.status === 'locked' ? 'cursor-not-allowed opacity-40 grayscale' : ''}
-            `}
-          >
-            <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
-              {char.img ? (
-                <img src={char.img} alt={char.name} className="object-contain w-full h-full" />
-              ) : (
-                <span className="text-5xl">🔒</span>
-              )}
-            </div>
-            <div className="w-full text-center py-2 mt-2 bg-black/60 rounded font-bold text-sm">
-              {char.name}
-            </div>
-          </div>
-        ))}
-      </div>
 
-      <div className="flex gap-4">
-        <button onClick={() => navigate('/home')} className="px-6 py-3 bg-zinc-800 rounded-xl font-bold hover:bg-zinc-700 transition">BACK</button>
-        <button onClick={() => navigate('/play')} className="px-10 py-3 bg-pink-600 rounded-xl font-bold text-xl hover:bg-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.5)] transition">START RUN</button>
-      </div>
+  // Find the currently selected character's data to display their stats
+  const activeChar = ROSTER.find(c => c.id === selectedCharacter);
+
+  return (
+    <div className="bg-pure-abyss min-h-screen pt-32 pb-12 font-grim relative text-zinc-400">
+      <DashboardNavbar />
+
+      <main className="w-full max-w-5xl mx-auto px-6 z-10 flex flex-col items-center relative">
+        
+        <header className="text-center flex flex-col items-center mb-12">
+          <h1 className="font-royal text-4xl md:text-5xl font-black uppercase tracking-[0.4em] mb-4 text-red-800/90 drop-shadow-[0_0_15px_rgba(139,0,0,0.1)]">
+            Manifest Vessel
+          </h1>
+          <p className="text-[10px] max-w-lg text-zinc-500 tracking-[0.3em] uppercase font-bold">
+            Choose a soul bound to the Tartarus Node.
+          </p>
+        </header>
+        
+        {/* The Roster Cards */}
+        <div className="flex flex-wrap justify-center gap-6 mb-10">
+          {ROSTER.map((char) => (
+            <div 
+              key={char.id}
+              onClick={() => char.status === 'unlocked' && setSelectedCharacter(char.id)}
+              className={`w-40 h-56 flex flex-col items-center justify-between p-4 cursor-pointer transition-all duration-300 relative
+                bg-black/40 backdrop-blur-sm
+                ${selectedCharacter === char.id 
+                  ? 'border border-red-700 shadow-[0_0_20px_rgba(139,0,0,0.4)] scale-105 transform translate-y-[-4px]' 
+                  : 'border border-zinc-900/50 hover:border-red-900/50 hover:bg-black/60'}
+                ${char.status === 'locked' ? 'cursor-not-allowed opacity-30 grayscale' : ''}
+              `}
+            >
+              {/* Esoteric top marker */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[1px] bg-red-900/50"></div>
+
+              <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
+                {char.img ? (
+                  <img src={char.img} alt={char.name} className="object-contain w-full h-full drop-shadow-[0_5px_15px_rgba(0,0,0,1)]" />
+                ) : (
+                  <span className="text-2xl text-red-900/30 font-royal">✦</span>
+                )}
+              </div>
+              
+              <div className="w-full text-center py-2 mt-2 border-t border-red-900/20 font-royal font-bold text-xs uppercase tracking-widest text-zinc-300">
+                {char.name}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Focused Stats Panel (Only shows if an unlocked character is actively selected) */}
+        <div className="h-40 w-full max-w-2xl flex flex-col items-center justify-center mb-12">
+          {activeChar && activeChar.status === 'unlocked' ? (
+            <div className="w-full flex flex-col items-center animate-fade-in">
+              <p className="text-[11px] text-red-900/80 tracking-[0.2em] uppercase font-bold mb-6 text-center italic">
+                {activeChar.quote}
+              </p>
+              
+              <div className="flex w-full justify-center gap-12 border-t border-b border-red-900/20 py-4">
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-1">Vitality</span>
+                  <span className="font-royal text-xl text-zinc-200">{activeChar.hp}</span>
+                </div>
+                <div className="w-px bg-red-900/20 flex items-center justify-center relative">
+                  <span className="absolute text-red-900/40 text-[8px]">✦</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-1">Agility</span>
+                  <span className="font-royal text-xl text-zinc-200">{activeChar.speed}</span>
+                </div>
+                <div className="w-px bg-red-900/20 flex items-center justify-center relative">
+                  <span className="absolute text-red-900/40 text-[8px]">✦</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-1">Relic</span>
+                  <span className="font-royal text-lg text-zinc-200">{activeChar.weapon}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-700">Awaiting Vessel...</div>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-8 items-center mt-auto">
+          <button 
+            onClick={() => navigate('/home')} 
+            className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-600 hover:text-zinc-300 transition-colors duration-300"
+          >
+            Abandon
+          </button>
+          
+          <button 
+            onClick={() => navigate('/play')} 
+            disabled={!activeChar || activeChar.status === 'locked'}
+            className="btn-pure px-12 py-4 rounded-full font-royal text-sm uppercase tracking-[0.3em] disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Awaken
+          </button>
+        </div>
+
+      </main>
     </div>
   );
 }
