@@ -50,16 +50,30 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       left: Phaser.Input.Keyboard.KeyCodes.A, right: Phaser.Input.Keyboard.KeyCodes.D
     });
 
+    // --- TARGETING SYSTEM ---
     this.isManualAim = false;
-    this.currentAimAngle = 0; // Stored in radians
+    this.currentAimAngle = 0;
+
+    // 1. The Ghostly Targeting Laser
+    this.laserGraphic = scene.add.graphics();
+    this.laserGraphic.setDepth(10); // Sits on the floor, under entities
+
+    // 2. The Qliphoth Reticle (Custom Cursor)
+    this.reticle = scene.add.graphics();
+    this.reticle.lineStyle(1, 0x8b0000, 0.8); // Dark blood red outer ring
+    this.reticle.strokeCircle(0, 0, 8);
+    this.reticle.fillStyle(0xff1a1a, 1);      // Bright glowing center
+    this.reticle.fillCircle(0, 0, 2);
+    this.reticle.setDepth(100);               // Floats above everything
+    this.reticle.setVisible(false);           // Hidden by default
 
     // Listen for a left-click to toggle the aim mode
     scene.input.on('pointerdown', (pointer) => {
-      // Only toggle on left click (button 0)
       if (pointer.button === 0) {
         this.isManualAim = !this.isManualAim;
-        // Optional: We can add a UI notification here later
-        console.log("Manual Aim:", this.isManualAim); 
+        
+        // Toggle the reticle visibility instantly
+        this.reticle.setVisible(this.isManualAim);
       }
     });
   }
@@ -215,7 +229,29 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.setAngle(0);
       this.setScale(this.baseScale);
     }
+    // Calculate aim BEFORE processing weapons
     this.updateAimTarget(enemiesGroup);
+
+    // --- VISUAL AIMING UPDATE ---
+    const pointer = this.scene.input.activePointer;
+    
+    // Clear the previous frame's laser
+    this.laserGraphic.clear(); 
+
+    if (this.isManualAim) {
+      // Snap the reticle to the mouse position
+      this.reticle.setPosition(pointer.worldX, pointer.worldY);
+      
+      // Draw the faint red laser from the player to the cursor
+      this.laserGraphic.lineStyle(1, 0x8b0000, 0.25); // 25% opacity
+      this.laserGraphic.beginPath();
+      this.laserGraphic.moveTo(this.x, this.y);
+      this.laserGraphic.lineTo(pointer.worldX, pointer.worldY);
+      this.laserGraphic.strokePath();
+    }
+    // -----------------------------
+
+    // Loop through every equipped weapon and fire it
     this.weapons.forEach(weapon => {
       weapon.instance.update(time, this, enemiesGroup);
     });

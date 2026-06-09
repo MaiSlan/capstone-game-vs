@@ -9,18 +9,19 @@ export default class MagicMissile {
   }
 
   update(time, player, enemiesGroup) {
-    if (time > this.lastFired && enemiesGroup && enemiesGroup.getChildren().length > 0) {
-      const closestEnemy = this.scene.physics.closest(player, enemiesGroup.getChildren());
+    if (time > this.lastFired) {
+      // Use the book sprite temporarily until we import an orb asset
+      const bullet = this.scene.playerProjectiles.create(player.x, player.y, 'magic_book'); 
+      bullet.isBullet = true;
+      bullet.damage = this.stats.damage;
       
-      if (closestEnemy) {
-        // Use standard dummy graphics for now, we will replace with assets later
-        const bullet = this.scene.playerProjectiles.create(player.x, player.y, 'magic_book'); 
-        bullet.isBullet = true;
-        bullet.damage = this.stats.damage;
-        
-        this.scene.physics.moveToObject(bullet, closestEnemy, this.stats.speed);
-        this.lastFired = time + this.stats.cooldown;
-      }
+      // Fire precisely along the Player's calculated aim angle (Mouse or Auto)
+      this.scene.physics.velocityFromRotation(player.currentAimAngle, this.stats.speed, bullet.body.velocity);
+      
+      // Rotate the projectile to face its travel direction
+      bullet.setRotation(player.currentAimAngle);
+      
+      this.lastFired = time + this.stats.cooldown;
     }
   }
 }

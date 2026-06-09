@@ -70,7 +70,8 @@ export default function PlayArea({ selectedCharacter }) {
       <GameNavbar onToggleFullscreen={toggleFullScreen} />
       
       {/* The actual Phaser Game Canvas Container */}
-      <div className="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center bg-[#050202]">
+      {/* ADD cursor-none to this div */}
+      <div className="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center bg-[#050202] cursor-none">
          <PhaserEngine key={gameInstanceKey} selectedCharacter={selectedCharacter} />
       </div>
 
