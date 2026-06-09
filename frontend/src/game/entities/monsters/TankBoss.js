@@ -6,8 +6,8 @@ export default class TankBoss extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
     
-    this.speed = 60;  // Very slow and menacing
-    this.hp = 200;    // Takes 20 hits to kill
+    this.speed = 60;
+    this.hp = 200;
   }
 
   update(player) {

@@ -6,8 +6,8 @@ export default class FastBat extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
     
-    this.speed = 180; // Almost as fast as the player
-    this.hp = 5;      // Very weak
+    this.speed = 180;
+    this.hp = 5;
   }
 
   update(player) {
