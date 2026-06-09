@@ -2,6 +2,7 @@ import AxeCleave from '../weapons/AxeCleave';
 import MagicMissile from '../weapons/MagicMissile';
 import PiercingLance from '../weapons/PiercingLance';
 import SwirlingBook from '../weapons/SwirlingBook';
+import Phaser from 'phaser';
 
 const WEAPON_REGISTRY = {
   'cleave_axe': AxeCleave,
