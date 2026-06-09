@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import DashboardNavbar from '../components/DashboardNavbar';
+import PublicNavbar from '../components/PublicNavbar';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ export default function HomePage() {
 
   return (
     <div className="bg-pure-abyss min-h-screen pt-40 pb-12 font-grim relative">
-      <DashboardNavbar />
+      <PublicNavbar />
 
       <main className="w-full max-w-5xl mx-auto px-6 z-10 flex flex-col gap-20 relative">
         

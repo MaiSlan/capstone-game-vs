@@ -1,9 +1,7 @@
-// Top of src/pages/CharacterSelect.jsx
 import { useNavigate } from 'react-router-dom';
-import DashboardNavbar from '../components/DashboardNavbar';
-import { CHARACTER_DB } from '../data/CharacterDB'; // --- NEW: Import the DB ---
+import PublicNavbar from '../components/PublicNavbar';
+import { CHARACTER_DB } from '../data/CharacterDB'; 
 
-// Look how clean the visual state is now! No math here.
 const ROSTER_UI = [
   { id: 'witch', status: 'unlocked', img: 'assets/characters/witch.png' },
   { id: 'viking', status: 'unlocked', img: 'assets/characters/viking.png' },
@@ -15,14 +13,12 @@ const ROSTER_UI = [
 export default function CharacterSelect({ selectedCharacter, setSelectedCharacter }) {
   const navigate = useNavigate();
 
-  // Find the UI visual state for the selected character
   const activeCharUI = ROSTER_UI.find(c => c.id === selectedCharacter);
-  // Dynamically pull their actual game math from the Database
   const activeCharData = selectedCharacter ? CHARACTER_DB[selectedCharacter] : null;
 
   return (
     <div className="bg-pure-abyss min-h-screen pt-32 pb-12 font-grim relative text-zinc-400">
-      <DashboardNavbar />
+      <PublicNavbar />
 
       <main className="w-full max-w-5xl mx-auto px-6 z-10 flex flex-col items-center relative">
         
@@ -35,9 +31,9 @@ export default function CharacterSelect({ selectedCharacter, setSelectedCharacte
           </p>
         </header>
         
-        {/* The Roster Cards */}
         <div className="flex flex-wrap justify-center gap-6 mb-10">
-          {ROSTER.map((char) => (
+          {/* FIX: Changed ROSTER.map to ROSTER_UI.map */}
+          {ROSTER_UI.map((char) => (
             <div 
               key={char.id}
               onClick={() => char.status === 'unlocked' && setSelectedCharacter(char.id)}
@@ -49,30 +45,29 @@ export default function CharacterSelect({ selectedCharacter, setSelectedCharacte
                 ${char.status === 'locked' ? 'cursor-not-allowed opacity-30 grayscale' : ''}
               `}
             >
-              {/* Esoteric top marker */}
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[1px] bg-red-900/50"></div>
 
               <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
                 {char.img ? (
-                  <img src={char.img} alt={CHARACTER_DB[char.id]?.name || 'Sealed'} className="object-contain w-full h-full drop-shadow-[0_5px_15px_rgba(0,0,0,1)]" />
+                  <img src={char.img} alt={char.id} className="object-contain w-full h-full drop-shadow-[0_5px_15px_rgba(0,0,0,1)]" />
                 ) : (
                   <span className="text-2xl text-red-900/30 font-royal">✦</span>
                 )}
               </div>
               
               <div className="w-full text-center py-2 mt-2 border-t border-red-900/20 font-royal font-bold text-xs uppercase tracking-widest text-zinc-300">
+                {/* FIX: Read the name from the DB, fallback to 'Sealed' */}
                 {CHARACTER_DB[char.id]?.name || 'Sealed'}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Focused Stats Panel */}
         <div className="h-40 w-full max-w-2xl flex flex-col items-center justify-center mb-12">
           {activeCharUI && activeCharUI.status === 'unlocked' && activeCharData ? (
             <div className="w-full flex flex-col items-center animate-fade-in">
               <p className="text-[11px] text-red-900/80 tracking-[0.2em] uppercase font-bold mb-6 text-center italic">
-                {activeCharData.quote} {/* Dynamically read from DB */}
+                {activeCharData.quote}
               </p>
               
               <div className="flex w-full justify-center gap-12 border-t border-b border-red-900/20 py-4">
@@ -101,7 +96,6 @@ export default function CharacterSelect({ selectedCharacter, setSelectedCharacte
           )}
         </div>
 
-        {/* Action Buttons */}
         <div className="flex gap-8 items-center mt-auto">
           <button 
             onClick={() => navigate('/home')} 
@@ -112,13 +106,12 @@ export default function CharacterSelect({ selectedCharacter, setSelectedCharacte
           
           <button 
             onClick={() => navigate('/play')} 
-            disabled={!activeChar || activeChar.status === 'locked'}
+            disabled={!activeCharUI || activeCharUI.status === 'locked'}
             className="btn-pure px-12 py-4 rounded-full font-royal text-sm uppercase tracking-[0.3em] disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Awaken
           </button>
         </div>
-
       </main>
     </div>
   );
