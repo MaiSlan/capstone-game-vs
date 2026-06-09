@@ -1,10 +1,15 @@
 import Player from '../Player';
+import { CHARACTER_DB } from '../../../data/CharacterDB';
 
 export default class Witch extends Player {
   constructor(scene, x, y) {
-    super(scene, x, y, 'witch_sprite', 220);
-    this.addOrUpgradeWeapon('magic_orb');
-    this.heroName = "Witch";
+    const stats = CHARACTER_DB.witch;
+    
+    // Pass the DB stats: texture, speed, maxHp
+    super(scene, x, y, 'witch_sprite', stats.speed, stats.hp);
+    
+    this.heroName = stats.name;
+    this.addOrUpgradeWeapon(stats.weaponId);
     this.lastFired = 0;
   }
   // Override the update to include attacking

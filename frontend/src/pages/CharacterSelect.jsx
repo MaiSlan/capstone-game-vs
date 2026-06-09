@@ -1,38 +1,24 @@
+// Top of src/pages/CharacterSelect.jsx
 import { useNavigate } from 'react-router-dom';
 import DashboardNavbar from '../components/DashboardNavbar';
+import { CHARACTER_DB } from '../data/CharacterDB'; // --- NEW: Import the DB ---
 
-// Augmented your ROSTER with the stats and quotes you liked
-const ROSTER = [
-  { 
-    id: 'witch', 
-    name: 'The Witch', 
-    status: 'unlocked', 
-    img: 'assets/characters/witch.png',
-    hp: 100, 
-    speed: 200, 
-    weapon: 'Swirling Book',
-    quote: '"The abyss whispers secrets only the broken can hear."'
-  },
-  { 
-    id: 'viking', 
-    name: 'The Viking', 
-    status: 'unlocked', 
-    img: 'assets/characters/viking.png',
-    hp: 150, 
-    speed: 180, 
-    weapon: 'Piercing Lance',
-    quote: '"If Valhalla is empty, I will carve my own path through Hell."'
-  },
-  { id: 'locked_1', name: 'Sealed', status: 'locked', img: null },
-  { id: 'locked_2', name: 'Sealed', status: 'locked', img: null },
-  { id: 'locked_3', name: 'Sealed', status: 'locked', img: null },
+// Look how clean the visual state is now! No math here.
+const ROSTER_UI = [
+  { id: 'witch', status: 'unlocked', img: 'assets/characters/witch.png' },
+  { id: 'viking', status: 'unlocked', img: 'assets/characters/viking.png' },
+  { id: 'locked_1', status: 'locked', img: null },
+  { id: 'locked_2', status: 'locked', img: null },
+  { id: 'locked_3', status: 'locked', img: null },
 ];
 
 export default function CharacterSelect({ selectedCharacter, setSelectedCharacter }) {
   const navigate = useNavigate();
 
-  // Find the currently selected character's data to display their stats
-  const activeChar = ROSTER.find(c => c.id === selectedCharacter);
+  // Find the UI visual state for the selected character
+  const activeCharUI = ROSTER_UI.find(c => c.id === selectedCharacter);
+  // Dynamically pull their actual game math from the Database
+  const activeCharData = selectedCharacter ? CHARACTER_DB[selectedCharacter] : null;
 
   return (
     <div className="bg-pure-abyss min-h-screen pt-32 pb-12 font-grim relative text-zinc-400">
@@ -68,45 +54,45 @@ export default function CharacterSelect({ selectedCharacter, setSelectedCharacte
 
               <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
                 {char.img ? (
-                  <img src={char.img} alt={char.name} className="object-contain w-full h-full drop-shadow-[0_5px_15px_rgba(0,0,0,1)]" />
+                  <img src={char.img} alt={CHARACTER_DB[char.id]?.name || 'Sealed'} className="object-contain w-full h-full drop-shadow-[0_5px_15px_rgba(0,0,0,1)]" />
                 ) : (
                   <span className="text-2xl text-red-900/30 font-royal">✦</span>
                 )}
               </div>
               
               <div className="w-full text-center py-2 mt-2 border-t border-red-900/20 font-royal font-bold text-xs uppercase tracking-widest text-zinc-300">
-                {char.name}
+                {CHARACTER_DB[char.id]?.name || 'Sealed'}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Focused Stats Panel (Only shows if an unlocked character is actively selected) */}
+        {/* Focused Stats Panel */}
         <div className="h-40 w-full max-w-2xl flex flex-col items-center justify-center mb-12">
-          {activeChar && activeChar.status === 'unlocked' ? (
+          {activeCharUI && activeCharUI.status === 'unlocked' && activeCharData ? (
             <div className="w-full flex flex-col items-center animate-fade-in">
               <p className="text-[11px] text-red-900/80 tracking-[0.2em] uppercase font-bold mb-6 text-center italic">
-                {activeChar.quote}
+                {activeCharData.quote} {/* Dynamically read from DB */}
               </p>
               
               <div className="flex w-full justify-center gap-12 border-t border-b border-red-900/20 py-4">
                 <div className="flex flex-col items-center">
                   <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-1">Vitality</span>
-                  <span className="font-royal text-xl text-zinc-200">{activeChar.hp}</span>
+                  <span className="font-royal text-xl text-zinc-200">{activeCharData.hp}</span>
                 </div>
                 <div className="w-px bg-red-900/20 flex items-center justify-center relative">
                   <span className="absolute text-red-900/40 text-[8px]">✦</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-1">Agility</span>
-                  <span className="font-royal text-xl text-zinc-200">{activeChar.speed}</span>
+                  <span className="font-royal text-xl text-zinc-200">{activeCharData.speed}</span>
                 </div>
                 <div className="w-px bg-red-900/20 flex items-center justify-center relative">
                   <span className="absolute text-red-900/40 text-[8px]">✦</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-1">Relic</span>
-                  <span className="font-royal text-lg text-zinc-200">{activeChar.weapon}</span>
+                  <span className="font-royal text-lg text-zinc-200">{activeCharData.weaponName}</span>
                 </div>
               </div>
             </div>

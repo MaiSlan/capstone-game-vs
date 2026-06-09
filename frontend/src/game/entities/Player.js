@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
   // We added textureKey and baseSpeed as arguments
-  constructor(scene, x, y, textureKey, baseSpeed = 200) {
+  constructor(scene, x, y, textureKey, baseSpeed = 200, maxHp = 100) {
     super(scene, x, y, textureKey); 
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -10,11 +10,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.baseScale = 0.125;
     this.setScale(this.baseScale);
     this.setCollideWorldBounds(true);
+    
+    // Set the injected stats
     this.baseSpeed = baseSpeed;
-
-    // --- RPG STATS ---
-    this.maxHp = 100;
-    this.hp = 100;
+    this.maxHp = maxHp;
+    this.hp = maxHp;
     this.xp = 0;
     this.xpToNextLevel = 50;
     this.level = 1;

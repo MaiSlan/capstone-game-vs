@@ -10,7 +10,6 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Point this to the deployed Render URL or localhost depending on the environment
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   const handleAuth = async (e) => {
@@ -23,25 +22,20 @@ export default function AuthPage() {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.detail || 'Authentication failed');
-      }
+      if (!response.ok) throw new Error(data.detail || 'Ritual failed');
 
       if (isLogin) {
-        // Store the JWT token securely for future API calls
         localStorage.setItem('game_token', data.token);
         navigate('/home'); 
       } else {
-        alert('Account created! You can now sign in.');
-        setIsLogin(true); // Switch to login view
+        alert('Pact forged. You may now awaken.');
+        setIsLogin(true);
       }
     } catch (err) {
       setError(err.message);
@@ -51,42 +45,45 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="bg-pure-abyss min-h-screen flex flex-col font-grim text-zinc-400">
       <PublicNavbar />
       
-      <div className="flex-1 flex items-center justify-center p-8 mt-16">
-        <div className="w-full max-w-md bg-zinc-900 border border-purple-900/50 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-purple-600" />
+      <div className="flex-1 flex items-center justify-center p-8 mt-16 relative z-10">
+        
+        <div className="qliphoth-node w-full max-w-md flex flex-col pt-10 pb-8 px-10">
           
-          <h2 className="text-3xl font-bold text-white mb-6 text-center">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
-          </h2>
+          <header className="flex flex-col items-center mb-8">
+            <span className="text-red-900/60 text-xl mb-2">✦</span>
+            <h2 className="font-royal text-3xl font-black uppercase tracking-[0.3em] text-zinc-200 text-center">
+              {isLogin ? 'Awaken' : 'Forge Pact'}
+            </h2>
+          </header>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-lg mb-6 text-sm text-center">
+            <div className="bg-red-950/20 border border-red-900/50 text-red-500 p-3 rounded mb-6 text-[10px] uppercase tracking-widest text-center">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleAuth} className="flex flex-col gap-4">
-            <div>
-              <label className="block text-zinc-400 text-sm mb-2">Email Address</label>
+          <form onSubmit={handleAuth} className="flex flex-col gap-6">
+            <div className="flex flex-col">
+              <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-2">Soul Signature (Email)</label>
               <input 
                 type="email" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-800 text-white rounded-lg p-3 focus:outline-none focus:border-pink-500 transition"
+                className="w-full bg-transparent border-b border-zinc-800 text-zinc-200 py-2 focus:outline-none focus:border-red-800 transition-colors duration-300 font-royal tracking-widest"
                 required 
               />
             </div>
             
-            <div>
-              <label className="block text-zinc-400 text-sm mb-2">Password</label>
+            <div className="flex flex-col mb-4">
+              <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-2">Incantation (Password)</label>
               <input 
                 type="password" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-800 text-white rounded-lg p-3 focus:outline-none focus:border-purple-500 transition"
+                className="w-full bg-transparent border-b border-zinc-800 text-zinc-200 py-2 focus:outline-none focus:border-red-800 transition-colors duration-300 font-royal tracking-widest"
                 required 
               />
             </div>
@@ -94,21 +91,20 @@ export default function AuthPage() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold py-3 rounded-lg mt-4 transition disabled:opacity-50"
+              className="btn-pure w-full py-4 font-royal text-sm uppercase tracking-[0.3em] disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              {loading ? 'Processing...' : isLogin ? 'SIGN IN' : 'SIGN UP'}
+              {loading ? 'Channeling...' : isLogin ? 'Enter Tartarus' : 'Bind Soul'}
             </button>
           </form>
 
-          <p className="text-center text-zinc-500 mt-6 text-sm">
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
+          <div className="flex justify-center mt-8 pt-6 border-t border-red-900/20">
             <button 
               onClick={() => setIsLogin(!isLogin)}
-              className="text-pink-400 hover:text-pink-300 font-bold transition"
+              className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 hover:text-red-700 transition-colors duration-300"
             >
-              {isLogin ? 'Register here' : 'Sign in here'}
+              {isLogin ? 'No pact exists? Forge one.' : 'Already bound? Awaken here.'}
             </button>
-          </p>
+          </div>
         </div>
       </div>
     </div>

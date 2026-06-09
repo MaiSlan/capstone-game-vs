@@ -26,20 +26,15 @@ export default function PlayArea({ selectedCharacter }) {
       setCurrentLevel(lvl);
       
       let pool = [];
-      // Every 5th level gives Weapons (for the specific character)
       if (lvl % 5 === 0) {
         pool = [...REWARD_DB.weapons[selectedCharacter]];
-        // Fallback if they own all weapons maxed out (for later): Add a heal
         if (pool.length === 0) pool.push(REWARD_DB.items.common.find(i => i.id === 'heal'));
       } else {
-        // Normal levels give Items/Skills
         pool = [...REWARD_DB.items.common];
       }
 
-      // Shuffle the pool and pick up to 3 cards
       const shuffled = pool.sort(() => 0.5 - Math.random());
       setCurrentChoices(shuffled.slice(0, 3));
-      
       setIsLevelUp(true);
     };
 
@@ -70,56 +65,73 @@ export default function PlayArea({ selectedCharacter }) {
     window.dispatchEvent(new CustomEvent('VS_APPLY_REWARD', { detail: { reward } }));
   };
 
-  // Placeholder rewards (We will connect these to your weapon/item arrays later)
-  const TEMP_REWARDS = [
-    { id: 'lance', title: 'Piercing Lance', desc: 'Fires a heavy lance that pierces 3 enemies.', icon: '🗡️' },
-    { id: 'magic_book', title: 'Swirling Book', desc: 'An ancient tome that orbits and damages foes.', icon: '📖' },
-    { id: 'heal', title: 'Health Potion', desc: 'Instantly restores all HP to max.', icon: '🧪' }
-  ];
-
   return (
-    <div ref={fullScreenRef} className="w-full h-screen bg-black flex flex-col relative">
+    <div ref={fullScreenRef} className="w-full h-screen bg-black flex flex-col relative font-grim">
       <GameNavbar onToggleFullscreen={toggleFullScreen} />
       
-      <div className="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center bg-zinc-900">
+      {/* The actual Phaser Game Canvas Container */}
+      <div className="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center bg-[#050202]">
          <PhaserEngine key={gameInstanceKey} selectedCharacter={selectedCharacter} />
       </div>
 
-      {/* Game Over Overlay (Unchanged) */}
+      {/* --- GAME OVER OVERLAY (Esoteric/Hollow Knight style) --- */}
       {isGameOver && (
-        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm">
-          {/* ... existing game over UI ... */}
-          <div className="bg-zinc-950 border-2 border-red-900 p-10 rounded-2xl flex flex-col items-center shadow-[0_0_50px_rgba(220,38,38,0.4)]">
-            <h2 className="text-6xl font-bold text-red-500 mb-2 tracking-widest drop-shadow-lg">YOU DIED</h2>
-            <p className="text-zinc-400 mb-10 text-xl font-mono border-b border-zinc-800 pb-4 w-full text-center">Reached Level {finalLevel}</p>
-            <div className="flex flex-col gap-4 w-64">
-              <button onClick={handleRestart} className="py-4 bg-red-700 hover:bg-red-600 rounded-xl font-bold text-white transition shadow-lg">RESTART RUN</button>
-              <button onClick={() => navigate('/select')} className="py-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl font-bold text-pink-400 transition">CHANGE HERO</button>
-              <button onClick={() => navigate('/home')} className="py-4 bg-zinc-900 hover:bg-zinc-800 rounded-xl font-bold text-zinc-500 transition">MAIN MENU</button>
+        <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center z-50 backdrop-blur-md">
+          <div className="flex flex-col items-center">
+            <h2 className="font-royal text-5xl md:text-6xl font-black uppercase tracking-[0.4em] mb-4 text-red-800 drop-shadow-[0_0_20px_rgba(139,0,0,0.5)]">
+              Vessel Shattered
+            </h2>
+            <div className="flex items-center gap-4 mb-12">
+              <span className="w-8 h-px bg-red-900/50"></span>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-500 font-bold">
+                Descent Halted at Layer {finalLevel}
+              </p>
+              <span className="w-8 h-px bg-red-900/50"></span>
+            </div>
+
+            <div className="flex gap-6 mt-4">
+              <button onClick={handleRestart} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em]">
+                Resurrect
+              </button>
+              <button onClick={() => navigate('/select')} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em]">
+                New Vessel
+              </button>
+              <button onClick={() => navigate('/home')} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em]">
+                Abandon
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* --- NEW: Level Up Overlay --- */}
+      {/* --- LEVEL UP OVERLAY (Qliphoth Node style) --- */}
       {isLevelUp && (
-        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-40 backdrop-blur-sm">
+        <div className="absolute inset-0 bg-black/85 flex items-center justify-center z-40 backdrop-blur-md">
           <div className="flex flex-col items-center">
-            <h2 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-2 drop-shadow-lg">
-              LEVEL {currentLevel}
+            <h2 className="font-royal text-3xl font-black uppercase tracking-[0.4em] text-zinc-200 mb-2">
+              Evolution <span className="text-red-800">I</span>I<span className="text-red-800">I</span>
             </h2>
-            <p className="text-zinc-300 mb-8 font-mono">Select an augmentation</p>
+            <p className="text-[10px] uppercase tracking-[0.4em] text-red-900/80 font-bold mb-12">
+              Select an Augmentation
+            </p>
             
-            <div className="flex gap-6">
+            <div className="flex gap-8">
               {currentChoices.map((reward) => (
                 <div 
                   key={reward.id}
                   onClick={() => selectReward(reward)}
-                  className="w-56 h-72 bg-zinc-900 border-2 border-zinc-700 hover:border-emerald-500 rounded-xl p-6 cursor-pointer flex flex-col items-center text-center transition-all duration-200 hover:-translate-y-2"
+                  className="qliphoth-node w-56 flex flex-col items-center text-center cursor-pointer group"
                 >
-                  <div className="text-6xl mb-6 mt-4">{reward.icon}</div>
-                  <h3 className="text-xl font-bold text-white mb-2">{reward.title}</h3>
-                  <p className="text-sm text-zinc-400">{reward.desc}</p>
+                  <div className="text-4xl mb-6 mt-2 filter drop-shadow-md group-hover:scale-110 transition-transform duration-300">
+                    {reward.icon}
+                  </div>
+                  <h3 className="font-royal text-sm font-bold uppercase tracking-widest text-zinc-300 mb-3 group-hover:text-white transition-colors">
+                    {reward.title}
+                  </h3>
+                  <div className="w-4 h-px bg-red-900/40 mb-3"></div>
+                  <p className="text-[10px] text-zinc-500 tracking-widest leading-relaxed uppercase">
+                    {reward.desc}
+                  </p>
                 </div>
               ))}
             </div>

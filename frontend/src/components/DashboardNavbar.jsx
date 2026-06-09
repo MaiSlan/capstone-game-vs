@@ -25,7 +25,7 @@ export default function DashboardNavbar() {
           onClick={handleSignOut}
           className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-500 hover:text-zinc-200 transition-colors duration-300"
         >
-          Sever Link
+          Sign Out
         </button>
       </div>
     </nav>
