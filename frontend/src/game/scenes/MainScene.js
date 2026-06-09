@@ -20,9 +20,30 @@ export default class MainScene extends Phaser.Scene {
   // Inside src/game/scenes/MainScene.js
   
   create() {
-    this.physics.world.setBounds(0, 0, 4000, 4000);
-    this.cameras.main.setBounds(0, 0, 4000, 4000);
-    this.add.grid(2000, 2000, 4000, 4000, 64, 64, 0x000000, 0, 0x4c1d95, 0.4);
+    // --- THE FLOOR OF TARTARUS ---
+    // We keep a very faint grid, but make it look like esoteric stone tiles
+    this.add.grid(2000, 2000, 4000, 4000, 128, 128, 0x050202, 1, 0x3a0000, 0.2);
+
+    // --- THE WALLS OF TARTARUS (Visual Boundaries) ---
+    const mapWidth = 4000;
+    const mapHeight = 4000;
+    
+    // Draw a massive glowing red perimeter on the floor
+    const boundaryGraphics = this.add.graphics();
+    boundaryGraphics.lineStyle(8, 0x8b0000, 0.8); // 8px thick blood-red line
+    boundaryGraphics.strokeRect(0, 0, mapWidth, mapHeight);
+    
+    // Add an inner "warning" line right before the wall
+    boundaryGraphics.lineStyle(2, 0xff1a1a, 0.4); 
+    boundaryGraphics.strokeRect(50, 50, mapWidth - 100, mapHeight - 100);
+
+    // Set the physics and camera bounds
+    this.physics.world.setBounds(0, 0, mapWidth, mapHeight);
+    
+    // Optional: We can constrain the camera slightly INSIDE the map 
+    // so the black void outside the 4000x4000 box is always visible,
+    // making it feel like an island in the abyss.
+    this.cameras.main.setBounds(-200, -200, mapWidth + 400, mapHeight + 400);
 
     const graphics = this.add.graphics();
     graphics.fillStyle(0xff0000, 1); graphics.fillRect(0, 0, 32, 32); graphics.generateTexture('dummy_monster', 32, 32);
