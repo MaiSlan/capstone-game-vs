@@ -3,8 +3,9 @@
 export const WEAPON_DB = {
   cleave_axe: {
     id: 'cleave_axe',
-    damage: 25,
-    cooldown: 1200, // Fires every 1.2 seconds
+    damage: 35,      // Increased damage for a heavy weapon
+    cooldown: 1800,  // Increased from 1200ms to 1800ms (slower swing)
+    radius: 140      // Added property for the drawing logic
   },
   magic_orb: {
     id: 'magic_orb',
