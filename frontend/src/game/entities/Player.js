@@ -1,4 +1,14 @@
-import Phaser from 'phaser';
+import AxeCleave from '../weapons/AxeCleave';
+import MagicMissile from '../weapons/MagicMissile';
+import PiercingLance from '../weapons/PiercingLance';
+import SwirlingBook from '../weapons/SwirlingBook';
+
+const WEAPON_REGISTRY = {
+  'cleave_axe': AxeCleave,
+  'magic_orb': MagicMissile,
+  'lance': PiercingLance,
+  'magic_book': SwirlingBook
+};
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
   // We added textureKey and baseSpeed as arguments
@@ -82,7 +92,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     if (existingWeapon) {
       if (existingWeapon.level < 5) existingWeapon.level++;
     } else if (this.weapons.length < this.maxWeapons) {
-      this.weapons.push({ id: weaponId, level: 1 });
+      // NEW: We store the visual UI data AND the live weapon instance together
+      const WeaponClass = WEAPON_REGISTRY[weaponId];
+      this.weapons.push({ 
+        id: weaponId, 
+        level: 1,
+        instance: new WeaponClass(this.scene) // Instantiate the specific weapon logic
+      });
     }
 
     if (this.scene && this.scene.scene.get('UIScene')) {
@@ -109,45 +125,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       } else {
         this.currentAimAngle = this.flipX ? 0 : Math.PI;
       }
-    }
-  }
-
-  processWeapons(time) {
-    // 1. Swirling Book Logic (Orbital)
-    const hasBook = this.weapons.find(w => w.id === 'magic_book');
-    if (hasBook) {
-      // If we own the book but haven't created the sprite yet, spawn it
-      if (this.orbitals.length === 0) {
-        const book = this.scene.playerProjectiles.create(this.x, this.y, 'magic_book');
-        book.isBullet = false; // Don't destroy on hit
-        book.damage = 5;       // Books do less damage but hit constantly
-        this.orbitals.push(book);
-      }
-
-      // Rotate the book around the player
-      this.orbitAngle += 0.05;
-      const radius = 60;
-      this.orbitals[0].setPosition(
-        this.x + Math.cos(this.orbitAngle) * radius,
-        this.y + Math.sin(this.orbitAngle) * radius
-      );
-    }
-    // 2. Piercing Lance Logic (Projectile)
-    const hasLance = this.weapons.find(w => w.id === 'lance');
-    if (hasLance && time > this.weaponCooldowns.lance) {
-      const lance = this.scene.playerProjectiles.create(this.x, this.y, 'lance');
-      lance.isBullet = false;
-      lance.damage = 15;
-      lance.pierce = 3;
-
-      // --- NEW: FIRE ALONG THE CALCULATED ANGLE ---
-      // 1. Give it velocity in the direction of the aim angle
-      this.scene.physics.velocityFromRotation(this.currentAimAngle, 400, lance.body.velocity);
-      
-      // 2. Rotate the actual sprite so the graphic points toward the target
-      lance.setRotation(this.currentAimAngle);
-
-      this.weaponCooldowns.lance = time + 1500;
     }
   }
 
@@ -238,6 +215,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.setScale(this.baseScale);
     }
     this.updateAimTarget(enemiesGroup);
-    this.processWeapons(time);
+    this.weapons.forEach(weapon => {
+      weapon.instance.update(time, this, enemiesGroup);
+    });
   }
 }
