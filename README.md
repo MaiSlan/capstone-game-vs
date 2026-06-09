@@ -25,3 +25,5 @@ Weapon & Skill Refinement: * The Architecture: This requires building out the sp
 Advanced Spawn Patterns (The Director): * The Logic: We upgrade the WaveManager.js. Instead of just randomly dropping enemies, it becomes a state machine reading the global timer. At exactly 3:00, it triggers the SpawnCircleTrap() method. At 5:00, it triggers the SpawnFastSwarm() method.
 
 The Bestiary / Master Bible: * The Foundation: You already started this perfectly with CharacterDB.js and RewardDB.js. We simply expand this data architecture to include MonsterDB.js, ensuring every HP, speed, and damage value is stored in one clean place outside the engine code.
+
+The Damage Numbers: Popping up tiny numbers (e.g., "-15") when enemies take damage makes combat feel impactful.
