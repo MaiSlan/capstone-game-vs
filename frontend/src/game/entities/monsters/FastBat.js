@@ -3,7 +3,7 @@ import { MONSTER_DB } from '../../../data/MonsterDB';
 
 export default class FastBat extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
-    super(scene, x, y, 'fast_bat_sprite'); // Replace with your actual asset key
+    super(scene, x, y, 'bat_sprite');
     scene.add.existing(this);
     scene.physics.add.existing(this);
     

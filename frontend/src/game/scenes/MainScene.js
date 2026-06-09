@@ -15,6 +15,7 @@ export default class MainScene extends Phaser.Scene {
   preload() {
     this.load.image('witch_sprite', 'assets/characters/witch.png');
     this.load.image('viking_sprite', 'assets/characters/viking.png');
+    this.load.image('bat_sprite', 'assets/monsters/bat.png');
   }
 
   // Inside src/game/scenes/MainScene.js
