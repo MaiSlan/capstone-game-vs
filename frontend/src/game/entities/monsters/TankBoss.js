@@ -23,11 +23,17 @@ export default class TankBoss extends Phaser.Physics.Arcade.Sprite {
     this.body.setSize(this.width * 0.8, this.height * 0.8);
   }
 
-  update(time, player) {
+  update(time) {
     if (!this.active || this.hp <= 0) return;
 
+    // --- THE FIX: Have the monster look at the Scene to find the player ---
+    const targetPlayer = this.scene.player;
+    
+    // Safety check: If the player is missing or dead, just stop moving
+    if (!targetPlayer || !targetPlayer.active) return;
+
     // Standard tracking logic
-    this.scene.physics.moveToObject(this, player, this.baseSpeed);
+    this.scene.physics.moveToObject(this, targetPlayer, this.baseSpeed);
 
     // Face the player
     if (this.body.velocity.x > 0) {
