@@ -38,6 +38,19 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       up: Phaser.Input.Keyboard.KeyCodes.W, down: Phaser.Input.Keyboard.KeyCodes.S,
       left: Phaser.Input.Keyboard.KeyCodes.A, right: Phaser.Input.Keyboard.KeyCodes.D
     });
+
+    this.isManualAim = false;
+    this.currentAimAngle = 0; // Stored in radians
+
+    // Listen for a left-click to toggle the aim mode
+    scene.input.on('pointerdown', (pointer) => {
+      // Only toggle on left click (button 0)
+      if (pointer.button === 0) {
+        this.isManualAim = !this.isManualAim;
+        // Optional: We can add a UI notification here later
+        console.log("Manual Aim:", this.isManualAim); 
+      }
+    });
   }
 
   addOrUpgradeItem(itemId) {
@@ -77,6 +90,28 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  updateAimTarget(enemiesGroup) {
+    if (this.isManualAim) {
+      // --- MOUSE AIM ---
+      // Crucial: Use worldX/worldY so it accurately tracks across the camera
+      const pointer = this.scene.input.activePointer;
+      this.currentAimAngle = Phaser.Math.Angle.Between(this.x, this.y, pointer.worldX, pointer.worldY);
+    } else {
+      // --- AUTO AIM ---
+      if (enemiesGroup && enemiesGroup.getChildren().length > 0) {
+        const closestEnemy = this.scene.physics.closest(this, enemiesGroup.getChildren());
+        if (closestEnemy && closestEnemy.active) {
+          this.currentAimAngle = Phaser.Math.Angle.Between(this.x, this.y, closestEnemy.x, closestEnemy.y);
+        } else {
+          // Fallback: If no enemies, aim in the direction we are facing
+          this.currentAimAngle = this.flipX ? 0 : Math.PI;
+        }
+      } else {
+        this.currentAimAngle = this.flipX ? 0 : Math.PI;
+      }
+    }
+  }
+
   processWeapons(time) {
     // 1. Swirling Book Logic (Orbital)
     const hasBook = this.weapons.find(w => w.id === 'magic_book');
@@ -97,24 +132,22 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.y + Math.sin(this.orbitAngle) * radius
       );
     }
-
     // 2. Piercing Lance Logic (Projectile)
     const hasLance = this.weapons.find(w => w.id === 'lance');
     if (hasLance && time > this.weaponCooldowns.lance) {
       const lance = this.scene.playerProjectiles.create(this.x, this.y, 'lance');
       lance.isBullet = false;
       lance.damage = 15;
-      lance.pierce = 3; // Can hit 3 enemies before breaking
+      lance.pierce = 3;
 
-      if (this.flipX) {
-        // Facing Right
-        this.scene.physics.velocityFromAngle(0, 400, lance.body.velocity);
-      } else {
-        // Facing Left
-        this.scene.physics.velocityFromAngle(180, 400, lance.body.velocity);
-      }
+      // --- NEW: FIRE ALONG THE CALCULATED ANGLE ---
+      // 1. Give it velocity in the direction of the aim angle
+      this.scene.physics.velocityFromRotation(this.currentAimAngle, 400, lance.body.velocity);
+      
+      // 2. Rotate the actual sprite so the graphic points toward the target
+      lance.setRotation(this.currentAimAngle);
 
-      this.weaponCooldowns.lance = time + 1500; // Fires every 1.5 seconds
+      this.weaponCooldowns.lance = time + 1500;
     }
   }
 
@@ -204,6 +237,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.setAngle(0);
       this.setScale(this.baseScale);
     }
+    this.updateAimTarget(enemiesGroup);
     this.processWeapons(time);
   }
 }
