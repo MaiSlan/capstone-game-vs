@@ -40,12 +40,10 @@ export default class MainScene extends Phaser.Scene {
     const floorLayer = map.createBlankLayer('BaseFloor', tileset, 0, 0);
 
     // 4. The Array of your 5 pale stone IDs
-    const paleStoneTiles = [1, 2, 3, 4, 5];
+    const paleStoneTiles = [0, 2, 4, 6, 8];
 
     // 5. Randomly fill the entire 125x125 grid using those 5 tiles
-    for (let i = 1; i <= 9; i++) {
-      floorLayer.putTileAt(i, i, 0); 
-    }
+    floorLayer.randomize(0, 0, mapWidthInTiles, mapHeightInTiles, paleStoneTiles);
 
     // 6. Scale the layer up so it looks appropriately sized next to the characters
     floorLayer.setScale(2);
