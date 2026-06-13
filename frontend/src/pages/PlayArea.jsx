@@ -13,6 +13,7 @@ export default function PlayArea({ selectedCharacter }) {
   const [isLevelUp, setIsLevelUp] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(1);
   const [currentChoices, setCurrentChoices] = useState([]);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     const handleGameOver = (e) => {
@@ -38,12 +39,18 @@ export default function PlayArea({ selectedCharacter }) {
       setIsLevelUp(true);
     };
 
+    const handlePauseState = (e) => {
+      setIsPaused(e.detail.isPaused);
+    };    
+
     window.addEventListener('VS_GAME_OVER', handleGameOver);
     window.addEventListener('VS_LEVEL_UP', handleLevelUp);
+    window.addEventListener('VS_PAUSE_STATE', handlePauseState);
     
     return () => {
       window.removeEventListener('VS_GAME_OVER', handleGameOver);
       window.removeEventListener('VS_LEVEL_UP', handleLevelUp);
+      window.removeEventListener('VS_PAUSE_STATE', handlePauseState);
     };
   }, [selectedCharacter]);
 
@@ -65,6 +72,10 @@ export default function PlayArea({ selectedCharacter }) {
     window.dispatchEvent(new CustomEvent('VS_APPLY_REWARD', { detail: { reward } }));
   };
 
+  const handleResume = () => {
+    window.dispatchEvent(new CustomEvent('VS_RESUME_GAME'));
+  };
+
   return (
     <div ref={fullScreenRef} className="w-full h-screen bg-black flex flex-col relative font-grim">
       <GameNavbar onToggleFullscreen={toggleFullScreen} />
@@ -74,6 +85,33 @@ export default function PlayArea({ selectedCharacter }) {
       <div className="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center bg-[#050202] cursor-none">
          <PhaserEngine key={gameInstanceKey} selectedCharacter={selectedCharacter} />
       </div>
+
+      {/* --- SUSPENDED / PAUSE OVERLAY --- */}
+      {isPaused && !isGameOver && !isLevelUp && (
+        <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center z-50 backdrop-blur-md">
+          <div className="flex flex-col items-center animate-fade-in">
+            <h2 className="font-royal text-5xl md:text-6xl font-black uppercase tracking-[0.4em] mb-4 text-zinc-300 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+              Suspended
+            </h2>
+            <div className="flex items-center gap-4 mb-12">
+              <span className="w-8 h-px bg-red-900/50"></span>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-red-900/80 font-bold">
+                The Flow of Time Halts
+              </p>
+              <span className="w-8 h-px bg-red-900/50"></span>
+            </div>
+
+            <div className="flex gap-6 mt-4">
+              <button onClick={handleResume} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em]">
+                Resume
+              </button>
+              <button onClick={() => navigate('/home')} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em] text-zinc-500 hover:text-red-500 hover:border-red-900/50 transition-colors">
+                Abandon
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* --- GAME OVER OVERLAY (Esoteric/Hollow Knight style) --- */}
       {isGameOver && (
