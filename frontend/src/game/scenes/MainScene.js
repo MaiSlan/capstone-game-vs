@@ -46,7 +46,6 @@ export default class MainScene extends Phaser.Scene {
     this.cameras.main.setBounds(-200, -200, mapWidth + 400, mapHeight + 400);
 
     const graphics = this.add.graphics();
-    graphics.clear(); graphics.fillStyle(0xa855f7, 1); graphics.fillRect(0, 0, 16, 16); graphics.generateTexture('fast_bat', 16, 16);
     graphics.clear(); graphics.fillStyle(0xf97316, 1); graphics.fillRect(0, 0, 96, 96); graphics.generateTexture('tank_boss', 96, 96);
     graphics.clear(); graphics.fillStyle(0xffff00, 1); graphics.fillCircle(8, 8, 8); graphics.generateTexture('magic_bullet', 16, 16);
     graphics.clear(); graphics.fillStyle(0x06b6d4, 1); graphics.fillRect(0, 0, 12, 12); graphics.generateTexture('exp_gem', 12, 12);
@@ -98,7 +97,6 @@ export default class MainScene extends Phaser.Scene {
         if (typeof enemy.die === 'function') {
           enemy.die(); 
         } else {
-          // Fallback for shapes/bats
           enemy.isDying = true; 
           enemy.destroy();  
         }
@@ -115,7 +113,6 @@ export default class MainScene extends Phaser.Scene {
           enemy.hurt(); // Triggers the hit-stun
           
         } else {
-          // Fallback for non-animated objects like bats
           enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
           this.time.delayedCall(100, () => { if (enemy && enemy.active && !enemy.isDying) enemy.clearTint() });
         }

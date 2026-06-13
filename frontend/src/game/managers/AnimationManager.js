@@ -1,6 +1,7 @@
 export default class AnimationManager {
   static initializeAnimations(scene) {
     
+    // Slime
     // --- SLIME: WALK ANIMATIONS (8 columns) ---
     // Row 1: Down (0-7), Row 2: Up (8-15), Row 3: Left (16-23), Row 4: Right (24-31)
     scene.anims.create({ key: 'slime_walk_down', frames: scene.anims.generateFrameNumbers('slime_walk', { start: 0, end: 7 }), frameRate: 10, repeat: -1 });
@@ -21,5 +22,28 @@ export default class AnimationManager {
     scene.anims.create({ key: 'slime_hurt_up', frames: scene.anims.generateFrameNumbers('slime_hurt', { start: 5, end: 9 }), frameRate: 15, repeat: 0 });
     scene.anims.create({ key: 'slime_hurt_left', frames: scene.anims.generateFrameNumbers('slime_hurt', { start: 10, end: 14 }), frameRate: 15, repeat: 0 });
     scene.anims.create({ key: 'slime_hurt_right', frames: scene.anims.generateFrameNumbers('slime_hurt', { start: 15, end: 19 }), frameRate: 15, repeat: 0 });
+
+    // Vampire
+    // --- VAMPIRE: WALK (6 columns) ---
+    scene.anims.create({ key: 'vampire_walk_down', frames: scene.anims.generateFrameNumbers('vampire_walk', { start: 0, end: 5 }), frameRate: 12, repeat: -1 });
+    scene.anims.create({ key: 'vampire_walk_up', frames: scene.anims.generateFrameNumbers('vampire_walk', { start: 6, end: 11 }), frameRate: 12, repeat: -1 });
+    scene.anims.create({ key: 'vampire_walk_left', frames: scene.anims.generateFrameNumbers('vampire_walk', { start: 12, end: 17 }), frameRate: 12, repeat: -1 });
+    scene.anims.create({ key: 'vampire_walk_right', frames: scene.anims.generateFrameNumbers('vampire_walk', { start: 18, end: 23 }), frameRate: 12, repeat: -1 });
+
+    // --- VAMPIRE: ATTACK (12 columns) ---
+    scene.anims.create({ key: 'vampire_attack_down', frames: scene.anims.generateFrameNumbers('vampire_attack', { start: 0, end: 11 }), frameRate: 15, repeat: 0 });
+    scene.anims.create({ key: 'vampire_attack_up', frames: scene.anims.generateFrameNumbers('vampire_attack', { start: 12, end: 23 }), frameRate: 15, repeat: 0 });
+    scene.anims.create({ key: 'vampire_attack_left', frames: scene.anims.generateFrameNumbers('vampire_attack', { start: 24, end: 35 }), frameRate: 15, repeat: 0 });
+    scene.anims.create({ key: 'vampire_attack_right', frames: scene.anims.generateFrameNumbers('vampire_attack', { start: 36, end: 47 }), frameRate: 15, repeat: 0 });
+
+    // --- VAMPIRE: HURT (4 columns) ---
+    scene.anims.create({ key: 'vampire_hurt_down', frames: scene.anims.generateFrameNumbers('vampire_hurt', { start: 0, end: 3 }), frameRate: 15, repeat: 0 });
+    scene.anims.create({ key: 'vampire_hurt_up', frames: scene.anims.generateFrameNumbers('vampire_hurt', { start: 4, end: 7 }), frameRate: 15, repeat: 0 });
+    scene.anims.create({ key: 'vampire_hurt_left', frames: scene.anims.generateFrameNumbers('vampire_hurt', { start: 8, end: 11 }), frameRate: 15, repeat: 0 });
+    scene.anims.create({ key: 'vampire_hurt_right', frames: scene.anims.generateFrameNumbers('vampire_hurt', { start: 12, end: 15 }), frameRate: 15, repeat: 0 });
+
+    // --- VAMPIRE: DEATH (11 columns) ---
+    // Using just the first row to save processing power on corpses
+    scene.anims.create({ key: 'vampire_death', frames: scene.anims.generateFrameNumbers('vampire_death', { start: 0, end: 10 }), frameRate: 15, repeat: 0 });
   }
 }

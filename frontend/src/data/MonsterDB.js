@@ -4,20 +4,20 @@ export const MONSTER_DB = {
   slime: { 
     id: 'slime', 
     name: 'Abyssal Slime', 
-    hp: 40, 
+    hp: 20, 
     speed: 50,       
     damage: 5, 
     xp: 5,
     scale: 2.5
   },
-  bat: { 
-    id: 'bat', 
-    name: 'Abyssal Bat', 
-    hp: 10, 
-    speed: 150,      // Fast, erratic
-    damage: 5, 
-    xp: 3,
-    tint: 0x8b0000   // Blood red
+  vampire: { 
+    id: 'vampire', 
+    name: 'Abyssal Vampire', 
+    hp: 30,
+    speed: 110,
+    damage: 15,
+    xp: 8,
+    scale: 1.8
   },
   tank_boss: { 
     id: 'tank_boss', 

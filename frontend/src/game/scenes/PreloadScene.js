@@ -88,15 +88,20 @@ export default class PreloadScene extends Phaser.Scene {
     // Items & Consumables
     this.load.image('red_potion', 'assets/items/potion.png'); 
 
-    // Monsters 
-    this.load.image('bat_sprite', 'assets/monsters/bat.png');
-
+    // --- SLIME MONSTER ---
     const slimeConfig = { frameWidth: 64, frameHeight: 64 };
     this.load.spritesheet('slime_walk', 'assets/monsters/slime/Slime2_Walk_with_shadow.png', slimeConfig);
     this.load.spritesheet('slime_idle', 'assets/monsters/slime/Slime2_Idle_with_shadow.png', slimeConfig);
     this.load.spritesheet('slime_attack', 'assets/monsters/slime/Slime2_Attack_with_shadow.png', slimeConfig);
     this.load.spritesheet('slime_death', 'assets/monsters/slime/Slime2_Death_with_shadow.png', slimeConfig);
     this.load.spritesheet('slime_hurt', 'assets/monsters/slime/Slime2_Hurt_with_shadow.png', slimeConfig);
+
+    // --- VAMPIRE MONSTER ---
+    const vampireConfig = { frameWidth: 64, frameHeight: 64 }; 
+    this.load.spritesheet('vampire_walk', 'assets/monsters/vampire/Vampires3_Walk_with_shadow.png', vampireConfig);
+    this.load.spritesheet('vampire_attack', 'assets/monsters/vampire/Vampires3_Attack_with_shadow.png', vampireConfig);
+    this.load.spritesheet('vampire_hurt', 'assets/monsters/vampire/Vampires3_Hurt_with_shadow.png', vampireConfig);
+    this.load.spritesheet('vampire_death', 'assets/monsters/vampire/Vampires3_Death_with_shadow.png', vampireConfig);
   }
 
   create() {

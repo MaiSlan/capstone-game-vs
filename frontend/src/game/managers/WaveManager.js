@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import SlimeMonster from '../entities/monsters/SlimeMonster';
-import FastBat from '../entities/monsters/FastBat';
+import VampireMonster from '../entities/monsters/VampireMonster';
 import TankBoss from '../entities/monsters/TankBoss';
 
 export default class WaveManager {
@@ -49,15 +49,13 @@ export default class WaveManager {
   }
 
   spawnWave(runTimeSeconds) {
-    // --- NEW: Aggressive Difficulty Scaling ---
-    // Starts at 2 per second, adds 1 more every 15 seconds!
     const baseSpawnCount = 2 + Math.floor(runTimeSeconds / 15);
     
     for (let i = 0; i < baseSpawnCount; i++) {
       const spawnPoint = this.getOffScreenSpawnPoint();
 
       if (runTimeSeconds >= 60 && Math.random() < 0.3) {
-        this.enemies.add(new FastBat(this.scene, spawnPoint.x, spawnPoint.y));
+        this.enemies.add(new VampireMonster(this.scene, spawnPoint.x, spawnPoint.y));
       } else {
         this.enemies.add(new SlimeMonster(this.scene, spawnPoint.x, spawnPoint.y));
       }
