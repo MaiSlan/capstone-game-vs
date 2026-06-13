@@ -5,7 +5,7 @@ import { CHARACTER_DB } from '../data/CharacterDB';
 const ROSTER_UI = [
   { id: 'witch', status: 'unlocked', img: 'assets/characters/witch.png' },
   { id: 'viking', status: 'unlocked', img: 'assets/characters/viking.png' },
-  { id: 'template', status: 'unlocked', img: 'assets/characters/template.png' },
+  { id: 'template', status: 'unlocked', img: 'assets/characters/template/template.png' },
   { id: 'locked_2', status: 'locked', img: null },
   { id: 'locked_3', status: 'locked', img: null },
 ];
