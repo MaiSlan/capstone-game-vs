@@ -16,9 +16,9 @@ export const REWARD_DB = {
   },
   items: {
     common: [
-      { id: 'speed_boots', type: 'item', title: 'Speed Boots', desc: 'Passively increases movement speed.', icon: '👢' },
-      { id: 'vitality_ring', type: 'item', title: 'Vitality Ring', desc: 'Increases Max HP by 25.', icon: '💍' },
-      { id: 'heal', type: 'consumable', title: 'Health Potion', desc: 'Instantly restores all HP.', icon: 'assets/items/potion.png' }
+      { id: 'speed_boots', type: 'item', title: 'Speed Boots', desc: 'Passively increases movement speed.', icon: 'assets/items/equipable/boots.png' },
+      { id: 'vitality_ring', type: 'item', title: 'Vitality Ring', desc: 'Increases Max HP by 25.', icon: 'assets/items/equipable/ring.png' },
+      { id: 'heal', type: 'consumable', title: 'Health Potion', desc: 'Instantly restores all HP.', icon: 'assets/items/consumable/potion.png' }
     ]
   }
 };

@@ -2,6 +2,7 @@ import AxeCleave from '../weapons/AxeCleave';
 import MagicMissile from '../weapons/MagicMissile';
 import PiercingLance from '../weapons/PiercingLance';
 import SwirlingBook from '../weapons/SwirlingBook';
+import { ITEM_DB } from '../../data/ItemDB';
 import Phaser from 'phaser';
 
 const WEAPON_REGISTRY = {
@@ -24,6 +25,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     
     // Set the injected stats
     this.baseSpeed = baseSpeed;
+    this.baseMaxHp = maxHp;
+    this.currentSpeed = baseSpeed;
     this.maxHp = maxHp;
     this.hp = maxHp;
     this.xp = 0;
@@ -82,22 +85,22 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     const existingItem = this.items.find(i => i.id === itemId);
     
     if (existingItem) {
-      if (existingItem.level < 5) {
+      const maxLvl = ITEM_DB[itemId].maxLevel;
+      if (existingItem.level < maxLvl) {
         existingItem.level++;
-        if (itemId === 'speed_boots') this.baseSpeed += 10;
-        if (itemId === 'vitality_ring') { this.maxHp += 10; this.hp += 10; }
       }
     } else if (this.items.length < this.maxItems) {
       this.items.push({ id: itemId, level: 1 });
-      if (itemId === 'speed_boots') this.baseSpeed += 20;
-      if (itemId === 'vitality_ring') { this.maxHp += 25; this.hp += 25; }
     }
 
+    this.recalculateStats();
+
+    // Update the UI
     if (this.scene && this.scene.scene.get('UIScene')) {
-      // --- THE FIX: Create "clean" arrays with no heavy Phaser instances ---
       const cleanWeapons = this.weapons.map(w => ({ id: w.id, level: w.level }));
       const cleanItems = this.items.map(i => ({ id: i.id, level: i.level }));
       this.scene.scene.get('UIScene').updateInventory(cleanWeapons, cleanItems);
+      this.scene.scene.get('UIScene').updateHP(this.hp, this.maxHp); // Update HP bar just in case
     }
   }
 
@@ -120,6 +123,38 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       const cleanWeapons = this.weapons.map(w => ({ id: w.id, level: w.level }));
       const cleanItems = this.items.map(i => ({ id: i.id, level: i.level }));
       this.scene.scene.get('UIScene').updateInventory(cleanWeapons, cleanItems);
+    }
+  }
+
+  recalculateStats() {
+    // 1. Start with flat 100% multipliers
+    let speedMult = 1.0;
+    let hpMult = 1.0;
+    
+    // Add variables for future flat stats (like armor or damage reduction)
+    let flatArmor = 0; 
+
+    // 2. Loop through equipped items and stack the multipliers
+    this.items.forEach(item => {
+      const itemData = ITEM_DB[item.id];
+      if (!itemData) return;
+
+      const levelIndex = item.level - 1; // Level 1 is array index 0
+
+      if (itemData.speed_multiplier) speedMult += itemData.speed_multiplier[levelIndex];
+      if (itemData.max_hp_multiplier) hpMult += itemData.max_hp_multiplier[levelIndex];
+    });
+
+    // 3. Apply the math to the current active stats
+    this.currentSpeed = this.baseSpeed * speedMult;
+
+    // 4. Handle HP carefully so we don't accidentally kill the player or rob them of health
+    const oldMaxHp = this.maxHp;
+    this.maxHp = Math.floor(this.baseMaxHp * hpMult);
+
+    if (this.maxHp > oldMaxHp) {
+      // If their Max HP just expanded, give them the new health instantly
+      this.hp += (this.maxHp - oldMaxHp);
     }
   }
 
@@ -203,19 +238,19 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.setVelocity(0);
 
     if (this.cursors.left.isDown || this.wasd.left.isDown) {
-      this.setVelocityX(-this.baseSpeed);
+      this.setVelocityX(-this.currentSpeed);
     } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
-      this.setVelocityX(this.baseSpeed);
+      this.setVelocityX(this.currentSpeed);
     }
 
     if (this.cursors.up.isDown || this.wasd.up.isDown) {
-      this.setVelocityY(-this.baseSpeed);
+      this.setVelocityY(-this.currentSpeed);
     } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
-      this.setVelocityY(this.baseSpeed);
+      this.setVelocityY(this.currentSpeed);
     }
 
     if (this.body.velocity.x !== 0 && this.body.velocity.y !== 0) {
-      this.body.velocity.normalize().scale(this.baseSpeed);
+      this.body.velocity.normalize().scale(this.currentSpeed);
     }
 
     const isMoving = this.body.velocity.x !== 0 || this.body.velocity.y !== 0;
