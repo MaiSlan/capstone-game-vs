@@ -17,12 +17,11 @@ export default class MainScene extends Phaser.Scene {
   }
   create() {
     AnimationManager.initializeAnimations(this);
-    AnimationManager.initializeAnimations(this);
 
+    // --- 1. THE 8000x8000 FLOOR ---
     const mapWidth = 8000;
     const mapHeight = 8000;
     
-    // 8000 / 32 (scaled tile size) = 250 tiles needed
     const mapWidthInTiles = 250; 
     const mapHeightInTiles = 250;
 
@@ -40,40 +39,35 @@ export default class MainScene extends Phaser.Scene {
     floorLayer.randomize(0, 0, mapWidthInTiles, mapHeightInTiles, paleStoneTiles);
     floorLayer.setScale(2);
 
-    // Update the core engine boundaries
     this.physics.world.setBounds(0, 0, mapWidth, mapHeight);
     this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
 
     // --- 2. THE SOLID WALLS ---
-    // Create a static physics group (objects that never move, but stop other objects)
     this.walls = this.physics.add.staticGroup();
 
-    // Top Wall (Repeating 8000px wide, 56px tall)
+    // Top Wall
     const topWall = this.add.tileSprite(mapWidth / 2, 28, mapWidth, 56, 'border_top');
+    this.physics.add.existing(topWall, true); // Force static physics body
     this.walls.add(topWall);
 
-    // Bottom Wall (Repeating 8000px wide, 72px tall)
+    // Bottom Wall
     const bottomWall = this.add.tileSprite(mapWidth / 2, mapHeight - 36, mapWidth, 72, 'border_bottom');
+    this.physics.add.existing(bottomWall, true);
     this.walls.add(bottomWall);
 
-    // Left Wall (We use the top border, rotated -90 degrees)
+    // Left Wall
     const leftWall = this.add.tileSprite(28, mapHeight / 2, mapHeight, 56, 'border_top');
+    this.physics.add.existing(leftWall, true);
     leftWall.setAngle(-90);
-    this.walls.add(leftWall);
-    // CRITICAL FIX: Arcade physics boxes don't rotate automatically. We manually set it!
     leftWall.body.setSize(56, mapHeight); 
+    this.walls.add(leftWall);
 
-    // Right Wall (Rotated 90 degrees)
+    // Right Wall
     const rightWall = this.add.tileSprite(mapWidth - 28, mapHeight / 2, mapHeight, 56, 'border_top');
+    this.physics.add.existing(rightWall, true);
     rightWall.setAngle(90);
+    rightWall.body.setSize(56, mapHeight);
     this.walls.add(rightWall);
-    rightWall.body.setSize(56, mapHeight); // Manually set physics box
-
-    // --- 3. ACTIVATE COLLISION ---
-    // This stops the player from walking off the map
-    this.physics.add.collider(this.player, this.walls);
-    // This stops the horde from being pushed out of the map
-    this.physics.add.collider(this.enemies, this.walls);
 
     const graphics = this.add.graphics();
     graphics.clear(); graphics.fillStyle(0xf97316, 1); graphics.fillRect(0, 0, 96, 96); graphics.generateTexture('tank_boss', 96, 96);
@@ -82,26 +76,25 @@ export default class MainScene extends Phaser.Scene {
     graphics.clear(); graphics.fillStyle(0x3b82f6, 1); graphics.fillRect(0, 0, 16, 16); graphics.generateTexture('magic_book', 16, 16);
     graphics.clear(); graphics.fillStyle(0x94a3b8, 1); graphics.fillRect(0, 0, 40, 8); graphics.generateTexture('lance', 40, 8);
     graphics.destroy();
-    graphics.destroy(); 
 
     // Groups
     this.playerProjectiles = this.physics.add.group();
     this.enemies = this.physics.add.group();
     this.expGems = this.physics.add.group();
 
-    // --- NEW: THE SWARM EFFECT ---
-    // This single line stops enemies from overlapping each other!
-    // They will now push and clump together like a massive zombie horde.
     this.physics.add.collider(this.enemies, this.enemies);    
 
     if (this.selectedCharacter === 'witch') {
-      this.player = new Witch(this, 2000, 2000);
+      this.player = new Witch(this, 4000, 4000);
     } else {
-      this.player = new Viking(this, 2000, 2000);
+      this.player = new Viking(this, 4000, 4000);
     }
 
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     this.waveManager = new WaveManager(this, this.enemies, this.player);
+
+    this.physics.add.collider(this.player, this.walls);
+    this.physics.add.collider(this.enemies, this.walls);
 
     // --- UPDATED WEAPON HIT LOGIC ---
     this.physics.add.overlap(this.playerProjectiles, this.enemies, (projectile, enemy) => {
