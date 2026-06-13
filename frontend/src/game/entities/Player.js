@@ -127,35 +127,42 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   recalculateStats() {
-    // 1. Start with flat 100% multipliers
     let speedMult = 1.0;
     let hpMult = 1.0;
     
-    // Add variables for future flat stats (like armor or damage reduction)
-    let flatArmor = 0; 
+    // --- NEW STAT TRACKERS ---
+    this.damageMult = 1.0;
+    this.cooldownMult = 1.0;
+    this.pickupMult = 1.0;
+    this.xpMult = 1.0;
+    this.lifesteal = 0;
+    this.hpDrainPerSec = 0;
+    this.armor = 0;
 
-    // 2. Loop through equipped items and stack the multipliers
     this.items.forEach(item => {
-      const itemData = ITEM_DB[item.id];
-      if (!itemData) return;
+      const data = ITEM_DB[item.id];
+      if (!data) return;
+      const lvl = item.level - 1;
 
-      const levelIndex = item.level - 1; // Level 1 is array index 0
-
-      if (itemData.speed_multiplier) speedMult += itemData.speed_multiplier[levelIndex];
-      if (itemData.max_hp_multiplier) hpMult += itemData.max_hp_multiplier[levelIndex];
+      if (data.speed_multiplier) speedMult += data.speed_multiplier[lvl];
+      if (data.max_hp_multiplier) hpMult += data.max_hp_multiplier[lvl];
+      if (data.damage_multiplier) this.damageMult += data.damage_multiplier[lvl];
+      if (data.cooldown_multiplier) this.cooldownMult += data.cooldown_multiplier[lvl];
+      if (data.pickup_multiplier) this.pickupMult += data.pickup_multiplier[lvl];
+      if (data.xp_multiplier) this.xpMult += data.xp_multiplier[lvl];
+      if (data.lifesteal) this.lifesteal += data.lifesteal[lvl];
+      if (data.hp_drain_per_sec) this.hpDrainPerSec += data.hp_drain_per_sec[lvl];
+      if (data.armor) this.armor += data.armor[lvl];
     });
 
-    // 3. Apply the math to the current active stats
     this.currentSpeed = this.baseSpeed * speedMult;
-
-    // 4. Handle HP carefully so we don't accidentally kill the player or rob them of health
+    
     const oldMaxHp = this.maxHp;
     this.maxHp = Math.floor(this.baseMaxHp * hpMult);
-
-    if (this.maxHp > oldMaxHp) {
-      // If their Max HP just expanded, give them the new health instantly
-      this.hp += (this.maxHp - oldMaxHp);
-    }
+    if (this.maxHp > oldMaxHp) this.hp += (this.maxHp - oldMaxHp);
+    
+    // Ensure HP doesn't exceed new max if max dropped (e.g. Dagger)
+    if (this.hp > this.maxHp) this.hp = this.maxHp; 
   }
 
   updateAimTarget(enemiesGroup) {
@@ -197,7 +204,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   }
   
   gainXP(amount) {
-    this.xp += amount;
+    this.xp += (amount * this.xpMult);
     
     if (this.scene && this.scene.scene.get('UIScene')) {
       this.scene.scene.get('UIScene').updateXP(this.xp, this.xpToNextLevel, this.level);
@@ -235,6 +242,18 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
   update(time, enemiesGroup) {
     if (this.hp <= 0) return;
+
+    // Voodoo Doll Bleed Effect
+    if (this.hpDrainPerSec > 0 && this.hp > 1) {
+      // Drain smoothly based on frame delta
+      this.hp -= (this.hpDrainPerSec * (delta / 1000));
+      if (this.hp < 1) this.hp = 1; // Don't let it kill the player
+      
+      // Update UI every so often
+      if (time % 500 < 20 && this.scene.scene.isActive('UIScene')) {
+        this.scene.scene.get('UIScene').updateHP(this.hp, this.maxHp);
+      }
+    }
     this.setVelocity(0);
 
     if (this.cursors.left.isDown || this.wasd.left.isDown) {

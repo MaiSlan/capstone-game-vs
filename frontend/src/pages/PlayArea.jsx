@@ -23,17 +23,40 @@ export default function PlayArea({ selectedCharacter }) {
     };
 
     const handleLevelUp = (e) => {
-      const lvl = e.detail.level;
+      // We safely grab the arrays we passed from Phaser
+      const { level: lvl, weapons, items } = e.detail;
       setCurrentLevel(lvl);
       
       let pool = [];
-      if (lvl % 5 === 0) {
-        pool = [...REWARD_DB.weapons[selectedCharacter]];
-        if (pool.length === 0) pool.push(REWARD_DB.items.common.find(i => i.id === 'heal'));
-      } else {
-        pool = [...REWARD_DB.items.common];
+
+      // 1. FILTER ITEMS
+      REWARD_DB.items.common.forEach(dbItem => {
+        const equipped = items.find(i => i.id === dbItem.id);
+        if (equipped) {
+          // If we own it, only add it if it's NOT max level
+          if (equipped.level < 5) pool.push(dbItem);
+        } else {
+          // If we don't own it, only add it if we have empty slots!
+          if (items.length < 5) pool.push(dbItem);
+        }
+      });
+
+      // 2. FILTER WEAPONS (Same logic)
+      REWARD_DB.weapons[selectedCharacter].forEach(dbWeapon => {
+        const equipped = weapons.find(w => w.id === dbWeapon.id);
+        if (equipped) {
+          if (equipped.level < 5) pool.push(dbWeapon);
+        } else {
+          if (weapons.length < 5) pool.push(dbWeapon);
+        }
+      });
+
+      // 3. FALLBACK: If fully maxed out, give consumables
+      if (pool.length === 0) {
+        pool.push(REWARD_DB.items.consumables.find(i => i.id === 'heal'));
       }
 
+      // Shuffle and pick 3
       const shuffled = pool.sort(() => 0.5 - Math.random());
       setCurrentChoices(shuffled.slice(0, 3));
       setIsLevelUp(true);
