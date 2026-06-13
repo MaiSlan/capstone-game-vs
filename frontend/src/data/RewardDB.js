@@ -9,6 +9,9 @@ export const REWARD_DB = {
     viking: [
       { id: 'lance', type: 'weapon', title: 'Piercing Lance', desc: 'Fires a heavy forward lance.', icon: '🗡️' },
       // TODO: Add Throwing Axes, Shield, etc.
+    ],
+    template: [
+      { id: 'lance', type: 'weapon', title: 'Piercing Lance', desc: 'Fires a heavy forward lance.', icon: '🗡️' },
     ]
   },
   items: {
