@@ -7,7 +7,8 @@ export const MONSTER_DB = {
     hp: 15, 
     speed: 60,       
     damage: 5, 
-    xp: 2
+    xp: 2,
+    scale: 1.5
   },
   bat: { 
     id: 'bat', 

@@ -71,10 +71,11 @@ export default class MainScene extends Phaser.Scene {
 
     // --- UPDATED WEAPON HIT LOGIC ---
     this.physics.add.overlap(this.playerProjectiles, this.enemies, (projectile, enemy) => {
-      // Use the projectile's specific damage, or default to 10
+      // PREVENT GHOST HITS: If the enemy is already playing its death animation, ignore it
+      if (enemy.isDying) return; 
+
       enemy.hp -= (projectile.damage || 10);
       
-      // Handle Piercing vs Normal Bullets
       if (projectile.pierce !== undefined) {
         projectile.pierce--;
         if (projectile.pierce <= 0) projectile.destroy();
@@ -83,32 +84,46 @@ export default class MainScene extends Phaser.Scene {
       }
       
       if (enemy.hp <= 0) {
-        // Boss drops 5 gems, normal enemies drop 1
+        enemy.isDying = true; // Immediately mark as dying to prevent multiple gem drops
+        
         const gemCount = enemy.texture.key === 'tank_boss' ? 5 : 1;
         for (let i = 0; i < gemCount; i++) {
-          // Spread gems slightly if there are multiple
           this.expGems.create(enemy.x + (i * 10), enemy.y + (i * 10), 'exp_gem');
         }
-        enemy.destroy();  
-      } else {
-        // --- THE FIX: Phaser 4 Syntax for TintFill ---
-        enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
         
-        this.time.delayedCall(100, () => { 
-          if (enemy && enemy.active) {
-            enemy.clearTint();
-          }
-        });
+        // --- THE FIX: Call the custom die() method if it exists, otherwise destroy instantly ---
+        if (typeof enemy.die === 'function') {
+          enemy.die(); 
+        } else {
+          enemy.destroy();  
+        }
+
+      } else {
+        enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
+        this.time.delayedCall(100, () => { if (enemy && enemy.active && !enemy.isDying) enemy.clearTint() });
       }
     });
 
     // --- NEW: Player hitting Enemy (Take Damage)
     this.physics.add.overlap(this.player, this.enemies, (player, enemy) => {
+      if (this.isDead || enemy.isDying) return; 
+
       player.takeDamage(10, this);
       this.scene.get('UIScene').updateHP(player.hp, player.maxHp);
       
+      // --- THE FIX: Tell the enemy to play its attack animation! ---
+      if (typeof enemy.attack === 'function') {
+        enemy.attack();
+      }
+      
       if (player.hp <= 0) {
-        console.log("GAME OVER"); // We'll build a real Game Over screen later
+        this.isDead = true;
+        this.physics.pause(); 
+        player.setTint(0xff0000); 
+        
+        window.dispatchEvent(new CustomEvent('VS_GAME_OVER', {
+          detail: { level: player.level }
+        }));
       }
     });
 

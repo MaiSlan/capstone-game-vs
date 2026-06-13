@@ -11,17 +11,23 @@ export default class SlimeMonster extends Phaser.Physics.Arcade.Sprite {
     this.hp = stats.hp;
     this.baseSpeed = stats.speed;
     this.xpValue = stats.xp;
+    if (stats.scale) this.setScale(stats.scale);
     
     // Shrink hitbox so the 64x64 frame has a tight physical core
     this.body.setSize(24, 24);
     this.body.setOffset(20, 20); 
     
     this.isDying = false;
-    this.currentDirection = 'down'; // Track facing direction for attacks later
+    this.isAttacking = false;
+    this.attackCooldown = 0;
+    this.currentDirection = 'down';
   }
 
   update(time) {
-    if (!this.active || this.hp <= 0 || this.isDying) return;
+    if (!this.active || this.hp <= 0 || this.isDying || this.isAttacking) {
+        if (this.isAttacking) this.setVelocity(0);
+        return;
+    }
 
     const targetPlayer = this.scene.player;
     if (!targetPlayer || !targetPlayer.active) return;
@@ -54,6 +60,25 @@ export default class SlimeMonster extends Phaser.Physics.Arcade.Sprite {
         }
       }
     }
+  }
+
+  attack() {
+    const time = this.scene.time.now;
+    
+    // Don't attack if already dead, already attacking, or on cooldown
+    if (this.isDying || this.isAttacking || time < this.attackCooldown) return;
+
+    this.isAttacking = true;
+    this.setVelocity(0); // Stop walking
+    
+    // Play the attack animation for whatever direction we are facing
+    this.play(`slime_attack_${this.currentDirection}`, true);
+
+    // When the animation finishes, go back to walking and set a cooldown
+    this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      this.isAttacking = false;
+      this.attackCooldown = time + 1000; // Wait 1 second before attacking again
+    });
   }
 
   die() {
