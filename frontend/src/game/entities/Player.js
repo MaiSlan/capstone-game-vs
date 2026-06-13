@@ -79,6 +79,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.reticle.setVisible(this.isManualAim);
       }
     });
+    this.recalculateStats();
   }
 
   addOrUpgradeItem(itemId) {
@@ -244,16 +245,18 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.hp <= 0) return;
 
     // Voodoo Doll Bleed Effect
+    const delta = this.scene.game.loop.delta;
+
+    // Voodoo Doll Bleed Effect
     if (this.hpDrainPerSec > 0 && this.hp > 1) {
-      // Drain smoothly based on frame delta
       this.hp -= (this.hpDrainPerSec * (delta / 1000));
-      if (this.hp < 1) this.hp = 1; // Don't let it kill the player
+      if (this.hp < 1) this.hp = 1; 
       
-      // Update UI every so often
       if (time % 500 < 20 && this.scene.scene.isActive('UIScene')) {
         this.scene.scene.get('UIScene').updateHP(this.hp, this.maxHp);
       }
     }
+
     this.setVelocity(0);
 
     if (this.cursors.left.isDown || this.wasd.left.isDown) {
