@@ -184,15 +184,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
       this.scene.scene.pause('MainScene');
       
-      // --- THE FIX: Clean the arrays before sending them across the React bridge ---
+      // Clean the arrays before sending them across the React bridge
       const cleanWeapons = this.weapons.map(w => ({ id: w.id, level: w.level }));
       const cleanItems = this.items.map(i => ({ id: i.id, level: i.level }));
       
       window.dispatchEvent(new CustomEvent('VS_LEVEL_UP', {
         detail: { 
           level: this.level,
-          currentWeapons: cleanWeapons,
-          currentItems: cleanItems
+          weapons: cleanWeapons, 
+          items: cleanItems      
         }
       }));
     }
