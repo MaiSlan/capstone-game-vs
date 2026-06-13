@@ -36,14 +36,27 @@ export default class WaveManager {
       this.bossSpawnedAtMinute2 = true;
     }
   }
-
+  
   getOffScreenSpawnPoint() {
     const cam = this.scene.cameras.main;
     const safeRadius = Math.max(cam.width, cam.height) / 2 + 150;
     const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
 
-    const spawnX = cam.midPoint.x + Math.cos(angle) * safeRadius;
-    const spawnY = cam.midPoint.y + Math.sin(angle) * safeRadius;
+    let spawnX = cam.midPoint.x + Math.cos(angle) * safeRadius;
+    let spawnY = cam.midPoint.y + Math.sin(angle) * safeRadius;
+
+    // --- THE BOUNDARY FIX ---
+    // If the math places the monster outside the 8000x8000 walls...
+    if (spawnX < 100 || spawnX > 7900 || spawnY < 100 || spawnY > 7900) {
+      // Flip the angle 180 degrees to spawn them on the opposite side of the player!
+      const oppositeAngle = angle + Math.PI;
+      spawnX = cam.midPoint.x + Math.cos(oppositeAngle) * safeRadius;
+      spawnY = cam.midPoint.y + Math.sin(oppositeAngle) * safeRadius;
+      
+      // Final clamp just in case the player is perfectly in a corner
+      spawnX = Phaser.Math.Clamp(spawnX, 100, 7900);
+      spawnY = Phaser.Math.Clamp(spawnY, 100, 7900);
+    }
 
     return { x: spawnX, y: spawnY };
   }
