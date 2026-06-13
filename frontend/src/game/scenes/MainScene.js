@@ -19,13 +19,13 @@ export default class MainScene extends Phaser.Scene {
     AnimationManager.initializeAnimations(this);
     AnimationManager.initializeAnimations(this);
 
-    // --- THE PROCEDURAL TARTARUS FLOOR ---
-    // If our map is 4000x4000, and our tiles are scaled to 32x32 visually, 
-    // we need exactly 125 tiles across and 125 tiles down.
-    const mapWidthInTiles = 125;
-    const mapHeightInTiles = 125;
+    const mapWidth = 8000;
+    const mapHeight = 8000;
+    
+    // 8000 / 32 (scaled tile size) = 250 tiles needed
+    const mapWidthInTiles = 250; 
+    const mapHeightInTiles = 250;
 
-    // 1. Create a blank tilemap system
     const map = this.make.tilemap({ 
       tileWidth: 16, 
       tileHeight: 16, 
@@ -33,41 +33,47 @@ export default class MainScene extends Phaser.Scene {
       height: mapHeightInTiles 
     });
 
-    // 2. Connect the image we preloaded to the map
     const tileset = map.addTilesetImage('ground_rocks', 'ground_rocks_img');
-
-    // 3. Create a blank rendering layer for the floor
     const floorLayer = map.createBlankLayer('BaseFloor', tileset, 0, 0);
 
-    // 4. The Array of your 5 pale stone IDs
     const paleStoneTiles = [0, 2, 4, 6, 8];
-
-    // 5. Randomly fill the entire 125x125 grid using those 5 tiles
     floorLayer.randomize(0, 0, mapWidthInTiles, mapHeightInTiles, paleStoneTiles);
-
-    // 6. Scale the layer up so it looks appropriately sized next to the characters
     floorLayer.setScale(2);
 
-    // --- THE WALLS OF TARTARUS (Visual Boundaries) ---
-    const mapWidth = 4000;
-    const mapHeight = 4000;
-    
-    // Draw a massive glowing red perimeter on the floor
-    const boundaryGraphics = this.add.graphics();
-    boundaryGraphics.lineStyle(8, 0x8b0000, 0.8); // 8px thick blood-red line
-    boundaryGraphics.strokeRect(0, 0, mapWidth, mapHeight);
-    
-    // Add an inner "warning" line right before the wall
-    boundaryGraphics.lineStyle(2, 0xff1a1a, 0.4); 
-    boundaryGraphics.strokeRect(50, 50, mapWidth - 100, mapHeight - 100);
-
-    // Set the physics and camera bounds
+    // Update the core engine boundaries
     this.physics.world.setBounds(0, 0, mapWidth, mapHeight);
-    
-    // Optional: We can constrain the camera slightly INSIDE the map 
-    // so the black void outside the 4000x4000 box is always visible,
-    // making it feel like an island in the abyss.
-    this.cameras.main.setBounds(-200, -200, mapWidth + 400, mapHeight + 400);
+    this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
+
+    // --- 2. THE SOLID WALLS ---
+    // Create a static physics group (objects that never move, but stop other objects)
+    this.walls = this.physics.add.staticGroup();
+
+    // Top Wall (Repeating 8000px wide, 56px tall)
+    const topWall = this.add.tileSprite(mapWidth / 2, 28, mapWidth, 56, 'border_top');
+    this.walls.add(topWall);
+
+    // Bottom Wall (Repeating 8000px wide, 72px tall)
+    const bottomWall = this.add.tileSprite(mapWidth / 2, mapHeight - 36, mapWidth, 72, 'border_bottom');
+    this.walls.add(bottomWall);
+
+    // Left Wall (We use the top border, rotated -90 degrees)
+    const leftWall = this.add.tileSprite(28, mapHeight / 2, mapHeight, 56, 'border_top');
+    leftWall.setAngle(-90);
+    this.walls.add(leftWall);
+    // CRITICAL FIX: Arcade physics boxes don't rotate automatically. We manually set it!
+    leftWall.body.setSize(56, mapHeight); 
+
+    // Right Wall (Rotated 90 degrees)
+    const rightWall = this.add.tileSprite(mapWidth - 28, mapHeight / 2, mapHeight, 56, 'border_top');
+    rightWall.setAngle(90);
+    this.walls.add(rightWall);
+    rightWall.body.setSize(56, mapHeight); // Manually set physics box
+
+    // --- 3. ACTIVATE COLLISION ---
+    // This stops the player from walking off the map
+    this.physics.add.collider(this.player, this.walls);
+    // This stops the horde from being pushed out of the map
+    this.physics.add.collider(this.enemies, this.walls);
 
     const graphics = this.add.graphics();
     graphics.clear(); graphics.fillStyle(0xf97316, 1); graphics.fillRect(0, 0, 96, 96); graphics.generateTexture('tank_boss', 96, 96);

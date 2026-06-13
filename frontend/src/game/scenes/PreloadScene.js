@@ -104,7 +104,9 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.spritesheet('vampire_death', 'assets/monsters/vampire/Vampires3_Death_with_shadow.png', vampireConfig);
 
     // --- MAP ASSETS ---
-    this.load.image('ground_rocks_img', 'assets/maps/tiles.png');
+    this.load.image('ground_rocks_img', 'assets/maps/tiles.png'); 
+    this.load.image('border_top', 'assets/maps/TopBorder.png');
+    this.load.image('border_bottom', 'assets/maps/BottomBorder.png');
   }
 
   create() {
