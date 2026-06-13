@@ -103,8 +103,23 @@ export default class MainScene extends Phaser.Scene {
           enemy.destroy();  
         }
       } else {
-        enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
-        this.time.delayedCall(100, () => { if (enemy && enemy.active && !enemy.isDying) enemy.clearTint() });
+        
+        // --- THE FIX: Trigger the animation instead of flashing white ---
+        if (typeof enemy.hurt === 'function') {
+          // Temporarily flash white while playing the hurt animation for extra impact
+          enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
+          this.time.delayedCall(100, () => { 
+            if (enemy && enemy.active && !enemy.deadTriggered) enemy.clearTint() 
+          });
+          
+          enemy.hurt(); // Triggers the hit-stun
+          
+        } else {
+          // Fallback for non-animated objects like bats
+          enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
+          this.time.delayedCall(100, () => { if (enemy && enemy.active && !enemy.isDying) enemy.clearTint() });
+        }
+        
       }
     });
 

@@ -7,109 +7,124 @@ export default class SlimeMonster extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
     
-    const stats = MONSTER_DB.slime;
+    const stats = MONSTER_DB.slime || { hp: 40, speed: 50, damage: 10, xp: 5 };
     this.hp = stats.hp;
     this.baseSpeed = stats.speed;
     this.xpValue = stats.xp;
     
-    // --- 1. THE SCALE FIX ---
-    // We force the scale directly on the sprite here. 2.5x makes them massive.
     this.setScale(2.5);
-    
-    // Since the sprite is massive, we must adjust the physics box to match.
-    // This gives them a nice, fat hitbox so your weapons hit them easily.
     this.body.setSize(30, 30);
     this.body.setOffset(17, 17); 
     
-    // --- STATE FLAGS ---
-    this.deadTriggered = false; // This custom flag bulletproofs the death animation
+    // --- STATE HIERARCHY FLAGS ---
+    this.deadTriggered = false; 
     this.isDying = false; 
     this.isAttacking = false;
+    this.isHurt = false; // NEW: Tracks the Hit Stun state
+    
     this.attackCooldown = 0;
     this.currentDirection = 'down';
 
     this.play('slime_walk_down', true);
   }
 
-  // Inside SlimeMonster.js
-
   update(time) {
-    // If dead or dying, do nothing.
-    if (!this.active || this.hp <= 0 || this.deadTriggered) return;
-
-    // If currently locked in the attack animation, lock the feet and do not update walking!
-    if (this.isAttacking) {
-      this.setVelocity(0);
+    // STATE CHECK: Do not process walking if locked in a higher-priority animation
+    if (!this.active || this.hp <= 0 || this.deadTriggered || this.isAttacking || this.isHurt) {
+      if (this.isAttacking || this.isHurt) this.setVelocity(0); // Lock feet
       return;
     }
 
     const targetPlayer = this.scene.player;
     if (!targetPlayer || !targetPlayer.active) return;
 
-    // --- RELENTLESS PURSUIT ---
-    // The slime never politely stops on its own. It walks until it hits the player!
-    this.scene.physics.moveToObject(this, targetPlayer, this.baseSpeed);
+    // --- THE SPACING FIX ---
+    const distance = Phaser.Math.Distance.Between(this.x, this.y, targetPlayer.x, targetPlayer.y);
 
-    // 4-Directional Walk Animation
-    const velX = this.body.velocity.x;
-    const velY = this.body.velocity.y;
-
-    if (Math.abs(velX) > Math.abs(velY)) {
-      if (velX > 0) {
-        this.play('slime_walk_right', true);
-        this.currentDirection = 'right';
-      } else {
-        this.play('slime_walk_left', true);
-        this.currentDirection = 'left';
-      }
+    // Increased to 65 to ensure they stop cleanly outside the player's sprite
+    if (distance <= 65) {
+      this.setVelocity(0);
+      this.attack();
     } else {
-      if (velY > 0) {
-        this.play('slime_walk_down', true);
-        this.currentDirection = 'down';
+      this.scene.physics.moveToObject(this, targetPlayer, this.baseSpeed);
+
+      const velX = this.body.velocity.x;
+      const velY = this.body.velocity.y;
+
+      if (Math.abs(velX) > Math.abs(velY)) {
+        if (velX > 0) {
+          this.play('slime_walk_right', true);
+          this.currentDirection = 'right';
+        } else {
+          this.play('slime_walk_left', true);
+          this.currentDirection = 'left';
+        }
       } else {
-        this.play('slime_walk_up', true);
-        this.currentDirection = 'up';
+        if (velY > 0) {
+          this.play('slime_walk_down', true);
+          this.currentDirection = 'down';
+        } else {
+          this.play('slime_walk_up', true);
+          this.currentDirection = 'up';
+        }
       }
     }
   }
 
   attack() {
     const time = this.scene.time.now;
-    if (this.deadTriggered || this.isAttacking || time < this.attackCooldown) return;
+    if (this.deadTriggered || this.isAttacking || this.isHurt || time < this.attackCooldown) return;
 
     this.isAttacking = true;
-    this.setVelocity(0); // Lock feet during attack
+    this.setVelocity(0); 
     
     this.play(`slime_attack_${this.currentDirection}`, true);
 
     this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
-      // Only unlock walking if the attack finishes AND we didn't get killed during it
-      if (animation.key.includes('attack') && !this.deadTriggered) {
+      // Only unlock if the attack finished normally
+      if (animation.key.includes('attack') && !this.deadTriggered && !this.isHurt) {
         this.isAttacking = false;
         this.attackCooldown = this.scene.time.now + 1000; 
       }
     });
   }
 
+  // --- NEW: THE HURT METHOD (HIT STUN) ---
+  hurt() {
+    // Never interrupt a death sequence
+    if (this.deadTriggered || this.isDying) return;
+
+    // Interrupt walking and attacking
+    this.isHurt = true;
+    this.isAttacking = false; 
+    this.setVelocity(0);
+
+    // Purge previous animation listeners so they don't fire incorrectly
+    this.off(Phaser.Animations.Events.ANIMATION_COMPLETE);
+
+    // Play the flinch animation
+    this.play(`slime_hurt_${this.currentDirection}`, true);
+
+    this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
+      if (animation.key.includes('hurt') && !this.deadTriggered) {
+        this.isHurt = false; // Allow them to walk/attack again
+      }
+    });
+  }
+
   die() {
-    // --- 3. THE DEATH FIX ---
-    // By using 'deadTriggered', we ignore whatever MainScene tries to tell us.
-    // If we are already running the death logic, abort.
     if (this.deadTriggered) return;
     this.deadTriggered = true;
     this.isDying = true;
     
     this.setVelocity(0);
-    this.body.enable = false; // Turn off physics entirely
+    this.body.enable = false; 
     this.clearTint();
 
-    // Kill any lingering attack listeners so they don't override the death
     this.off(Phaser.Animations.Events.ANIMATION_COMPLETE);
 
-    // Force the death puddle animation to play
     this.play('slime_death', true);
 
-    // Completely erase the object from the game only when the puddle finishes
     this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
       if (animation.key === 'slime_death') {
         this.destroy();
