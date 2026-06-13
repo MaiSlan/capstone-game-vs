@@ -31,49 +31,44 @@ export default class SlimeMonster extends Phaser.Physics.Arcade.Sprite {
     this.play('slime_walk_down', true);
   }
 
+  // Inside SlimeMonster.js
+
   update(time) {
-    // If it's dead, dying, or currently locked in an attack animation, don't move!
-    if (!this.active || this.hp <= 0 || this.deadTriggered || this.isAttacking) {
-      if (this.isAttacking) this.setVelocity(0);
+    // If dead or dying, do nothing.
+    if (!this.active || this.hp <= 0 || this.deadTriggered) return;
+
+    // If currently locked in the attack animation, lock the feet and do not update walking!
+    if (this.isAttacking) {
+      this.setVelocity(0);
       return;
     }
 
     const targetPlayer = this.scene.player;
     if (!targetPlayer || !targetPlayer.active) return;
 
-    // --- 2. THE ATTACK RANGE FIX ---
-    // Calculate exact pixels between the center of the slime and the player
-    const distance = Phaser.Math.Distance.Between(this.x, this.y, targetPlayer.x, targetPlayer.y);
+    // --- RELENTLESS PURSUIT ---
+    // The slime never politely stops on its own. It walks until it hits the player!
+    this.scene.physics.moveToObject(this, targetPlayer, this.baseSpeed);
 
-    // If within 45 pixels, they stop walking to attack. 
-    // This prevents them from walking directly into the center of the Viking!
-    if (distance <= 45) {
-      this.setVelocity(0);
-      this.attack();
-    } else {
-      // If further than 45 pixels, keep chasing
-      this.scene.physics.moveToObject(this, targetPlayer, this.baseSpeed);
+    // 4-Directional Walk Animation
+    const velX = this.body.velocity.x;
+    const velY = this.body.velocity.y;
 
-      // 4-Directional Walk Animation
-      const velX = this.body.velocity.x;
-      const velY = this.body.velocity.y;
-
-      if (Math.abs(velX) > Math.abs(velY)) {
-        if (velX > 0) {
-          this.play('slime_walk_right', true);
-          this.currentDirection = 'right';
-        } else {
-          this.play('slime_walk_left', true);
-          this.currentDirection = 'left';
-        }
+    if (Math.abs(velX) > Math.abs(velY)) {
+      if (velX > 0) {
+        this.play('slime_walk_right', true);
+        this.currentDirection = 'right';
       } else {
-        if (velY > 0) {
-          this.play('slime_walk_down', true);
-          this.currentDirection = 'down';
-        } else {
-          this.play('slime_walk_up', true);
-          this.currentDirection = 'up';
-        }
+        this.play('slime_walk_left', true);
+        this.currentDirection = 'left';
+      }
+    } else {
+      if (velY > 0) {
+        this.play('slime_walk_down', true);
+        this.currentDirection = 'down';
+      } else {
+        this.play('slime_walk_up', true);
+        this.currentDirection = 'up';
       }
     }
   }

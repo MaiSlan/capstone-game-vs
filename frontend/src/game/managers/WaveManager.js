@@ -11,12 +11,24 @@ export default class WaveManager {
     
     this.spawnTimer = 0;
     this.bossSpawnedAtMinute2 = false;
+    this.hasSpawnedInitialBurst = false; // --- NEW: Track the start of the game
   }
 
   update(timeMs, runTimeSeconds) {
+    // --- NEW: Instant Action ---
+    // Spawn 10 slimes immediately when the game boots up
+    if (!this.hasSpawnedInitialBurst) {
+      for (let i = 0; i < 10; i++) {
+        const point = this.getOffScreenSpawnPoint();
+        this.enemies.add(new SlimeMonster(this.scene, point.x, point.y));
+      }
+      this.hasSpawnedInitialBurst = true;
+    }
+
+    // --- NEW: Faster Spawns (Every 1 second instead of 2) ---
     if (timeMs > this.spawnTimer) {
       this.spawnWave(runTimeSeconds);
-      this.spawnTimer = timeMs + 2000;
+      this.spawnTimer = timeMs + 1000; 
     }
 
     if (runTimeSeconds >= 120 && !this.bossSpawnedAtMinute2) {
@@ -37,7 +49,9 @@ export default class WaveManager {
   }
 
   spawnWave(runTimeSeconds) {
-    const baseSpawnCount = 1 + Math.floor(runTimeSeconds / 45);
+    // --- NEW: Aggressive Difficulty Scaling ---
+    // Starts at 2 per second, adds 1 more every 15 seconds!
+    const baseSpawnCount = 2 + Math.floor(runTimeSeconds / 15);
     
     for (let i = 0; i < baseSpawnCount; i++) {
       const spawnPoint = this.getOffScreenSpawnPoint();

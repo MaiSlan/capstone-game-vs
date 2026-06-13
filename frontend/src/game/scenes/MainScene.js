@@ -60,6 +60,11 @@ export default class MainScene extends Phaser.Scene {
     this.enemies = this.physics.add.group();
     this.expGems = this.physics.add.group();
 
+    // --- NEW: THE SWARM EFFECT ---
+    // This single line stops enemies from overlapping each other!
+    // They will now push and clump together like a massive zombie horde.
+    this.physics.add.collider(this.enemies, this.enemies);    
+
     if (this.selectedCharacter === 'witch') {
       this.player = new Witch(this, 2000, 2000);
     } else {
