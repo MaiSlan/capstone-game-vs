@@ -8,18 +8,24 @@ export default class PiercingLance {
     this.lastFired = 0;
   }
 
-  update(time, player, enemiesGroup) {
+  update(time, player, enemiesGroup, weaponLevel = 1) {
     if (time > this.lastFired) {
+      
+      const lvlIdx = weaponLevel - 1;
+      const currentDamage = this.stats.damage[lvlIdx] * player.damageMult;
+      const currentCooldown = this.stats.cooldown[lvlIdx] * player.cooldownMult;
+      const currentSpeed = this.stats.speed[lvlIdx];
+      const currentPierce = this.stats.pierce[lvlIdx];
+
       const lance = this.scene.playerProjectiles.create(player.x, player.y, 'lance');
       lance.isBullet = false;
-      lance.damage = this.stats.damage;
-      lance.pierce = this.stats.pierce;
+      lance.damage = currentDamage;
+      lance.pierce = currentPierce;
 
-      // Reads the player's targeting system (Mouse vs Auto)
-      this.scene.physics.velocityFromRotation(player.currentAimAngle, this.stats.speed, lance.body.velocity);
+      this.scene.physics.velocityFromRotation(player.currentAimAngle, currentSpeed, lance.body.velocity);
       lance.setRotation(player.currentAimAngle);
 
-      this.lastFired = time + this.stats.cooldown;
+      this.lastFired = time + currentCooldown;
     }
   }
 }

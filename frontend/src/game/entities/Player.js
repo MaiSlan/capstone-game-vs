@@ -313,7 +313,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Loop through every equipped weapon and fire it
     this.weapons.forEach(weapon => {
-      weapon.instance.update(time, this, enemiesGroup);
+      weapon.instance.update(time, this, enemiesGroup, weapon.level);
     });
   }
 }
