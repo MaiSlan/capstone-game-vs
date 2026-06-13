@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
+import PreloadScene from './scenes/PreloadScene';
 import MainScene from './scenes/MainScene';
 import UIScene from './scenes/UIScene';
 
@@ -22,9 +23,8 @@ export default function PhaserEngine({ selectedCharacter }) {
     };
 
     const game = new Phaser.Game(config);
-
-    // Wait for the engine to boot, inject the scenes, and start MainScene WITH data
     game.events.once('ready', () => {
+      game.scene.add('PreloadScene', PreloadScene);
       game.scene.add('MainScene', MainScene);
       game.scene.add('UIScene', UIScene);
       game.scene.start('MainScene', { character: selectedCharacter });
