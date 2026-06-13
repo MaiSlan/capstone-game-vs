@@ -24,8 +24,8 @@ export const CHARACTER_DB = {
     name: 'The Template',
     hp: 100,         // Balanced
     speed: 180,      // Average-Fast
-    weaponName: 'Magic Bullet',
-    weaponId: 'magic_bullet',
+    weaponName: 'Axe Cleave',
+    weaponId: 'cleave_axe',
     quote: '"I am not unfinished. I am full of potential."'
   }
 };
