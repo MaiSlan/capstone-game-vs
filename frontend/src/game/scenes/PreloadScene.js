@@ -88,11 +88,14 @@ export default class PreloadScene extends Phaser.Scene {
     // Items & Consumables
     this.load.image('red_potion', 'assets/items/potion.png'); 
 
-    // Monsters (Update these strings once you choose your spritesheets!)
-    // For now, these act as placeholders for your future CraftPix sheets
-    this.load.image('dummy_sprite', 'assets/monsters/dummy.png');
+    // Monsters 
     this.load.image('bat_sprite', 'assets/monsters/bat.png');
-    this.load.image('boss_sprite', 'assets/monsters/boss.png');
+
+    const slimeConfig = { frameWidth: 64, frameHeight: 64 };
+    this.load.spritesheet('slime_walk', 'assets/monsters/slime/Slime2_Walk_with_shadow.png', slimeConfig);
+    this.load.spritesheet('slime_idle', 'assets/monsters/slime/Slime2_Idle_with_shadow.png', slimeConfig);
+    this.load.spritesheet('slime_attack', 'assets/monsters/slime/Slime2_Attack_with_shadow.png', slimeConfig);
+    this.load.spritesheet('slime_death', 'assets/monsters/slime/Slime2_Death_with_shadow.png', slimeConfig);
   }
 
   create() {

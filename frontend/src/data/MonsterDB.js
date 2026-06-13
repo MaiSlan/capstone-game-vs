@@ -1,14 +1,13 @@
 // src/data/MonsterDB.js
 
 export const MONSTER_DB = {
-  dummy: { 
-    id: 'dummy', 
-    name: 'Wandering Husk', 
-    hp: 20, 
-    speed: 70,       // Slow, shambling 
-    damage: 10, 
-    xp: 5,
-    tint: 0x555555   // Lifeless grey
+  slime: { 
+    id: 'slime', 
+    name: 'Abyssal Slime', 
+    hp: 15, 
+    speed: 60,       
+    damage: 5, 
+    xp: 2
   },
   bat: { 
     id: 'bat', 

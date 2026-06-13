@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import Witch from '../entities/characters/Witch';
 import Viking from '../entities/characters/Viking';
 import WaveManager from '../managers/WaveManager';
+import AnimationManager from '../managers/AnimationManager';
 
 export default class MainScene extends Phaser.Scene {
   constructor() {
@@ -18,6 +19,7 @@ export default class MainScene extends Phaser.Scene {
   // Inside src/game/scenes/MainScene.js
   
   create() {
+    AnimationManager.initializeAnimations(this);
     // --- THE FLOOR OF TARTARUS ---
     // We keep a very faint grid, but make it look like esoteric stone tiles
     this.add.grid(2000, 2000, 4000, 4000, 128, 128, 0x050202, 1, 0x3a0000, 0.2);
@@ -44,7 +46,6 @@ export default class MainScene extends Phaser.Scene {
     this.cameras.main.setBounds(-200, -200, mapWidth + 400, mapHeight + 400);
 
     const graphics = this.add.graphics();
-    graphics.fillStyle(0xff0000, 1); graphics.fillRect(0, 0, 32, 32); graphics.generateTexture('dummy_monster', 32, 32);
     graphics.clear(); graphics.fillStyle(0xa855f7, 1); graphics.fillRect(0, 0, 16, 16); graphics.generateTexture('fast_bat', 16, 16);
     graphics.clear(); graphics.fillStyle(0xf97316, 1); graphics.fillRect(0, 0, 96, 96); graphics.generateTexture('tank_boss', 96, 96);
     graphics.clear(); graphics.fillStyle(0xffff00, 1); graphics.fillCircle(8, 8, 8); graphics.generateTexture('magic_bullet', 16, 16);
