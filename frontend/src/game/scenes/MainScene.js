@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import Witch from '../entities/characters/Witch';
 import Viking from '../entities/characters/Viking';
+import Template from '../entities/characters/Template';
 import WaveManager from '../managers/WaveManager';
 import AnimationManager from '../managers/AnimationManager';
 
@@ -40,7 +41,7 @@ export default class MainScene extends Phaser.Scene {
     floorLayer.setScale(2);
 
     this.physics.world.setBounds(0, 0, mapWidth, mapHeight);
-    this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
+    this.cameras.main.setBounds(-500, -500, mapWidth + 1000, mapHeight + 1000);
 
     // --- 2. THE SOLID WALLS ---
     this.walls = this.physics.add.staticGroup();
@@ -84,12 +85,14 @@ export default class MainScene extends Phaser.Scene {
 
     this.physics.add.collider(this.enemies, this.enemies);    
 
+    // --- SPAWN SELECTION ---
     if (this.selectedCharacter === 'witch') {
       this.player = new Witch(this, 4000, 4000);
-    } else {
+    } else if (this.selectedCharacter === 'viking') {
       this.player = new Viking(this, 4000, 4000);
+    } else {
+      this.player = new Template(this, 4000, 4000);
     }
-
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     this.waveManager = new WaveManager(this, this.enemies, this.player);
 

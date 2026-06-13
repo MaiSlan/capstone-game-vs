@@ -84,6 +84,12 @@ export default class PreloadScene extends Phaser.Scene {
     // Characters
     this.load.image('witch_sprite', 'assets/characters/witch.png');
     this.load.image('viking_sprite', 'assets/characters/viking.png');
+    // --- TEMPLATE CHARACTER ---
+    const templateConfig = { frameWidth: 64, frameHeight: 64 };     
+    this.load.spritesheet('template_walk', 'assets/characters/template/Unarmed_Walk_with_shadow.png', templateConfig);
+    this.load.spritesheet('template_idle', 'assets/characters/template/Unarmed_Idle_with_shadow.png', templateConfig);
+    this.load.spritesheet('template_hurt', 'assets/characters/template/Unarmed_Hurt_with_shadow.png', templateConfig);
+    this.load.spritesheet('template_death', 'assets/characters/template/Unarmed_Death_with_shadow.png', templateConfig);
     
     // Items & Consumables
     this.load.image('red_potion', 'assets/items/potion.png'); 
