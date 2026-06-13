@@ -90,9 +90,14 @@ export default class MainScene extends Phaser.Scene {
         }
         enemy.destroy();  
       } else {
-        // Flash white to show it took damage but didn't die (useful for the Boss)
-        enemy.setTintFill(0xffffff);
-        this.time.delayedCall(100, () => { if (enemy && enemy.active) enemy.clearTint() });
+        // --- THE FIX: Phaser 4 Syntax for TintFill ---
+        enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
+        
+        this.time.delayedCall(100, () => { 
+          if (enemy && enemy.active) {
+            enemy.clearTint();
+          }
+        });
       }
     });
 

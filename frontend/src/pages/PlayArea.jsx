@@ -124,7 +124,15 @@ export default function PlayArea({ selectedCharacter }) {
                   className="qliphoth-node w-56 flex flex-col items-center text-center cursor-pointer group"
                 >
                   <div className="text-4xl mb-6 mt-2 filter drop-shadow-md group-hover:scale-110 transition-transform duration-300">
-                    {reward.icon}
+                    
+                    {/* --- THE FIX: Conditional Image Rendering --- */}
+                    {reward.icon.includes('.png') ? (
+                      <img src={reward.icon} alt={reward.id} className="w-16 h-16 object-contain" />
+                    ) : (
+                      reward.icon
+                    )}
+                    {/* ------------------------------------------ */}
+
                   </div>
                   <h3 className="font-royal text-sm font-bold uppercase tracking-widest text-zinc-300 mb-3 group-hover:text-white transition-colors">
                     {reward.title}

@@ -5,6 +5,11 @@ export default class PreloadScene extends Phaser.Scene {
     super('PreloadScene');
   }
 
+  init(data) {
+    // Catch the data from React
+    this.sceneData = data; 
+  }
+
   preload() {
     // --- 1. SETUP VISUAL LOADING BAR CONTAINER ---
     const width = this.cameras.main.width;
@@ -91,7 +96,6 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   create() {
-    // Assets are fully loaded into browser cache. Launch the gameplay scene!
-    this.scene.start('MainScene');
+    this.scene.start('MainScene', this.sceneData);
   }
 }
