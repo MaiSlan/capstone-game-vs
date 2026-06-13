@@ -84,20 +84,20 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     if (existingItem) {
       if (existingItem.level < 5) {
         existingItem.level++;
-        // Apply stacking buffs for upgrades
         if (itemId === 'speed_boots') this.baseSpeed += 10;
         if (itemId === 'vitality_ring') { this.maxHp += 10; this.hp += 10; }
       }
     } else if (this.items.length < this.maxItems) {
       this.items.push({ id: itemId, level: 1 });
-      // Apply initial buff
       if (itemId === 'speed_boots') this.baseSpeed += 20;
       if (itemId === 'vitality_ring') { this.maxHp += 25; this.hp += 25; }
     }
 
-    // Tell UI to redraw with BOTH arrays
     if (this.scene && this.scene.scene.get('UIScene')) {
-      this.scene.scene.get('UIScene').updateInventory(this.weapons, this.items);
+      // --- THE FIX: Create "clean" arrays with no heavy Phaser instances ---
+      const cleanWeapons = this.weapons.map(w => ({ id: w.id, level: w.level }));
+      const cleanItems = this.items.map(i => ({ id: i.id, level: i.level }));
+      this.scene.scene.get('UIScene').updateInventory(cleanWeapons, cleanItems);
     }
   }
 
@@ -107,17 +107,19 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     if (existingWeapon) {
       if (existingWeapon.level < 5) existingWeapon.level++;
     } else if (this.weapons.length < this.maxWeapons) {
-      // NEW: We store the visual UI data AND the live weapon instance together
       const WeaponClass = WEAPON_REGISTRY[weaponId];
       this.weapons.push({ 
         id: weaponId, 
         level: 1,
-        instance: new WeaponClass(this.scene) // Instantiate the specific weapon logic
+        instance: new WeaponClass(this.scene) 
       });
     }
 
     if (this.scene && this.scene.scene.get('UIScene')) {
-      this.scene.scene.get('UIScene').updateInventory(this.weapons, this.items);
+      // --- THE FIX: Clean the arrays for the UI Scene ---
+      const cleanWeapons = this.weapons.map(w => ({ id: w.id, level: w.level }));
+      const cleanItems = this.items.map(i => ({ id: i.id, level: i.level }));
+      this.scene.scene.get('UIScene').updateInventory(cleanWeapons, cleanItems);
     }
   }
 
@@ -177,19 +179,20 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       if (this.scene && this.scene.scene.get('UIScene')) {
         this.scene.scene.get('UIScene').updateHP(this.hp, this.maxHp);
         this.scene.scene.get('UIScene').updateXP(this.xp, this.xpToNextLevel, this.level);
-        
-        // --- NEW: Update Level UI ---
         this.scene.scene.get('UIScene').updateLevelText(this.level);
       }
 
       this.scene.scene.pause('MainScene');
       
-      // Pass the inventory to React so the Level-Up screen knows what we already have!
+      // --- THE FIX: Clean the arrays before sending them across the React bridge ---
+      const cleanWeapons = this.weapons.map(w => ({ id: w.id, level: w.level }));
+      const cleanItems = this.items.map(i => ({ id: i.id, level: i.level }));
+      
       window.dispatchEvent(new CustomEvent('VS_LEVEL_UP', {
         detail: { 
           level: this.level,
-          currentWeapons: this.weapons,
-          currentItems: this.items
+          currentWeapons: cleanWeapons,
+          currentItems: cleanItems
         }
       }));
     }

@@ -11,7 +11,7 @@ export default class Template extends Player {
     this.heroName = stats.name;
     
     // 2. Override the 0.125 "wobble" scale from Player.js to fit the 64x64 pixel art
-    this.baseScale = 1.5; 
+    this.baseScale = 3.0; 
     this.setScale(this.baseScale);
     
     // 3. Set the custom hitbox for this specific sprite
