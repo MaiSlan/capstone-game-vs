@@ -23,40 +23,68 @@ export default function PlayArea({ selectedCharacter }) {
     };
 
     const handleLevelUp = (e) => {
-      // We safely grab the arrays we passed from Phaser
       const { level: lvl, weapons, items } = e.detail;
       setCurrentLevel(lvl);
       
       let pool = [];
 
-      // 1. FILTER ITEMS
-      REWARD_DB.items.common.forEach(dbItem => {
-        const equipped = items.find(i => i.id === dbItem.id);
-        if (equipped) {
-          // If we own it, only add it if it's NOT max level
-          if (equipped.level < 5) pool.push(dbItem);
-        } else {
-          // If we don't own it, only add it if we have empty slots!
-          if (items.length < 5) pool.push(dbItem);
-        }
-      });
+      // --- MAJOR MILESTONES (Levels 5, 10, 15, etc.) ---
+      if (lvl % 5 === 0) {
+        // 1. Offer Upgrades for currently equipped weapons
+        weapons.forEach(equippedWeapon => {
+          if (equippedWeapon.level < 5) {
+            const dbRef = REWARD_DB.weapons[selectedCharacter].find(w => w.id === equippedWeapon.id);
+            if (dbRef) pool.push({ ...dbRef, isUpgrade: true, currentLevel: equippedWeapon.level });
+          }
+        });
 
-      // 2. FILTER WEAPONS (Same logic)
-      REWARD_DB.weapons[selectedCharacter].forEach(dbWeapon => {
-        const equipped = weapons.find(w => w.id === dbWeapon.id);
-        if (equipped) {
-          if (equipped.level < 5) pool.push(dbWeapon);
-        } else {
-          if (weapons.length < 5) pool.push(dbWeapon);
+        // 2. Offer New Weapons (if we have empty slots)
+        if (weapons.length < 5) {
+          REWARD_DB.weapons[selectedCharacter].forEach(dbWeapon => {
+            const isEquipped = weapons.find(w => w.id === dbWeapon.id);
+            if (!isEquipped) pool.push(dbWeapon);
+          });
         }
-      });
+      } 
+      // --- STANDARD LEVELS ---
+      else {
+        // 1. Offer Weapon Upgrades
+        weapons.forEach(equippedWeapon => {
+          if (equippedWeapon.level < 5) {
+            // Even if it's the base weapon not explicitly in the reward array, we need to find its UI data
+            // You might need to ensure ALL weapons have an entry somewhere in REWARD_DB so they have titles/icons
+            let dbRef = REWARD_DB.weapons[selectedCharacter].find(w => w.id === equippedWeapon.id);
+            
+            // Fallback just in case it's a default weapon missing from the reward list
+            if (!dbRef) dbRef = { id: equippedWeapon.id, type: 'weapon', title: equippedWeapon.id.replace('_', ' '), desc: 'Upgrade your weapon.', icon: '⚔️' };
+            
+            pool.push({ ...dbRef, isUpgrade: true, currentLevel: equippedWeapon.level });
+          }
+        });
 
-      // 3. FALLBACK: If fully maxed out, give consumables
+        // 2. Offer Item Upgrades
+        items.forEach(equippedItem => {
+          if (equippedItem.level < 5) {
+            const dbRef = REWARD_DB.items.common.find(i => i.id === equippedItem.id);
+            if (dbRef) pool.push({ ...dbRef, isUpgrade: true, currentLevel: equippedItem.level });
+          }
+        });
+
+        // 3. Offer New Items (if slots available)
+        if (items.length < 5) {
+          REWARD_DB.items.common.forEach(dbItem => {
+            const isEquipped = items.find(i => i.id === dbItem.id);
+            if (!isEquipped) pool.push(dbItem);
+          });
+        }
+      }
+
+      // --- FALLBACK & SHUFFLE ---
       if (pool.length === 0) {
         pool.push(REWARD_DB.items.consumables.find(i => i.id === 'heal'));
       }
 
-      // Shuffle and pick 3
+      // Shuffle the pool and take the top 3
       const shuffled = pool.sort(() => 0.5 - Math.random());
       setCurrentChoices(shuffled.slice(0, 3));
       setIsLevelUp(true);
@@ -188,20 +216,27 @@ export default function PlayArea({ selectedCharacter }) {
                   className="qliphoth-node w-56 flex flex-col items-center text-center cursor-pointer group"
                 >
                   <div className="text-4xl mb-6 mt-2 filter drop-shadow-md group-hover:scale-110 transition-transform duration-300">
-                    
-                    {/* --- THE FIX: Conditional Image Rendering --- */}
                     {reward.icon.includes('.png') ? (
                       <img src={reward.icon} alt={reward.id} className="w-16 h-16 object-contain" />
                     ) : (
                       reward.icon
                     )}
-                    {/* ------------------------------------------ */}
-
                   </div>
-                  <h3 className="font-royal text-sm font-bold uppercase tracking-widest text-zinc-300 mb-3 group-hover:text-white transition-colors">
+                  
+                  <h3 className="font-royal text-sm font-bold uppercase tracking-widest text-zinc-300 mb-2 group-hover:text-white transition-colors">
                     {reward.title}
                   </h3>
+
+                  {/* --- NEW: THE UPGRADE TEXT --- */}
+                  {reward.isUpgrade && (
+                    <div className="text-[10px] text-amber-600 font-bold tracking-[0.2em] uppercase mb-2 animate-pulse">
+                      Level {reward.currentLevel} ➔ {reward.currentLevel + 1}
+                    </div>
+                  )}
+                  {/* ---------------------------- */}
+
                   <div className="w-4 h-px bg-red-900/40 mb-3"></div>
+                  
                   <p className="text-[10px] text-zinc-500 tracking-widest leading-relaxed uppercase">
                     {reward.desc}
                   </p>

@@ -90,9 +90,6 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.spritesheet('template_idle', 'assets/characters/template/Unarmed_Idle_with_shadow.png', templateConfig);
     this.load.spritesheet('template_hurt', 'assets/characters/template/Unarmed_Hurt_with_shadow.png', templateConfig);
     this.load.spritesheet('template_death', 'assets/characters/template/Unarmed_Death_with_shadow.png', templateConfig);
-    
-    // Items & Consumables
-    this.load.image('red_potion', 'assets/items/potion.png'); 
 
     // --- SLIME MONSTER ---
     const slimeConfig = { frameWidth: 64, frameHeight: 64 };
