@@ -105,6 +105,9 @@ export default function PlayArea({ selectedCharacter }) {
               <button onClick={handleResume} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em]">
                 Resume
               </button>
+              <button onClick={() => navigate('/select')} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em] text-zinc-500 hover:text-red-500 hover:border-red-900/50 transition-colors">
+                Character Select
+              </button>
               <button onClick={() => navigate('/home')} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em] text-zinc-500 hover:text-red-500 hover:border-red-900/50 transition-colors">
                 Abandon
               </button>
