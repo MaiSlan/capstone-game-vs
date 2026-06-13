@@ -43,7 +43,9 @@ export default class MainScene extends Phaser.Scene {
     const paleStoneTiles = [1, 2, 3, 4, 5];
 
     // 5. Randomly fill the entire 125x125 grid using those 5 tiles
-    floorLayer.randomize(0, 0, mapWidthInTiles, mapHeightInTiles, paleStoneTiles);
+    for (let i = 1; i <= 9; i++) {
+      floorLayer.putTileAt(i, i, 0); 
+    }
 
     // 6. Scale the layer up so it looks appropriately sized next to the characters
     floorLayer.setScale(2);
