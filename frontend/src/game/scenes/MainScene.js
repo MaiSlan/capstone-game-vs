@@ -20,9 +20,37 @@ export default class MainScene extends Phaser.Scene {
   
   create() {
     AnimationManager.initializeAnimations(this);
-    // --- THE FLOOR OF TARTARUS ---
-    // We keep a very faint grid, but make it look like esoteric stone tiles
-    this.add.grid(2000, 2000, 4000, 4000, 128, 128, 0x050202, 1, 0x3a0000, 0.2);
+    AnimationManager.initializeAnimations(this);
+
+    // --- NEW: THE PROCEDURAL TARTARUS FLOOR ---
+    // If our map is 4000x4000, and our tiles are scaled to 32x32 visually, 
+    // we need exactly 125 tiles across and 125 tiles down.
+    const mapWidthInTiles = 125;
+    const mapHeightInTiles = 125;
+
+    // 1. Create a blank tilemap system
+    const map = this.make.tilemap({ 
+      tileWidth: 16, 
+      tileHeight: 16, 
+      width: mapWidthInTiles, 
+      height: mapHeightInTiles 
+    });
+
+    // 2. Connect the image we preloaded to the map
+    const tileset = map.addTilesetImage('ground_rocks', 'ground_rocks_img');
+
+    // 3. Create a blank rendering layer for the floor
+    const floorLayer = map.createBlankLayer('BaseFloor', tileset, 0, 0);
+
+    // 4. The Array of your 5 pale stone IDs
+    const paleStoneTiles = [0, 1, 2, 3, 4];
+
+    // 5. Randomly fill the entire 125x125 grid using those 5 tiles
+    floorLayer.randomize(0, 0, mapWidthInTiles, mapHeightInTiles, paleStoneTiles);
+
+    // 6. Scale the layer up so it looks appropriately sized next to the characters
+    floorLayer.setScale(2);
+    // ------------------------------------------
 
     // --- THE WALLS OF TARTARUS (Visual Boundaries) ---
     const mapWidth = 4000;
