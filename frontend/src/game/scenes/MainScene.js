@@ -83,9 +83,7 @@ export default class MainScene extends Phaser.Scene {
         projectile.destroy(); 
       }
       
-      if (enemy.hp <= 0) {
-        enemy.isDying = true; // Immediately mark as dying to prevent multiple gem drops
-        
+      if (enemy.hp <= 0) {        
         const gemCount = enemy.texture.key === 'tank_boss' ? 5 : 1;
         for (let i = 0; i < gemCount; i++) {
           this.expGems.create(enemy.x + (i * 10), enemy.y + (i * 10), 'exp_gem');
@@ -95,9 +93,10 @@ export default class MainScene extends Phaser.Scene {
         if (typeof enemy.die === 'function') {
           enemy.die(); 
         } else {
+          // Fallback for shapes/bats
+          enemy.isDying = true; 
           enemy.destroy();  
         }
-
       } else {
         enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
         this.time.delayedCall(100, () => { if (enemy && enemy.active && !enemy.isDying) enemy.clearTint() });

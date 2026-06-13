@@ -37,7 +37,7 @@ export default class WaveManager {
   }
 
   spawnWave(runTimeSeconds) {
-    const baseSpawnCount = 3 + Math.floor(runTimeSeconds / 30);
+    const baseSpawnCount = 1 + Math.floor(runTimeSeconds / 45);
     
     for (let i = 0; i < baseSpawnCount; i++) {
       const spawnPoint = this.getOffScreenSpawnPoint();

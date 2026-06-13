@@ -4,11 +4,11 @@ export const MONSTER_DB = {
   slime: { 
     id: 'slime', 
     name: 'Abyssal Slime', 
-    hp: 15, 
-    speed: 60,       
+    hp: 40, 
+    speed: 50,       
     damage: 5, 
-    xp: 2,
-    scale: 1.5
+    xp: 5,
+    scale: 2.5
   },
   bat: { 
     id: 'bat', 

@@ -68,14 +68,14 @@ export default class SlimeMonster extends Phaser.Physics.Arcade.Sprite {
     if (this.isDying || this.isAttacking || time < this.attackCooldown) return;
 
     this.isAttacking = true;
-    this.setVelocity(0); 
+    this.setVelocity(0); // Stop moving 
     
     this.play(`slime_attack_${this.currentDirection}`, true);
 
-    // Wait for the attack to finish
-    this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-      // Safety check: Only resume walking if we didn't die during the attack!
-      if (!this.isDying) {
+    // --- THE FIX: Explicitly check WHICH animation finished ---
+    this.once('animationcomplete', (animation) => {
+      // Only unlock movement if the attack finished AND we didn't die during the attack
+      if (animation.key.includes('attack') && !this.isDying) {
         this.isAttacking = false;
         this.attackCooldown = this.scene.time.now + 1000; 
       }
@@ -83,20 +83,24 @@ export default class SlimeMonster extends Phaser.Physics.Arcade.Sprite {
   }
 
   die() {
-    if (this.isDying) return;
+    // This is the only place isDying should be set
     this.isDying = true;
     
     this.setVelocity(0);
-    this.body.enable = false; 
+    this.body.enable = false; // Turn off physics entirely
     this.clearTint();
 
-    // --- THE FIX: Wipe out any lingering "attack" listeners ---
-    this.off(Phaser.Animations.Events.ANIMATION_COMPLETE);
+    // --- THE FIX: Purge any lingering attack listeners so they don't conflict ---
+    this.removeAllListeners('animationcomplete');
 
-    this.play('slime_death');
+    // Force the death animation to play
+    this.play('slime_death', true);
 
-    this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-      this.destroy();
+    // Completely destroy the object when the death puddle finishes
+    this.once('animationcomplete', (animation) => {
+      if (animation.key === 'slime_death') {
+        this.destroy();
+      }
     });
   }
 }
