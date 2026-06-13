@@ -27,7 +27,7 @@ export default function PhaserEngine({ selectedCharacter }) {
       game.scene.add('PreloadScene', PreloadScene);
       game.scene.add('MainScene', MainScene);
       game.scene.add('UIScene', UIScene);
-      game.scene.start('MainScene', { character: selectedCharacter });
+      game.scene.start('PreloadScene', { character: selectedCharacter });
     });
 
     return () => {
