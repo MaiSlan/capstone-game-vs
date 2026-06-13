@@ -65,19 +65,20 @@ export default class SlimeMonster extends Phaser.Physics.Arcade.Sprite {
   attack() {
     const time = this.scene.time.now;
     
-    // Don't attack if already dead, already attacking, or on cooldown
     if (this.isDying || this.isAttacking || time < this.attackCooldown) return;
 
     this.isAttacking = true;
-    this.setVelocity(0); // Stop walking
+    this.setVelocity(0); 
     
-    // Play the attack animation for whatever direction we are facing
     this.play(`slime_attack_${this.currentDirection}`, true);
 
-    // When the animation finishes, go back to walking and set a cooldown
+    // Wait for the attack to finish
     this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-      this.isAttacking = false;
-      this.attackCooldown = time + 1000; // Wait 1 second before attacking again
+      // Safety check: Only resume walking if we didn't die during the attack!
+      if (!this.isDying) {
+        this.isAttacking = false;
+        this.attackCooldown = this.scene.time.now + 1000; 
+      }
     });
   }
 
@@ -87,8 +88,11 @@ export default class SlimeMonster extends Phaser.Physics.Arcade.Sprite {
     
     this.setVelocity(0);
     this.body.enable = false; 
+    this.clearTint();
 
-    // Play the unified death animation
+    // --- THE FIX: Wipe out any lingering "attack" listeners ---
+    this.off(Phaser.Animations.Events.ANIMATION_COMPLETE);
+
     this.play('slime_death');
 
     this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {

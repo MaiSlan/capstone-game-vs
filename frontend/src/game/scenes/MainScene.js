@@ -137,25 +137,6 @@ export default class MainScene extends Phaser.Scene {
     this.isDead = false;
     this.runTimeMs = 0;
 
-    this.physics.add.overlap(this.player, this.enemies, (player, enemy) => {
-      if (this.isDead) return; // Don't take damage if already dead
-
-      player.takeDamage(10, this);
-      this.scene.get('UIScene').updateHP(player.hp, player.maxHp);
-      
-      // THE DEATH TRIGGER
-      if (player.hp <= 0) {
-        this.isDead = true;
-        this.physics.pause(); // Instantly freezes all movement and collisions
-        player.setTint(0xff0000); // Lock the player to a red color
-        
-        // Shout out to React that the game is over, passing the final level
-        window.dispatchEvent(new CustomEvent('VS_GAME_OVER', {
-          detail: { level: player.level }
-        }));
-      }
-    });
-
     this.scene.launch('UIScene');
 
     this.rewardListener = (e) => {
