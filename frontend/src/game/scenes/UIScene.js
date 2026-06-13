@@ -9,12 +9,12 @@ export default class UIScene extends Phaser.Scene {
   create() {
     // 1. Minimalist XP Bar
     this.xpBarBg = this.add.graphics();
-    this.xpBarBg.fillStyle(0x18181b, 1);
+    this.xpBarBg.fillStyle(0x18181b, 1); 
     this.xpBarBg.fillRect(0, 0, this.scale.width, 10);
 
     this.xpBarFill = this.add.graphics();
-    this.xpBarFill.fillStyle(0x3b82f6, 1);
-    this.xpBarFill.fillRect(0, 0, this.scale.width * 0.1, 10);
+    this.xpBarFill.fillStyle(0x3b82f6, 1); 
+    this.xpBarFill.fillRect(0, 0, this.scale.width * 0.1, 10); 
 
     // 2. Health Bar
     this.add.text(20, 25, 'HP', { font: '16px monospace', fill: '#ef4444' });
@@ -25,7 +25,7 @@ export default class UIScene extends Phaser.Scene {
     // 3. Level Indicator
     this.levelText = this.add.text(this.scale.width - 20, 25, 'LVL: 1', {
       font: 'bold 18px monospace',
-      fill: '#3b82f6',
+      fill: '#3b82f6', 
     }).setOrigin(1, 0);
 
     // 4. Inventory Slots
@@ -46,11 +46,10 @@ export default class UIScene extends Phaser.Scene {
       this.inventoryContainer.add([iBox, iInit, iLvl]);
       this.itemBoxes.push({ initial: iInit, level: iLvl });
     }
-
-    // --- THE FIX: Remove Phaser UI, use Event Listeners ---
     
-    // Listen for ESC key from the keyboard
-    this.input.keyboard.on('keydown-ESC', () => {
+    // 5. Input Handling for the ESC key (STRICT BINDING)
+    const escKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+    escKey.on('down', () => {
       this.togglePause();
     });
 
@@ -58,9 +57,8 @@ export default class UIScene extends Phaser.Scene {
     window.addEventListener('VS_RESUME_GAME', () => {
       if (this.isPaused) this.togglePause();
     });
-    // ------------------------------------------------------
 
-    // 5. Global Timer
+    // 6. Global Timer
     this.timerText = this.add.text(this.scale.width / 2, 25, '00:00', {
       font: 'bold 24px monospace',
       fill: '#ffffff',
@@ -68,9 +66,11 @@ export default class UIScene extends Phaser.Scene {
       padding: { x: 10, y: 5 }
     }).setOrigin(0.5);
 
+    // Handle window resize
     this.scale.on('resize', this.handleResize, this);
     const mainScene = this.scene.get('MainScene');
     
+    // Boot-up sync
     this.time.delayedCall(10, () => {
       if (mainScene && mainScene.player) {
         this.updateHP(mainScene.player.hp, mainScene.player.maxHp);
@@ -80,11 +80,16 @@ export default class UIScene extends Phaser.Scene {
     });
   }
 
+  updateLevelText(level) {
+    if (this.levelText) {
+      this.levelText.setText(`LVL: ${level}`);
+    }
+  }
+
   updateInventory(weaponsArray, itemsArray = []) {
     if (!this.weaponBoxes || !this.itemBoxes) return; 
 
     for (let i = 0; i < 5; i++) {
-      // Weapons
       if (i < weaponsArray.length) {
         this.weaponBoxes[i].initial.setText(weaponsArray[i].id.charAt(0).toUpperCase());
         this.weaponBoxes[i].level.setText(weaponsArray[i].level);
@@ -93,7 +98,6 @@ export default class UIScene extends Phaser.Scene {
         this.weaponBoxes[i].level.setText('');
       }
 
-      // Items
       if (i < itemsArray.length) {
         this.itemBoxes[i].initial.setText(itemsArray[i].id.charAt(0).toUpperCase());
         this.itemBoxes[i].level.setText(itemsArray[i].level);
@@ -110,11 +114,9 @@ export default class UIScene extends Phaser.Scene {
 
     if (this.isPaused) {
       mainScene.scene.pause(); 
-      // Tell React to show the Pause Menu
       window.dispatchEvent(new CustomEvent('VS_PAUSE_STATE', { detail: { isPaused: true } }));
     } else {
       mainScene.scene.resume(); 
-      // Tell React to hide the Pause Menu
       window.dispatchEvent(new CustomEvent('VS_PAUSE_STATE', { detail: { isPaused: false } }));
     }
   }
@@ -127,7 +129,6 @@ export default class UIScene extends Phaser.Scene {
     this.hpBarFill.fillStyle(0xef4444, 1); 
     this.hpBarFill.fillRect(50, 25, 200 * percentage, 16);
 
-    // --- NEW: Update the text string ---
     if (this.hpText) {
       this.hpText.setText(`${Math.floor(current)} / ${max}`);
     }
@@ -140,8 +141,6 @@ export default class UIScene extends Phaser.Scene {
     this.xpBarFill.clear();
     this.xpBarFill.fillStyle(0x3b82f6, 1); 
     this.xpBarFill.fillRect(0, 0, this.scale.width * percentage, 10);
-    
-    // Optional: You can add a text element in create() to show the Level, and update it here
   }
 
   handleResize(gameSize) {
