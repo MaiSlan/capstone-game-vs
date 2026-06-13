@@ -15,14 +15,11 @@ export default class MainScene extends Phaser.Scene {
 
   preload() {
   }
-
-  // Inside src/game/scenes/MainScene.js
-  
   create() {
     AnimationManager.initializeAnimations(this);
     AnimationManager.initializeAnimations(this);
 
-    // --- NEW: THE PROCEDURAL TARTARUS FLOOR ---
+    // --- THE PROCEDURAL TARTARUS FLOOR ---
     // If our map is 4000x4000, and our tiles are scaled to 32x32 visually, 
     // we need exactly 125 tiles across and 125 tiles down.
     const mapWidthInTiles = 125;
@@ -43,14 +40,13 @@ export default class MainScene extends Phaser.Scene {
     const floorLayer = map.createBlankLayer('BaseFloor', tileset, 0, 0);
 
     // 4. The Array of your 5 pale stone IDs
-    const paleStoneTiles = [0, 1, 2, 3, 4];
+    const paleStoneTiles = [1, 2, 3, 4, 5];
 
     // 5. Randomly fill the entire 125x125 grid using those 5 tiles
     floorLayer.randomize(0, 0, mapWidthInTiles, mapHeightInTiles, paleStoneTiles);
 
     // 6. Scale the layer up so it looks appropriately sized next to the characters
     floorLayer.setScale(2);
-    // ------------------------------------------
 
     // --- THE WALLS OF TARTARUS (Visual Boundaries) ---
     const mapWidth = 4000;
