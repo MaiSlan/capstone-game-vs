@@ -91,6 +91,26 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image('ground_rocks_img', 'assets/maps/tiles.png'); 
     this.load.image('border_top', 'assets/maps/TopBorder.png');
     this.load.image('border_bottom', 'assets/maps/BottomBorder.png');
+
+    // --- HUD ICONS ---   
+    // Weapons
+    this.load.image('cleave_axe', 'assets/weapons/axe.png');
+    this.load.image('magic_orb', 'assets/weapons/magic_orb.png');
+    this.load.image('lance', 'assets/weapons/spear.png');
+    this.load.image('magic_book', 'assets/weapons/spellbook.png');
+
+    // Items
+    this.load.image('speed_boots', 'assets/items/boots.png');
+    this.load.image('vitality_ring', 'assets/items/ring.png');
+    this.load.image('thief_gloves', 'assets/items/gloves.png');
+    this.load.image('sacrificial_dagger', 'assets/items/dagger.png');
+    this.load.image('broken_arrow', 'assets/items/equipable/broken_arrow.png');
+    this.load.image('voodoo_doll', 'assets/items/equipable/voodoo.png');
+    this.load.image('haste_necklace', 'assets/items/equipable/necklace.png');
+    this.load.image('mysterious_letter', 'assets/items/equipable/letter.png');
+    this.load.image('cursed_skull', 'assets/items/equipable/skull.png');
+    this.load.image('coin_purse', 'assets/items/equipable/coin_purse.png');
+
   }
 
   create() {

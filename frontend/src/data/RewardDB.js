@@ -3,15 +3,15 @@
 export const REWARD_DB = {
   weapons: {
     witch: [
-      { id: 'magic_book', type: 'weapon', title: 'Swirling Book', desc: 'An ancient tome that orbits you.', icon: '📖' },
+      { id: 'magic_book', type: 'weapon', title: 'Swirling Book', desc: 'An ancient tome that orbits you.', icon: 'assets/weapons/spellbook.png' },
       // TODO: Add Magic Wand, Familiar, etc.
     ],
     viking: [
-      { id: 'lance', type: 'weapon', title: 'Piercing Lance', desc: 'Fires a heavy forward lance.', icon: '🗡️' },
+      { id: 'lance', type: 'weapon', title: 'Piercing Lance', desc: 'Fires a heavy forward lance.', icon: 'assets/weapons/spear.png' },
       // TODO: Add Throwing Axes, Shield, etc.
     ],
     template: [
-      { id: 'lance', type: 'weapon', title: 'Piercing Lance', desc: 'Fires a heavy forward lance.', icon: '🗡️' },
+      { id: 'lance', type: 'weapon', title: 'Piercing Lance', desc: 'Fires a heavy forward lance.', icon: 'assets/weapons/spear.png' },
     ]
   },
   items: {
