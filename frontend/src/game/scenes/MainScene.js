@@ -23,6 +23,21 @@ export default class MainScene extends Phaser.Scene {
     this.bgm = this.sound.add('bgm_skyrim', { volume: 0.3, loop: true });    
     this.bgm.play();
 
+    // --- TIMER INIT ---
+    this.surviveSeconds = 0;    
+    // Phaser's time events automatically pause when the scene pauses!
+    this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        this.surviveSeconds++;
+        // Send the exact time to the React overlay
+        window.dispatchEvent(new CustomEvent('VS_UPDATE_TIMER', { 
+          detail: { seconds: this.surviveSeconds } 
+        }));
+      },
+      loop: true
+    });
+
     // --- 1. THE 8000x8000 FLOOR ---
     const mapWidth = 8000;
     const mapHeight = 8000;

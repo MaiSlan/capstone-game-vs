@@ -15,7 +15,10 @@ export default function PlayArea({ selectedCharacter }) {
   const [currentChoices, setCurrentChoices] = useState([]);
   
   const [isPaused, setIsPaused] = useState(false);
-  const [pauseStats, setPauseStats] = useState(null); // --- NEW: Holds player data
+  const [pauseStats, setPauseStats] = useState(null);
+  
+  // --- NEW: Track the game time ---
+  const [gameTime, setGameTime] = useState(0); 
 
   useEffect(() => {
     const handleGameOver = (e) => {
@@ -24,13 +27,17 @@ export default function PlayArea({ selectedCharacter }) {
       if (document.fullscreenElement) document.exitFullscreen();
     };
 
+    // --- NEW: Catch the timer event ---
+    const handleUpdateTimer = (e) => {
+      setGameTime(e.detail.seconds);
+    };
+
     const handleLevelUp = (e) => {
       const { level: lvl, weapons, items } = e.detail;
       setCurrentLevel(lvl);
       
       let pool = [];
 
-      // Helper to map weapon IDs to their PNGs
       const getWeaponIcon = (id) => {
         const iconMap = {
           'cleave_axe': 'assets/weapons/axe.png',
@@ -60,7 +67,6 @@ export default function PlayArea({ selectedCharacter }) {
           if (equippedWeapon.level < 5) {
             let dbRef = REWARD_DB.weapons[selectedCharacter].find(w => w.id === equippedWeapon.id);
             
-            // --- THE FIX: Map the default weapon to its actual PNG instead of an emoji ---
             if (!dbRef) {
               dbRef = { 
                 id: equippedWeapon.id, 
@@ -101,17 +107,19 @@ export default function PlayArea({ selectedCharacter }) {
 
     const handlePauseState = (e) => {
       setIsPaused(e.detail.isPaused);
-      setPauseStats(e.detail.stats || null); // --- NEW: Catch the stats payload
+      setPauseStats(e.detail.stats || null);
     };    
 
     window.addEventListener('VS_GAME_OVER', handleGameOver);
     window.addEventListener('VS_LEVEL_UP', handleLevelUp);
     window.addEventListener('VS_PAUSE_STATE', handlePauseState);
+    window.addEventListener('VS_UPDATE_TIMER', handleUpdateTimer); // Map the listener
     
     return () => {
       window.removeEventListener('VS_GAME_OVER', handleGameOver);
       window.removeEventListener('VS_LEVEL_UP', handleLevelUp);
       window.removeEventListener('VS_PAUSE_STATE', handlePauseState);
+      window.removeEventListener('VS_UPDATE_TIMER', handleUpdateTimer);
     };
   }, [selectedCharacter]);
 
@@ -125,6 +133,7 @@ export default function PlayArea({ selectedCharacter }) {
 
   const handleRestart = () => {
     setIsGameOver(false);
+    setGameTime(0); // Reset timer on death
     setGameInstanceKey(prev => prev + 1); 
   };
 
@@ -137,7 +146,6 @@ export default function PlayArea({ selectedCharacter }) {
     window.dispatchEvent(new CustomEvent('VS_RESUME_GAME'));
   };
 
-  // Helper component for the Stats Grid
   const StatRow = ({ label, value }) => (
     <div className="flex justify-between items-center border-b border-zinc-800/50 pb-2">
       <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">{label}</span>
@@ -145,10 +153,35 @@ export default function PlayArea({ selectedCharacter }) {
     </div>
   );
 
+  // --- NEW: Time Formatting Helper ---
+  const formatTime = (totalSeconds) => {
+    const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+    const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+    return `${minutes}:${seconds}`;
+  };
+
   return (
     <div ref={fullScreenRef} className="w-full h-screen bg-black flex flex-col relative font-grim">
       <GameNavbar onToggleFullscreen={toggleFullScreen} />
       
+      {/* --- NEW: THE ECLIPSE CLOCK OVERLAY --- */}
+      <div className="absolute top-10 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none mt-2">
+        {/* The Graphic */}
+        <div className="relative w-12 h-12 flex items-center justify-center mb-1">
+          {/* The Sun's Corona (Bright glowing ring) */}
+          <div className="absolute inset-0 rounded-full bg-zinc-200 shadow-[0_0_20px_rgba(255,255,255,0.6)] opacity-90 animate-pulse"></div>
+          {/* The Moon blocking the sun (Dark center) */}
+          <div className="absolute inset-0 rounded-full bg-[#050202] w-[85%] h-[85%] m-auto shadow-[inset_0_0_15px_rgba(0,0,0,1)]"></div>
+          {/* Subtle blood red rim light to tie into the esoteric theme */}
+          <div className="absolute inset-0 rounded-full border border-red-900/40"></div>
+        </div>
+        
+        {/* The Digital Timer */}
+        <span className="font-royal text-2xl font-bold tracking-[0.2em] text-zinc-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
+          {formatTime(gameTime)}
+        </span>
+      </div>
+
       <div className="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center bg-[#050202] cursor-none">
          <PhaserEngine key={gameInstanceKey} selectedCharacter={selectedCharacter} />
       </div>
@@ -168,7 +201,6 @@ export default function PlayArea({ selectedCharacter }) {
               <span className="w-8 h-px bg-red-900/50"></span>
             </div>
 
-            {/* --- NEW: VESSEL STATISTICS PANEL --- */}
             {pauseStats && (
               <div className="w-full max-w-lg mb-10 p-8 border border-red-900/30 bg-zinc-950/50 shadow-[inset_0_0_20px_rgba(139,0,0,0.1)] rounded-sm">
                 <h3 className="text-xs font-bold uppercase tracking-[0.4em] text-red-800 text-center mb-6 border-b border-red-900/30 pb-4">
@@ -184,7 +216,6 @@ export default function PlayArea({ selectedCharacter }) {
                 </div>
               </div>
             )}
-            {/* ---------------------------------- */}
 
             <div className="flex gap-6">
               <button onClick={handleResume} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em]">

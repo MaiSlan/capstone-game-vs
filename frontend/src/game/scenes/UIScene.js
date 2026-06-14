@@ -38,13 +38,6 @@ export default class UIScene extends Phaser.Scene {
       letterSpacing: '2px'
     }).setOrigin(1, 0);
 
-    // 4. Global Timer (Elegant center)
-    this.timerText = this.add.text(width / 2, 25, '00:00', {
-      font: '18px serif',
-      fill: '#e4e4e7',
-      letterSpacing: '2px'
-    }).setOrigin(0.5);
-
     // 5. Inventory Slots (Moved to bottom left)
     this.inventoryContainer = this.add.container(20, height - 50); 
     this.weaponBoxes = [];
@@ -188,14 +181,6 @@ export default class UIScene extends Phaser.Scene {
     this.xpBarBg.fillRect(0, 0, width, 4);
     
     if (this.levelText) this.levelText.setPosition(width - 20, 20);
-    if (this.timerText) this.timerText.setPosition(width / 2, 25);
     if (this.inventoryContainer) this.inventoryContainer.setPosition(20, height - 50);
-  }
-
-  updateTimer(totalSeconds) {
-    if (!this.timerText) return;
-    const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
-    const seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
-    this.timerText.setText(`${minutes}:${seconds}`);
   }
 }
