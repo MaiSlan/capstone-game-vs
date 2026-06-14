@@ -16,7 +16,7 @@ const WITCH_FRAMES = [
 ];
 
 const ROSTER_UI = [
-  { id: 'witch', status: 'unlocked', img: 'assets/characters/witch/spritesheet.png' },
+  { id: 'witch', status: 'unlocked', img: 'assets/characters/witch/standing.png' },
   { id: 'viking', status: 'unlocked', img: 'assets/characters/viking.png' },
   { id: 'template', status: 'unlocked', img: 'assets/characters/template/template.png' },
   { id: 'locked_2', status: 'locked', img: null },
