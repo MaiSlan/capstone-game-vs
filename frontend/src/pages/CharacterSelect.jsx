@@ -24,12 +24,15 @@ const ROSTER_UI = [
 ];
 
 // --- THE FIX: Interactive 360 Sprite Viewer Component ---
-const InteractiveSprite = ({ spritesheetUrl, frames }) => {
+const InteractiveSprite = ({ spritesheetUrl, frames, isActive }) => {
   const [frameIdx, setFrameIdx] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const lastX = useRef(null);
 
   const handlePointerDown = (e) => {
+    // --- THE FIX: Block interaction if the card isn't selected ---
+    if (!isActive) return; 
+    
     setIsDragging(true);
     lastX.current = e.clientX;
     e.target.setPointerCapture(e.pointerId);
@@ -40,10 +43,9 @@ const InteractiveSprite = ({ spritesheetUrl, frames }) => {
     
     const deltaX = e.clientX - lastX.current;
     
-    // Drag sensitivity: requires 12 pixels of drag to trigger a rotation frame
     if (Math.abs(deltaX) > 12) { 
       setFrameIdx((prev) => {
-        let next = prev + (deltaX > 0 ? -1 : 1); // Swiping right spins counter-clockwise
+        let next = prev + (deltaX > 0 ? -1 : 1);
         if (next > 7) next = 0;
         if (next < 0) next = 7;
         return next;
@@ -65,14 +67,15 @@ const InteractiveSprite = ({ spritesheetUrl, frames }) => {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      className="cursor-grab active:cursor-grabbing shrink-0 filter drop-shadow-[0_5px_15px_rgba(0,0,0,1)]"
+      // --- THE FIX: Only show the grab cursor if active ---
+      className={`shrink-0 filter drop-shadow-[0_5px_15px_rgba(0,0,0,1)] ${isActive ? 'cursor-grab active:cursor-grabbing' : ''}`}
       style={{
         backgroundImage: `url('${spritesheetUrl}')`,
         backgroundPosition: `-${frame.x}px -${frame.y}px`,
-        backgroundSize: '774px 774px', // The exact size of the spritesheet file
-        width: '256px',                // The exact size of an individual frame
+        backgroundSize: '774px 774px', 
+        width: '256px',                
         height: '256px',
-        transform: 'scale(0.55)',      // Scales the 256px box down to nicely fit the UI card
+        transform: 'scale(0.55)',      
       }}
     />
   );
