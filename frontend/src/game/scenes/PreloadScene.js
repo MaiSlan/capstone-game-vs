@@ -92,7 +92,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image('border_top', 'assets/maps/TopBorder.png');
 
     // --- AUDIO ---
-    this.load.audio('bgm_skyrim', 'assets/sounds/Skyrim.ogg');
+    this.load.audio('bgm_skyrim', 'assets/sounds/skyrim.ogg');
     this.load.image('border_bottom', 'assets/maps/BottomBorder.png');
 
     // --- HUD ICONS ---   
