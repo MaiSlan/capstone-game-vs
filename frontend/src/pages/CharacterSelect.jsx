@@ -118,11 +118,12 @@ export default function CharacterSelect({ selectedCharacter, setSelectedCharacte
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[1px] bg-red-900/50"></div>
 
               <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
-                {/* Dynamically insert the spinner if it's the witch, otherwise fallback to static image */}
                 {char.id === 'witch' ? (
                   <InteractiveSprite
                     spritesheetUrl={char.img}
                     frames={WITCH_FRAMES}
+                    // --- THE FIX: Tell the component if it is selected ---
+                    isActive={selectedCharacter === char.id} 
                   />
                 ) : char.img ? (
                   <img src={char.img} alt={char.id} className="object-contain w-full h-full drop-shadow-[0_5px_15px_rgba(0,0,0,1)]" />
