@@ -6,7 +6,6 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   init(data) {
-    // Catch the data from React
     this.sceneData = data; 
   }
 
@@ -15,69 +14,51 @@ export default class PreloadScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
     
-    // Create graphics objects for the progress bar outlines
+    // Set background to Pure Abyss
+    this.cameras.main.setBackgroundColor('#050202');
+
     const progressBox = this.add.graphics();
     const progressBar = this.add.graphics();
     
-    // Draw a dark background container for the loading bar
-    progressBox.fillStyle(0x1e1e24, 0.8);
-    progressBox.fillRect(width / 2 - 160, height / 2 - 25, 320, 50);
+    // Minimalist esoteric borders
+    progressBox.lineStyle(1, 0x7f1d1d, 0.5); // red-900 border
+    progressBox.strokeRect(width / 2 - 160, height / 2 - 2, 320, 4);
 
     // --- 2. ADD LOADING TEXT ---
     const loadingText = this.make.text({
       x: width / 2,
-      y: height / 2 - 50,
-      text: 'Loading Assets...',
+      y: height / 2 - 30,
+      text: 'MANIFESTING VESSEL...',
       style: {
-        font: '20px monospace',
-        fill: '#ffffff'
+        font: '14px serif', // Mimics the Royal font
+        fill: '#71717a',    // zinc-500
+        letterSpacing: '4px'
       }
-    });
-    loadingText.setOrigin(0.5, 0.5);
+    }).setOrigin(0.5, 0.5);
 
     const percentText = this.make.text({
       x: width / 2,
-      y: height / 2,
-      text: '0%',
+      y: height / 2 + 30,
+      text: '✦ 0% ✦',
       style: {
-        font: '18px monospace',
-        fill: '#ffffff'
+        font: '12px serif',
+        fill: '#991b1b' // red-800
       }
-    });
-    percentText.setOrigin(0.5, 0.5);
-
-    const assetText = this.make.text({
-      x: width / 2,
-      y: height / 2 + 50,
-      text: '',
-      style: {
-        font: '14px monospace',
-        fill: '#a855f7' // Purple accent color
-      }
-    });
-    assetText.setOrigin(0.5, 0.5);
+    }).setOrigin(0.5, 0.5);
 
     // --- 3. PHASER LOADING EVENTS ---
-    // 'progress' returns a value between 0 and 1
     this.load.on('progress', (value) => {
-      percentText.setText(parseInt(value * 100) + '%');
+      percentText.setText(`✦ ${parseInt(value * 100)}% ✦`);
       progressBar.clear();
-      progressBar.fillStyle(0xffffff, 1);
-      progressBar.fillRect(width / 2 - 150, height / 2 - 15, 300 * value, 30);
+      progressBar.fillStyle(0x991b1b, 1); // blood red fill
+      progressBar.fillRect(width / 2 - 160, height / 2 - 2, 320 * value, 4);
     });
 
-    // Displays the current file name being loaded
-    this.load.on('fileprogress', (file) => {
-      assetText.setText('Loading: ' + file.key);
-    });
-
-    // Cleans up the loading visuals when complete
     this.load.on('complete', () => {
       progressBar.destroy();
       progressBox.destroy();
       loadingText.destroy();
       percentText.destroy();
-      assetText.destroy();
     });
 
     // --- 4. THE MASTER ENGINE PRELOAD LIST ---

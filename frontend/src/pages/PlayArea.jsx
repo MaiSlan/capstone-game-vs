@@ -13,7 +13,9 @@ export default function PlayArea({ selectedCharacter }) {
   const [isLevelUp, setIsLevelUp] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(1);
   const [currentChoices, setCurrentChoices] = useState([]);
+  
   const [isPaused, setIsPaused] = useState(false);
+  const [pauseStats, setPauseStats] = useState(null); // --- NEW: Holds player data
 
   useEffect(() => {
     const handleGameOver = (e) => {
@@ -28,17 +30,13 @@ export default function PlayArea({ selectedCharacter }) {
       
       let pool = [];
 
-      // --- MAJOR MILESTONES (Levels 5, 10, 15, etc.) ---
       if (lvl % 5 === 0) {
-        // 1. Offer Upgrades for currently equipped weapons
         weapons.forEach(equippedWeapon => {
           if (equippedWeapon.level < 5) {
             const dbRef = REWARD_DB.weapons[selectedCharacter].find(w => w.id === equippedWeapon.id);
             if (dbRef) pool.push({ ...dbRef, isUpgrade: true, currentLevel: equippedWeapon.level });
           }
         });
-
-        // 2. Offer New Weapons (if we have empty slots)
         if (weapons.length < 5) {
           REWARD_DB.weapons[selectedCharacter].forEach(dbWeapon => {
             const isEquipped = weapons.find(w => w.id === dbWeapon.id);
@@ -46,31 +44,20 @@ export default function PlayArea({ selectedCharacter }) {
           });
         }
       } 
-      // --- STANDARD LEVELS ---
       else {
-        // 1. Offer Weapon Upgrades
         weapons.forEach(equippedWeapon => {
           if (equippedWeapon.level < 5) {
-            // Even if it's the base weapon not explicitly in the reward array, we need to find its UI data
-            // You might need to ensure ALL weapons have an entry somewhere in REWARD_DB so they have titles/icons
             let dbRef = REWARD_DB.weapons[selectedCharacter].find(w => w.id === equippedWeapon.id);
-            
-            // Fallback just in case it's a default weapon missing from the reward list
             if (!dbRef) dbRef = { id: equippedWeapon.id, type: 'weapon', title: equippedWeapon.id.replace('_', ' '), desc: 'Upgrade your weapon.', icon: '⚔️' };
-            
             pool.push({ ...dbRef, isUpgrade: true, currentLevel: equippedWeapon.level });
           }
         });
-
-        // 2. Offer Item Upgrades
         items.forEach(equippedItem => {
           if (equippedItem.level < 5) {
             const dbRef = REWARD_DB.items.common.find(i => i.id === equippedItem.id);
             if (dbRef) pool.push({ ...dbRef, isUpgrade: true, currentLevel: equippedItem.level });
           }
         });
-
-        // 3. Offer New Items (if slots available)
         if (items.length < 5) {
           REWARD_DB.items.common.forEach(dbItem => {
             const isEquipped = items.find(i => i.id === dbItem.id);
@@ -79,12 +66,10 @@ export default function PlayArea({ selectedCharacter }) {
         }
       }
 
-      // --- FALLBACK & SHUFFLE ---
       if (pool.length === 0) {
         pool.push(REWARD_DB.items.consumables.find(i => i.id === 'heal'));
       }
 
-      // Shuffle the pool and take the top 3
       const shuffled = pool.sort(() => 0.5 - Math.random());
       setCurrentChoices(shuffled.slice(0, 3));
       setIsLevelUp(true);
@@ -92,6 +77,7 @@ export default function PlayArea({ selectedCharacter }) {
 
     const handlePauseState = (e) => {
       setIsPaused(e.detail.isPaused);
+      setPauseStats(e.detail.stats || null); // --- NEW: Catch the stats payload
     };    
 
     window.addEventListener('VS_GAME_OVER', handleGameOver);
@@ -127,12 +113,18 @@ export default function PlayArea({ selectedCharacter }) {
     window.dispatchEvent(new CustomEvent('VS_RESUME_GAME'));
   };
 
+  // Helper component for the Stats Grid
+  const StatRow = ({ label, value }) => (
+    <div className="flex justify-between items-center border-b border-zinc-800/50 pb-2">
+      <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">{label}</span>
+      <span className="font-royal text-lg text-zinc-300">{value}</span>
+    </div>
+  );
+
   return (
     <div ref={fullScreenRef} className="w-full h-screen bg-black flex flex-col relative font-grim">
       <GameNavbar onToggleFullscreen={toggleFullScreen} />
       
-      {/* The actual Phaser Game Canvas Container */}
-      {/* ADD cursor-none to this div */}
       <div className="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center bg-[#050202] cursor-none">
          <PhaserEngine key={gameInstanceKey} selectedCharacter={selectedCharacter} />
       </div>
@@ -140,11 +132,11 @@ export default function PlayArea({ selectedCharacter }) {
       {/* --- SUSPENDED / PAUSE OVERLAY --- */}
       {isPaused && !isGameOver && !isLevelUp && (
         <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center z-50 backdrop-blur-md">
-          <div className="flex flex-col items-center animate-fade-in">
+          <div className="flex flex-col items-center animate-fade-in w-full max-w-2xl">
             <h2 className="font-royal text-5xl md:text-6xl font-black uppercase tracking-[0.4em] mb-4 text-zinc-300 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
               Suspended
             </h2>
-            <div className="flex items-center gap-4 mb-12">
+            <div className="flex items-center gap-4 mb-8">
               <span className="w-8 h-px bg-red-900/50"></span>
               <p className="text-[10px] uppercase tracking-[0.4em] text-red-900/80 font-bold">
                 The Flow of Time Halts
@@ -152,7 +144,25 @@ export default function PlayArea({ selectedCharacter }) {
               <span className="w-8 h-px bg-red-900/50"></span>
             </div>
 
-            <div className="flex gap-6 mt-4">
+            {/* --- NEW: VESSEL STATISTICS PANEL --- */}
+            {pauseStats && (
+              <div className="w-full max-w-lg mb-10 p-8 border border-red-900/30 bg-zinc-950/50 shadow-[inset_0_0_20px_rgba(139,0,0,0.1)] rounded-sm">
+                <h3 className="text-xs font-bold uppercase tracking-[0.4em] text-red-800 text-center mb-6 border-b border-red-900/30 pb-4">
+                  Vessel Attributes
+                </h3>
+                <div className="grid grid-cols-2 gap-x-12 gap-y-4">
+                  <StatRow label="Vitality" value={`${pauseStats.hp} / ${pauseStats.maxHp}`} />
+                  <StatRow label="Agility" value={pauseStats.speed} />
+                  <StatRow label="Power (DPS)" value={`${pauseStats.damageMult}%`} />
+                  <StatRow label="Attack Speed" value={`${pauseStats.haste}%`} />
+                  <StatRow label="Armor" value={pauseStats.armor} />
+                  <StatRow label="Greed" value={`${pauseStats.greed}%`} />
+                </div>
+              </div>
+            )}
+            {/* ---------------------------------- */}
+
+            <div className="flex gap-6">
               <button onClick={handleResume} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em]">
                 Resume
               </button>
@@ -167,7 +177,7 @@ export default function PlayArea({ selectedCharacter }) {
         </div>
       )}
 
-      {/* --- GAME OVER OVERLAY (Esoteric/Hollow Knight style) --- */}
+      {/* --- GAME OVER OVERLAY --- */}
       {isGameOver && (
         <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center z-50 backdrop-blur-md">
           <div className="flex flex-col items-center">
@@ -189,7 +199,7 @@ export default function PlayArea({ selectedCharacter }) {
               <button onClick={() => navigate('/select')} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em]">
                 New Vessel
               </button>
-              <button onClick={() => navigate('/home')} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em]">
+              <button onClick={() => navigate('/home')} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em] text-zinc-500 hover:border-red-900/50 transition-colors">
                 Abandon
               </button>
             </div>
@@ -197,7 +207,7 @@ export default function PlayArea({ selectedCharacter }) {
         </div>
       )}
 
-      {/* --- LEVEL UP OVERLAY (Qliphoth Node style) --- */}
+      {/* --- LEVEL UP OVERLAY --- */}
       {isLevelUp && (
         <div className="absolute inset-0 bg-black/85 flex items-center justify-center z-40 backdrop-blur-md">
           <div className="flex flex-col items-center">
@@ -227,13 +237,11 @@ export default function PlayArea({ selectedCharacter }) {
                     {reward.title}
                   </h3>
 
-                  {/* --- NEW: THE UPGRADE TEXT --- */}
                   {reward.isUpgrade && (
                     <div className="text-[10px] text-amber-600 font-bold tracking-[0.2em] uppercase mb-2 animate-pulse">
                       Level {reward.currentLevel} ➔ {reward.currentLevel + 1}
                     </div>
                   )}
-                  {/* ---------------------------- */}
 
                   <div className="w-4 h-px bg-red-900/40 mb-3"></div>
                   
