@@ -25,12 +25,12 @@ export const WEAPON_DB = {
     cooldown: [900, 800, 700, 550, 400],
     speed: [450, 480, 520, 560, 650]
   },
-  magic_book: { // BUFFED: Spins faster, larger protective radius
+  magic_book: {
     id: 'magic_book',
     maxLevel: 5,
     damage: [10, 15, 22, 30, 45],
     rotationSpeed: [0.06, 0.07, 0.08, 0.1, 0.12],
-    radius: [65, 75, 85, 95, 110] 
+    radius: [160, 200, 250, 300, 380] 
   },
   magic_wand: {
     id: 'magic_wand',
