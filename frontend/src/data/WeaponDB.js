@@ -29,8 +29,8 @@ export const WEAPON_DB = {
     id: 'magic_book',
     maxLevel: 5,
     damage: [10, 15, 22, 30, 45],
-    rotationSpeed: [0.015, 0.02, 0.025, 0.03, 0.04],
-    radius: [80, 100, 120, 140, 170]
+    rotationSpeed: [0.010, 0.015, 0.02, 0.03, 0.04],
+    radius: [120, 140, 160, 180, 200]
   },
   magic_wand: {
     id: 'magic_wand',

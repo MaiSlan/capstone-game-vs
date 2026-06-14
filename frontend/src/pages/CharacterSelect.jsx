@@ -1,14 +1,82 @@
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../components/PublicNavbar';
 import { CHARACTER_DB } from '../data/CharacterDB'; 
 
+// --- THE FIX: Map the JSON coordinates in a perfect clockwise 360 rotation ---
+const WITCH_FRAMES = [
+  { x: 1, y: 517 },   // 0: South (Facing screen)
+  { x: 517, y: 1 },   // 1: South-East
+  { x: 1, y: 1 },     // 2: East
+  { x: 259, y: 1 },   // 3: North-East
+  { x: 259, y: 259 }, // 4: North (Facing away)
+  { x: 1, y: 259 },   // 5: North-West
+  { x: 259, y: 517 }, // 6: West
+  { x: 517, y: 259 }  // 7: South-West
+];
+
 const ROSTER_UI = [
-  { id: 'witch', status: 'unlocked', img: 'assets/characters/witch.png' },
+  { id: 'witch', status: 'unlocked', img: 'assets/characters/witch/spritesheet.png' },
   { id: 'viking', status: 'unlocked', img: 'assets/characters/viking.png' },
   { id: 'template', status: 'unlocked', img: 'assets/characters/template/template.png' },
   { id: 'locked_2', status: 'locked', img: null },
   { id: 'locked_3', status: 'locked', img: null },
 ];
+
+// --- THE FIX: Interactive 360 Sprite Viewer Component ---
+const InteractiveSprite = ({ spritesheetUrl, frames }) => {
+  const [frameIdx, setFrameIdx] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const lastX = useRef(null);
+
+  const handlePointerDown = (e) => {
+    setIsDragging(true);
+    lastX.current = e.clientX;
+    e.target.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging) return;
+    
+    const deltaX = e.clientX - lastX.current;
+    
+    // Drag sensitivity: requires 12 pixels of drag to trigger a rotation frame
+    if (Math.abs(deltaX) > 12) { 
+      setFrameIdx((prev) => {
+        let next = prev + (deltaX > 0 ? -1 : 1); // Swiping right spins counter-clockwise
+        if (next > 7) next = 0;
+        if (next < 0) next = 7;
+        return next;
+      });
+      lastX.current = e.clientX;
+    }
+  };
+
+  const handlePointerUp = (e) => {
+    setIsDragging(false);
+    e.target.releasePointerCapture(e.pointerId);
+  };
+
+  const frame = frames[frameIdx];
+
+  return (
+    <div
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      className="cursor-grab active:cursor-grabbing shrink-0 filter drop-shadow-[0_5px_15px_rgba(0,0,0,1)]"
+      style={{
+        backgroundImage: `url('${spritesheetUrl}')`,
+        backgroundPosition: `-${frame.x}px -${frame.y}px`,
+        backgroundSize: '774px 774px', // The exact size of the spritesheet file
+        width: '256px',                // The exact size of an individual frame
+        height: '256px',
+        transform: 'scale(0.55)',      // Scales the 256px box down to nicely fit the UI card
+      }}
+    />
+  );
+};
 
 export default function CharacterSelect({ selectedCharacter, setSelectedCharacter }) {
   const navigate = useNavigate();
@@ -32,7 +100,6 @@ export default function CharacterSelect({ selectedCharacter, setSelectedCharacte
         </header>
         
         <div className="flex flex-wrap justify-center gap-6 mb-10">
-          {/* FIX: Changed ROSTER.map to ROSTER_UI.map */}
           {ROSTER_UI.map((char) => (
             <div 
               key={char.id}
@@ -48,7 +115,13 @@ export default function CharacterSelect({ selectedCharacter, setSelectedCharacte
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[1px] bg-red-900/50"></div>
 
               <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
-                {char.img ? (
+                {/* Dynamically insert the spinner if it's the witch, otherwise fallback to static image */}
+                {char.id === 'witch' ? (
+                  <InteractiveSprite
+                    spritesheetUrl={char.img}
+                    frames={WITCH_FRAMES}
+                  />
+                ) : char.img ? (
                   <img src={char.img} alt={char.id} className="object-contain w-full h-full drop-shadow-[0_5px_15px_rgba(0,0,0,1)]" />
                 ) : (
                   <span className="text-2xl text-red-900/30 font-royal">✦</span>
@@ -56,7 +129,6 @@ export default function CharacterSelect({ selectedCharacter, setSelectedCharacte
               </div>
               
               <div className="w-full text-center py-2 mt-2 border-t border-red-900/20 font-royal font-bold text-xs uppercase tracking-widest text-zinc-300">
-                {/* FIX: Read the name from the DB, fallback to 'Sealed' */}
                 {CHARACTER_DB[char.id]?.name || 'Sealed'}
               </div>
             </div>
