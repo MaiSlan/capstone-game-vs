@@ -73,5 +73,14 @@ export default class AnimationManager {
 
     // --- TEMPLATE: DEATH (7 columns) ---
     scene.anims.create({ key: 'template_death', frames: scene.anims.generateFrameNumbers('template_death', { start: 0, end: 6 }), frameRate: 10, repeat: 0 });
+    
+    // ------------------------------------------------------------------
+    // Witch
+    // --- WITCH: WALK ANIMATIONS (6 columns) ---
+    // Row 1: East (0-5), Row 2: West (6-11), Row 3: North (12-17), Row 4: South (18-23)
+    scene.anims.create({ key: 'witch_walk_east', frames: scene.anims.generateFrameNumbers('witch_walk', { start: 0, end: 5 }), frameRate: 8, repeat: -1 });
+    scene.anims.create({ key: 'witch_walk_west', frames: scene.anims.generateFrameNumbers('witch_walk', { start: 6, end: 11 }), frameRate: 8, repeat: -1 });
+    scene.anims.create({ key: 'witch_walk_north', frames: scene.anims.generateFrameNumbers('witch_walk', { start: 12, end: 17 }), frameRate: 8, repeat: -1 });
+    scene.anims.create({ key: 'witch_walk_south', frames: scene.anims.generateFrameNumbers('witch_walk', { start: 18, end: 23 }), frameRate: 8, repeat: -1 });
   }
 }

@@ -281,18 +281,48 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     const isMoving = this.body.velocity.x !== 0 || this.body.velocity.y !== 0;
 
-    if (isMoving) {
-      if (this.body.velocity.x > 0) {
-        this.setFlipX(true);  
-      } else if (this.body.velocity.x < 0) {
-        this.setFlipX(false); 
+    // --- NEW: Proper Animation Controller ---
+    if (this.hasAnimations) {
+      if (isMoving) {
+        // Un-flip the sprite since your spritesheet has dedicated East/West drawings
+        this.setFlipX(false);
+        this.setScale(this.baseScale); // Ensure she doesn't squish from the old wobble
+
+        // Check which axis has the stronger velocity to determine the primary animation
+        if (Math.abs(this.body.velocity.x) > Math.abs(this.body.velocity.y)) {
+          if (this.body.velocity.x > 0) {
+            this.anims.play(`${this.animPrefix}_east`, true);
+          } else {
+            this.anims.play(`${this.animPrefix}_west`, true);
+          }
+        } else {
+          if (this.body.velocity.y > 0) {
+            this.anims.play(`${this.animPrefix}_south`, true);
+          } else {
+            this.anims.play(`${this.animPrefix}_north`, true);
+          }
+        }
+      } else {
+        // Stop the animation exactly on the frame she is currently on
+        this.anims.stop();
       }
-      this.setAngle(Math.sin(time / 80) * 15);
-      this.setScale(this.baseScale, this.baseScale + (Math.abs(Math.sin(time / 80)) * 0.0015));
-    } else {
-      this.setAngle(0);
-      this.setScale(this.baseScale);
+    } 
+    // --- OLD: Fallback Wobble for characters without animations (Viking) ---
+    else {
+      if (isMoving) {
+        if (this.body.velocity.x > 0) {
+          this.setFlipX(true);  
+        } else if (this.body.velocity.x < 0) {
+          this.setFlipX(false); 
+        }
+        this.setAngle(Math.sin(time / 80) * 15);
+        this.setScale(this.baseScale, this.baseScale + (Math.abs(Math.sin(time / 80)) * 0.0015));
+      } else {
+        this.setAngle(0);
+        this.setScale(this.baseScale);
+      }
     }
+
     // Calculate aim BEFORE processing weapons
     this.updateAimTarget(enemiesGroup);
 
