@@ -88,5 +88,21 @@ export default class AnimationManager {
     
     // Row 4: East (18-23)
     scene.anims.create({ key: 'witch_walk_east', frames: scene.anims.generateFrameNumbers('witch_walk', { start: 18, end: 23 }), frameRate: 8, repeat: -1 });
+
+
+    // ------------------------------------------------------------------
+    // Viking
+    // --- VIKING: WALK ANIMATIONS (6 columns) ---
+    // Row 1: South (0-5)
+    scene.anims.create({ key: 'viking_walk_south', frames: scene.anims.generateFrameNumbers('viking_walk', { start: 0, end: 5 }), frameRate: 8, repeat: -1 });
+    
+    // Row 2: North (6-11)
+    scene.anims.create({ key: 'viking_walk_north', frames: scene.anims.generateFrameNumbers('viking_walk', { start: 6, end: 11 }), frameRate: 8, repeat: -1 });
+    
+    // Row 3: West (12-17)
+    scene.anims.create({ key: 'viking_walk_west', frames: scene.anims.generateFrameNumbers('viking_walk', { start: 12, end: 17 }), frameRate: 8, repeat: -1 });
+    
+    // Row 4: East (18-23)
+    scene.anims.create({ key: 'viking_walk_east', frames: scene.anims.generateFrameNumbers('viking_walk', { start: 18, end: 23 }), frameRate: 8, repeat: -1 });
   }
 }
