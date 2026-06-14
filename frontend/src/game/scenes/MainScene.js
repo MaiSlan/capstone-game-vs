@@ -19,6 +19,10 @@ export default class MainScene extends Phaser.Scene {
   create() {
     AnimationManager.initializeAnimations(this);
 
+    // --- AUDIO INIT ---
+    this.bgm = this.sound.add('bgm_skyrim', { volume: 0.3, loop: true });    
+    this.bgm.play();
+
     // --- 1. THE 8000x8000 FLOOR ---
     const mapWidth = 8000;
     const mapHeight = 8000;
@@ -200,12 +204,25 @@ export default class MainScene extends Phaser.Scene {
 
     window.addEventListener('VS_APPLY_REWARD', this.rewardListener);
 
-    // Clean up the event listener if the scene restarts
+    this.pauseListener = (e) => {
+      const isPaused = e.detail.isPaused;
+      if (this.bgm && this.bgm.isPlaying) {
+        // Drop the volume to a faint 5% when suspended, restore to 30% when active
+        this.bgm.setVolume(isPaused ? 0.05 : 0.3);
+      }
+    };
+    window.addEventListener('VS_PAUSE_STATE', this.pauseListener);
+
+    // Clean up the event listeners if the scene restarts
     this.events.on('destroy', () => {
       window.removeEventListener('VS_APPLY_REWARD', this.rewardListener);
+      window.removeEventListener('VS_PAUSE_STATE', this.pauseListener);
+      
+      // Stop the music if the player dies and leaves the scene
+      if (this.bgm) this.bgm.stop(); 
     });
   }
-
+  
   update(time, delta) {
     if (this.isDead) return;
 
