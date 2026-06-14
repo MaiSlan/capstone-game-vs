@@ -17,7 +17,7 @@ export default class Viking extends Player {
     this.animPrefix = 'viking_walk';
     
     // Scale him up to match the high-res 256px spritesheet
-    this.baseScale = 0.35; // Adjust this number to make him larger or smaller
+    this.baseScale = 0.5; // Adjust this number to make him larger or smaller
     this.setScale(this.baseScale);
   }
 }
