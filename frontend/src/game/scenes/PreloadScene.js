@@ -103,10 +103,10 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image('magic_book', 'assets/weapons/spellbook.png');
 
     // Items
-    this.load.image('speed_boots', 'assets/items/boots.png');
-    this.load.image('vitality_ring', 'assets/items/ring.png');
-    this.load.image('thief_gloves', 'assets/items/gloves.png');
-    this.load.image('sacrificial_dagger', 'assets/items/dagger.png');
+    this.load.image('speed_boots', 'assets/items/equipable/boots.png');
+    this.load.image('vitality_ring', 'assets/items/equipable/ring.png');
+    this.load.image('thief_gloves', 'assets/items/equipable/gloves.png');
+    this.load.image('sacrificial_dagger', 'assets/items/equipable/dagger.png');
     this.load.image('broken_arrow', 'assets/items/equipable/broken_arrow.png');
     this.load.image('voodoo_doll', 'assets/items/equipable/voodoo.png');
     this.load.image('haste_necklace', 'assets/items/equipable/necklace.png');
