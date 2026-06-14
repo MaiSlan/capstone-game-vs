@@ -30,6 +30,17 @@ export default function PlayArea({ selectedCharacter }) {
       
       let pool = [];
 
+      // Helper to map weapon IDs to their PNGs
+      const getWeaponIcon = (id) => {
+        const iconMap = {
+          'cleave_axe': 'assets/weapons/axe_icon.png',
+          'magic_orb': 'assets/weapons/orb_icon.png',
+          'lance': 'assets/weapons/lance_icon.png',
+          'magic_book': 'assets/weapons/book_icon.png'
+        };
+        return iconMap[id] || `assets/weapons/${id}_icon.png`;
+      };
+
       if (lvl % 5 === 0) {
         weapons.forEach(equippedWeapon => {
           if (equippedWeapon.level < 5) {
@@ -48,16 +59,29 @@ export default function PlayArea({ selectedCharacter }) {
         weapons.forEach(equippedWeapon => {
           if (equippedWeapon.level < 5) {
             let dbRef = REWARD_DB.weapons[selectedCharacter].find(w => w.id === equippedWeapon.id);
-            if (!dbRef) dbRef = { id: equippedWeapon.id, type: 'weapon', title: equippedWeapon.id.replace('_', ' '), desc: 'Upgrade your weapon.', icon: '⚔️' };
+            
+            // --- THE FIX: Map the default weapon to its actual PNG instead of an emoji ---
+            if (!dbRef) {
+              dbRef = { 
+                id: equippedWeapon.id, 
+                type: 'weapon', 
+                title: equippedWeapon.id.replace('_', ' ').toUpperCase(), 
+                desc: 'Enhance your primary relic.', 
+                icon: getWeaponIcon(equippedWeapon.id) 
+              };
+            }
+            
             pool.push({ ...dbRef, isUpgrade: true, currentLevel: equippedWeapon.level });
           }
         });
+        
         items.forEach(equippedItem => {
           if (equippedItem.level < 5) {
             const dbRef = REWARD_DB.items.common.find(i => i.id === equippedItem.id);
             if (dbRef) pool.push({ ...dbRef, isUpgrade: true, currentLevel: equippedItem.level });
           }
         });
+        
         if (items.length < 5) {
           REWARD_DB.items.common.forEach(dbItem => {
             const isEquipped = items.find(i => i.id === dbItem.id);
