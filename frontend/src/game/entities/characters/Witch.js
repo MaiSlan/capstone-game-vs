@@ -15,7 +15,7 @@ export default class Witch extends Player {
     
     // --- THE FIX: Scale Override ---
     // The default was 0.125. Try 0.35 or 0.4 to match the Slime's visual weight!
-    this.baseScale = 0.35; 
+    this.baseScale = 0.5; 
     this.setScale(this.baseScale);
   }
 }
