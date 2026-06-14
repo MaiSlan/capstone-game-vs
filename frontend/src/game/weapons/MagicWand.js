@@ -25,7 +25,7 @@ export default class MagicWand {
       }
 
       // Reuse the magic orb sprite, but make it smaller and tint it cyan to distinguish it
-      const bolt = this.scene.playerProjectiles.create(player.x, player.y, 'magic_book'); 
+      const bolt = this.scene.playerProjectiles.create(player.x, player.y, 'magic_orb'); 
       bolt.isBullet = true;
       bolt.damage = currentDamage;
       bolt.setScale(0.6); 

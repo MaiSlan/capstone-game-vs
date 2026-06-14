@@ -7,12 +7,23 @@ export default class ArcaneNova {
     this.stats = WEAPON_DB.arcane_nova;
     this.lastFired = 0;
 
-    // Dynamically draw the explosion ring
+    // --- THE FIX: A vastly improved, multi-layered shockwave graphic ---
     if (!scene.textures.exists('nova_ring')) {
       const graphics = scene.add.graphics();
-      graphics.lineStyle(6, 0x9333ea, 1); // Deep purple line
-      graphics.strokeCircle(100, 100, 96);
-      graphics.generateTexture('nova_ring', 200, 200);
+
+      // 1. Semi-transparent dark purple inner core
+      graphics.fillStyle(0x7e22ce, 0.4);
+      graphics.fillCircle(150, 150, 140);
+      
+      // 2. Thick, dense mid-ring
+      graphics.lineStyle(20, 0x9333ea, 0.7); 
+      graphics.strokeCircle(150, 150, 125);
+
+      // 3. Bright, thin glowing outer edge
+      graphics.lineStyle(6, 0xd8b4fe, 1); 
+      graphics.strokeCircle(150, 150, 140);
+
+      graphics.generateTexture('nova_ring', 300, 300);
       graphics.destroy();
     }
   }
@@ -24,21 +35,20 @@ export default class ArcaneNova {
       const currentCooldown = this.stats.cooldown[lvlIdx] * player.cooldownMult;
       const currentRadius = this.stats.radius[lvlIdx];
 
-      // Drop the explosion directly on the player
       const nova = this.scene.playerProjectiles.create(player.x, player.y, 'nova_ring');
       nova.isBullet = false;
       nova.damage = currentDamage;
       nova.setOrigin(0.5, 0.5);
       
-      // Start tiny, fade out, and expand via a Tween
       nova.setScale(0.1); 
-      nova.setAlpha(0.8);
+      nova.setAlpha(0.9); // Start slightly more opaque
 
       this.scene.tweens.add({
         targets: nova,
-        scale: currentRadius / 100, // Expand to the DB radius limit
-        alpha: 0,                   // Fade into nothingness
-        duration: 400,              // Lasts for almost half a second
+        scale: currentRadius / 150, // Divide by 150 because our new graphic radius is 150
+        alpha: 0,                   
+        duration: 500,              // Slightly longer fade to appreciate the visual
+        ease: 'Cubic.easeOut',      // Make the explosion snap fast initially, then slow down
         onComplete: () => {
           if (nova && nova.active) nova.destroy();
         }

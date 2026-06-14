@@ -16,9 +16,10 @@ export default class MagicMissile {
       const currentCooldown = this.stats.cooldown[lvlIdx] * player.cooldownMult;
       const currentSpeed = this.stats.speed[lvlIdx];
 
-      const bullet = this.scene.playerProjectiles.create(player.x, player.y, 'magic_book'); 
+      const bullet = this.scene.playerProjectiles.create(player.x, player.y, 'magic_orb'); 
       bullet.isBullet = true;
       bullet.damage = currentDamage;
+      bullet.setScale(0.5);
       
       this.scene.physics.velocityFromRotation(player.currentAimAngle, currentSpeed, bullet.body.velocity);
       bullet.setRotation(player.currentAimAngle);
