@@ -3,34 +3,34 @@ import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../components/PublicNavbar';
 import { CHARACTER_DB } from '../data/CharacterDB'; 
 
-// --- THE FIX: Map the JSON coordinates in a perfect clockwise 360 rotation ---
-const WITCH_FRAMES = [
-  { x: 1, y: 517 },   // 0: South (Facing screen)
+// --- THE FIX: Made the frames generic so both Witch and Viking can use them ---
+const ROTATION_FRAMES = [
+  { x: 1, y: 517 },   // 0: South 
   { x: 517, y: 1 },   // 1: South-East
   { x: 1, y: 1 },     // 2: East
   { x: 259, y: 1 },   // 3: North-East
-  { x: 259, y: 259 }, // 4: North (Facing away)
+  { x: 259, y: 259 }, // 4: North 
   { x: 1, y: 259 },   // 5: North-West
   { x: 259, y: 517 }, // 6: West
   { x: 517, y: 259 }  // 7: South-West
 ];
 
 const ROSTER_UI = [
-  { id: 'witch', status: 'unlocked', img: 'assets/characters/witch/standing.png' },
-  { id: 'viking', status: 'unlocked', img: 'assets/characters/viking.png' },
-  { id: 'template', status: 'unlocked', img: 'assets/characters/template/template.png' },
-  { id: 'locked_2', status: 'locked', img: null },
-  { id: 'locked_3', status: 'locked', img: null },
+  { id: 'witch', status: 'unlocked', img: 'assets/characters/witch/standing.png', hasRotation: true },
+  
+  { id: 'viking', status: 'unlocked', img: 'assets/characters/viking/standing.png', hasRotation: true }, 
+  
+  { id: 'template', status: 'unlocked', img: 'assets/characters/template/template.png', hasRotation: false },
+  { id: 'locked_2', status: 'locked', img: null, hasRotation: false },
+  { id: 'locked_3', status: 'locked', img: null, hasRotation: false },
 ];
 
-// --- THE FIX: Interactive 360 Sprite Viewer Component ---
 const InteractiveSprite = ({ spritesheetUrl, frames, isActive }) => {
   const [frameIdx, setFrameIdx] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const lastX = useRef(null);
 
   const handlePointerDown = (e) => {
-    // --- THE FIX: Block interaction if the card isn't selected ---
     if (!isActive) return; 
     
     setIsDragging(true);
@@ -67,7 +67,6 @@ const InteractiveSprite = ({ spritesheetUrl, frames, isActive }) => {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      // --- THE FIX: Only show the grab cursor if active ---
       className={`shrink-0 filter drop-shadow-[0_5px_15px_rgba(0,0,0,1)] ${isActive ? 'cursor-grab active:cursor-grabbing' : ''}`}
       style={{
         backgroundImage: `url('${spritesheetUrl}')`,
@@ -118,11 +117,11 @@ export default function CharacterSelect({ selectedCharacter, setSelectedCharacte
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[1px] bg-red-900/50"></div>
 
               <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
-                {char.id === 'witch' ? (
+                {/* --- THE FIX: Dynamically render the spinner if the character supports it --- */}
+                {char.hasRotation ? (
                   <InteractiveSprite
                     spritesheetUrl={char.img}
-                    frames={WITCH_FRAMES}
-                    // --- THE FIX: Tell the component if it is selected ---
+                    frames={ROTATION_FRAMES}
                     isActive={selectedCharacter === char.id} 
                   />
                 ) : char.img ? (
