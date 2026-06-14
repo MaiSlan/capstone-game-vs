@@ -241,24 +241,20 @@ export default class MainScene extends Phaser.Scene {
   update(time, delta) {
     if (this.isDead) return;
 
-    // Accumulate time strictly based on game delta (so pauses stop the clock)
-    this.runTimeMs += delta;
-    const runTimeSeconds = Math.floor(this.runTimeMs / 1000);
-    
-    // Update the UI Clock
-    this.scene.get('UIScene').updateTimer(runTimeSeconds);
-
+    // 1. Update the Player and Weapons
     this.player.update(time, this.enemies);
     
-    // Pass BOTH the raw time and the seconds to the WaveManager
-    this.waveManager.update(time, runTimeSeconds);
+    // 2. Pass the time and our new clean surviveSeconds to the WaveManager
+    this.waveManager.update(time, this.surviveSeconds);
 
+    // 3. Update all active enemies
     this.enemies.getChildren().forEach((enemy) => {
       if (enemy && enemy.active) enemy.update(this.player);
     });
 
-    // If a gem is within 150 pixels, it flies toward the player
+    // 4. Magnetize EXP Gems (Modified by Thief Gloves multiplier)
     const magnetRadius = 150 * this.player.pickupMult;
+    
     this.expGems.getChildren().forEach((gem) => {
       if (gem && gem.active) {
         const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, gem.x, gem.y);        
@@ -269,5 +265,5 @@ export default class MainScene extends Phaser.Scene {
         }
       }
     });
-  }  
+  }
 }
