@@ -4,7 +4,8 @@ export const REWARD_DB = {
   weapons: {
     witch: [
       { id: 'magic_book', type: 'weapon', title: 'Swirling Book', desc: 'An ancient tome that orbits you.', icon: 'assets/weapons/spellbook.png' },
-      // TODO: Add Magic Wand, Familiar, etc.
+      { id: 'magic_wand', type: 'weapon', title: 'Seeker Wand', desc: 'Rapidly fires auto-tracking bolts.', icon: 'assets/weapons/magic_wand.png' },
+      { id: 'arcane_nova', type: 'weapon', title: 'Void Pulse', desc: 'Unleashes a massive energy burst.', icon: 'assets/weapons/arcane_nova.png' }
     ],
     viking: [
       { id: 'lance', type: 'weapon', title: 'Piercing Lance', desc: 'Fires a heavy forward lance.', icon: 'assets/weapons/spear.png' },

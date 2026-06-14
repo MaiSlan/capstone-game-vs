@@ -4,8 +4,8 @@ export const CHARACTER_DB = {
   witch: { 
     id: 'witch',
     name: 'The Witch', 
-    hp: 80,         // Fragile
-    speed: 220,     // Very Fast
+    hp: 100,         // Fragile
+    speed: 230,     // Very Fast
     weaponName: 'Magic Missiles',
     weaponId: 'magic_orb',
     quote: '"I only came down here because I dropped my favorite hat..."'

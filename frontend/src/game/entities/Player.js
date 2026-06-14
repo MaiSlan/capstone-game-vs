@@ -2,6 +2,8 @@ import AxeCleave from '../weapons/AxeCleave';
 import MagicMissile from '../weapons/MagicMissile';
 import PiercingLance from '../weapons/PiercingLance';
 import SwirlingBook from '../weapons/SwirlingBook';
+import MagicWand from '../weapons/MagicWand';
+import ArcaneNova from '../weapons/ArcaneNova';
 import { ITEM_DB } from '../../data/ItemDB';
 import Phaser from 'phaser';
 
@@ -9,7 +11,9 @@ const WEAPON_REGISTRY = {
   'cleave_axe': AxeCleave,
   'magic_orb': MagicMissile,
   'lance': PiercingLance,
-  'magic_book': SwirlingBook
+  'magic_book': SwirlingBook,
+  'magic_wand': MagicWand,
+  'arcane_nova': ArcaneNova
 };
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
