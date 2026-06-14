@@ -53,10 +53,14 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.cursors = scene.input.keyboard.createCursorKeys();
     this.wasd = scene.input.keyboard.addKeys({
-      up: Phaser.Input.Keyboard.KeyCodes.W, down: Phaser.Input.Keyboard.KeyCodes.S,
-      left: Phaser.Input.Keyboard.KeyCodes.A, right: Phaser.Input.Keyboard.KeyCodes.D
+      up: Phaser.Input.Keyboard.KeyCodes.W, 
+      down: Phaser.Input.Keyboard.KeyCodes.S,
+      left: Phaser.Input.Keyboard.KeyCodes.A, 
+      right: Phaser.Input.Keyboard.KeyCodes.D,
+      // --- THE FIX: Add native AZERTY support ---
+      z: Phaser.Input.Keyboard.KeyCodes.Z,
+      q: Phaser.Input.Keyboard.KeyCodes.Q
     });
-
     // --- TARGETING SYSTEM ---
     this.isManualAim = false;
     this.currentAimAngle = 0;
@@ -263,15 +267,21 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.setVelocity(0);
 
-    if (this.cursors.left.isDown || this.wasd.left.isDown) {
+    // Left movement (A on Qwerty, Q on Azerty, or Left Arrow)
+    if (this.cursors.left.isDown || this.wasd.left.isDown || this.wasd.q.isDown) {
       this.setVelocityX(-this.currentSpeed);
-    } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
+    } 
+    // Right movement
+    else if (this.cursors.right.isDown || this.wasd.right.isDown) {
       this.setVelocityX(this.currentSpeed);
     }
 
-    if (this.cursors.up.isDown || this.wasd.up.isDown) {
+    // Up movement (W on Qwerty, Z on Azerty, or Up Arrow)
+    if (this.cursors.up.isDown || this.wasd.up.isDown || this.wasd.z.isDown) {
       this.setVelocityY(-this.currentSpeed);
-    } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
+    } 
+    // Down movement
+    else if (this.cursors.down.isDown || this.wasd.down.isDown) {
       this.setVelocityY(this.currentSpeed);
     }
 
