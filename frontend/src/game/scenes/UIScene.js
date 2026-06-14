@@ -53,19 +53,25 @@ export default class UIScene extends Phaser.Scene {
     // Weapons (Top row)
     for (let i = 0; i < 5; i++) {
       const box = this.add.graphics(); box.lineStyle(1, 0x3f3f46, 0.8); box.strokeRect(i * 32, -32, 26, 26);
-      const init = this.add.text(i * 32 + 13, -19, '', { font: '12px serif', fill: '#d4d4d8' }).setOrigin(0.5);
-      const lvl = this.add.text(i * 32 + 24, -8, '', { font: '8px serif', fill: '#f59e0b' }).setOrigin(1, 1); // amber
-      this.inventoryContainer.add([box, init, lvl]);
-      this.weaponBoxes.push({ initial: init, level: lvl });
+      
+      // --- THE FIX: Create an invisible image placeholder instead of Text ---
+      const icon = this.add.image(i * 32 + 13, -19, '').setOrigin(0.5).setVisible(false);
+      const lvl = this.add.text(i * 32 + 24, -8, '', { font: '8px serif', fill: '#f59e0b' }).setOrigin(1, 1); 
+      
+      this.inventoryContainer.add([box, icon, lvl]);
+      this.weaponBoxes.push({ icon: icon, level: lvl }); // Track 'icon' instead of 'initial'
     }
 
     // Items (Bottom row)
     for (let i = 0; i < 5; i++) {
       const box = this.add.graphics(); box.lineStyle(1, 0x3f3f46, 0.8); box.strokeRect(i * 32, 0, 26, 26);
-      const init = this.add.text(i * 32 + 13, 13, '', { font: '12px serif', fill: '#991b1b' }).setOrigin(0.5);
+      
+      // --- THE FIX: Create an invisible image placeholder instead of Text ---
+      const icon = this.add.image(i * 32 + 13, 13, '').setOrigin(0.5).setVisible(false);
       const lvl = this.add.text(i * 32 + 24, 24, '', { font: '8px serif', fill: '#f59e0b' }).setOrigin(1, 1);
-      this.inventoryContainer.add([box, init, lvl]);
-      this.itemBoxes.push({ initial: init, level: lvl });
+      
+      this.inventoryContainer.add([box, icon, lvl]);
+      this.itemBoxes.push({ icon: icon, level: lvl });
     }
     
     // Input Handling
@@ -92,23 +98,34 @@ export default class UIScene extends Phaser.Scene {
     if (this.levelText) this.levelText.setText(`LAYER ${level}`);
   }
 
+  // Inside UIScene.js
+
   updateInventory(weaponsArray, itemsArray = []) {
     if (!this.weaponBoxes || !this.itemBoxes) return; 
 
     for (let i = 0; i < 5; i++) {
+      
+      // --- WEAPONS ---
       if (i < weaponsArray.length) {
-        this.weaponBoxes[i].initial.setText(weaponsArray[i].id.charAt(0).toUpperCase());
+        // Set the image texture to match the weapon's ID
+        this.weaponBoxes[i].icon.setTexture(weaponsArray[i].id);
+        this.weaponBoxes[i].icon.setDisplaySize(20, 20); // Shrinks the PNG to fit inside the 26x26 box
+        this.weaponBoxes[i].icon.setVisible(true);
         this.weaponBoxes[i].level.setText(weaponsArray[i].level);
       } else {
-        this.weaponBoxes[i].initial.setText('');
+        this.weaponBoxes[i].icon.setVisible(false);
         this.weaponBoxes[i].level.setText('');
       }
 
+      // --- ITEMS ---
       if (i < itemsArray.length) {
-        this.itemBoxes[i].initial.setText(itemsArray[i].id.charAt(0).toUpperCase());
+        // Set the image texture to match the item's ID
+        this.itemBoxes[i].icon.setTexture(itemsArray[i].id);
+        this.itemBoxes[i].icon.setDisplaySize(20, 20);
+        this.itemBoxes[i].icon.setVisible(true);
         this.itemBoxes[i].level.setText(itemsArray[i].level);
       } else {
-        this.itemBoxes[i].initial.setText('');
+        this.itemBoxes[i].icon.setVisible(false);
         this.itemBoxes[i].level.setText('');
       }
     }
