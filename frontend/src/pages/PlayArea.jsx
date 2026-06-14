@@ -33,10 +33,10 @@ export default function PlayArea({ selectedCharacter }) {
       // Helper to map weapon IDs to their PNGs
       const getWeaponIcon = (id) => {
         const iconMap = {
-          'cleave_axe': 'assets/weapons/axe_icon.png',
-          'magic_orb': 'assets/weapons/orb_icon.png',
-          'lance': 'assets/weapons/lance_icon.png',
-          'magic_book': 'assets/weapons/book_icon.png'
+          'cleave_axe': 'assets/weapons/axe.png',
+          'magic_orb': 'assets/weapons/magic_orb.png',
+          'lance': 'assets/weapons/spear.png',
+          'magic_book': 'assets/weapons/spellbook.png'
         };
         return iconMap[id] || `assets/weapons/${id}_icon.png`;
       };
