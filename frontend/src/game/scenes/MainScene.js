@@ -118,8 +118,10 @@ export default class MainScene extends Phaser.Scene {
         for (let i = 0; i < gemCount; i++) {
           this.expGems.create(enemy.x + (i * 10), enemy.y + (i * 10), 'exp_gem');
         }
-        
-        // --- THE FIX: Call the custom die() method if it exists, otherwise destroy instantly ---
+        if (this.player.lifesteal > 0 && this.player.hp < this.player.maxHp) {
+          this.player.hp = Math.min(this.player.maxHp, this.player.hp + this.player.lifesteal);
+          this.scene.get('UIScene').updateHP(this.player.hp, this.player.maxHp);
+        }
         if (typeof enemy.die === 'function') {
           enemy.die(); 
         } else {
@@ -223,15 +225,15 @@ export default class MainScene extends Phaser.Scene {
       if (enemy && enemy.active) enemy.update(this.player);
     });
 
-    // --- NEW: The EXP Magnet Effect
     // If a gem is within 150 pixels, it flies toward the player
+    const magnetRadius = 150 * this.player.pickupMult;
     this.expGems.getChildren().forEach((gem) => {
       if (gem && gem.active) {
-        const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, gem.x, gem.y);
-        if (distance < 150) {
-          this.physics.moveToObject(gem, this.player, 400); // 400 is the fly speed
+        const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, gem.x, gem.y);        
+        if (distance < magnetRadius) {
+          this.physics.moveToObject(gem, this.player, 400); 
         } else {
-          gem.body.setVelocity(0); // Stop moving if player runs away
+          gem.body.setVelocity(0); 
         }
       }
     });
