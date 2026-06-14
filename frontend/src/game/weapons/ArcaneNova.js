@@ -28,6 +28,8 @@ export default class ArcaneNova {
     }
   }
 
+  // Inside ArcaneNova.js
+
   update(time, player, enemiesGroup, weaponLevel = 1) {
     if (time > this.lastFired) {
       const lvlIdx = weaponLevel - 1;
@@ -41,14 +43,26 @@ export default class ArcaneNova {
       nova.setOrigin(0.5, 0.5);
       
       nova.setScale(0.1); 
-      nova.setAlpha(0.9); // Start slightly more opaque
+      nova.setAlpha(0.9);
+
+      // Force the physics body to start tiny
+      if (nova.body) nova.body.updateFromGameObject();
 
       this.scene.tweens.add({
         targets: nova,
-        scale: currentRadius / 150, // Divide by 150 because our new graphic radius is 150
+        scale: currentRadius / 150, 
         alpha: 0,                   
-        duration: 500,              // Slightly longer fade to appreciate the visual
-        ease: 'Cubic.easeOut',      // Make the explosion snap fast initially, then slow down
+        duration: 600, // Lasts slightly longer so you can see the carnage
+        ease: 'Cubic.easeOut',      
+        
+        // --- THE FIX: Expand the physics hitbox in real-time ---
+        onUpdate: () => {
+          if (nova && nova.active && nova.body) {
+            nova.body.updateFromGameObject();
+          }
+        },
+        // -------------------------------------------------------
+
         onComplete: () => {
           if (nova && nova.active) nova.destroy();
         }

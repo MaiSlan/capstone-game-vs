@@ -44,6 +44,6 @@ export const WEAPON_DB = {
     maxLevel: 5,
     damage: [25, 40, 60, 85, 120], // Huge burst damage
     cooldown: [3000, 2800, 2500, 2100, 1500],
-    radius: [100, 120, 140, 170, 220] // Massive screen-clearing explosion
+    radius: [150, 180, 220, 270, 350]
   }
 };
