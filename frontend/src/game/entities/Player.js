@@ -6,32 +6,32 @@ import Phaser from 'phaser';
 // -----------------------------------------
 import BouncingAxe from '../weapons/viking/BouncingAxe';
 import PiercingLance from '../weapons/viking/PiercingLance';
-import SeismicStomp from '../weapons/viking/SeismicStomp';
-import DragonShout from '../weapons/viking/DragonShout';
+//import SeismicStomp from '../weapons/viking/SeismicStomp';
+//import DragonShout from '../weapons/viking/DragonShout';
 
 // -----------------------------------------
 // Ⅱ. Captain Calypso (Pirate)
 // -----------------------------------------
-import Musket from '../weapons/pirate/Musket';
-import Molotov from '../weapons/pirate/Molotov';
-import TreasureShovel from '../weapons/pirate/TreasureShovel';
-import LoadedDice from '../weapons/pirate/LoadedDice';
+//import Musket from '../weapons/pirate/Musket';
+//import Molotov from '../weapons/pirate/Molotov';
+//import TreasureShovel from '../weapons/pirate/TreasureShovel';
+//import LoadedDice from '../weapons/pirate/LoadedDice';
 
 // -----------------------------------------
 // Ⅲ. Galt (Berserker)
 // -----------------------------------------
-import IronSlab from '../weapons/berserker/IronSlab';
-import FanOfKnives from '../weapons/berserker/FanOfKnives';
-import TrailGrenades from '../weapons/berserker/TrailGrenades';
-import ArmCannon from '../weapons/berserker/ArmCannon';
+//import IronSlab from '../weapons/berserker/IronSlab';
+//import FanOfKnives from '../weapons/berserker/FanOfKnives';
+//import TrailGrenades from '../weapons/berserker/TrailGrenades';
+//import ArmCannon from '../weapons/berserker/ArmCannon';
 
 // -----------------------------------------
 // Ⅳ. Balian (Paladin)
 // -----------------------------------------
-import ShieldBash from '../weapons/paladin/ShieldBash';
-import HolyBroadsword from '../weapons/paladin/HolyBroadsword';
-import ConsecratedGround from '../weapons/paladin/ConsecratedGround';
-import SpinningCross from '../weapons/paladin/SpinningCross';
+//import ShieldBash from '../weapons/paladin/ShieldBash';
+//import HolyBroadsword from '../weapons/paladin/HolyBroadsword';
+//import ConsecratedGround from '../weapons/paladin/ConsecratedGround';
+//import SpinningCross from '../weapons/paladin/SpinningCross';
 
 // -----------------------------------------
 // Ⅴ. Yenna (Witch)
