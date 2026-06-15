@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
-import PublicNavbar from '../components/PublicNavbar';
-import { CHARACTER_DB } from '../data/CharacterDB'; 
+import PublicNavbar from '../data/components/PublicNavbar';
+import { CHARACTER_DB } from '../data/CharacterDB';
 
 // --- THE FIX: Made the frames generic so both Witch and Viking can use them ---
 const ROTATION_FRAMES = [
@@ -20,7 +20,7 @@ const ROSTER_UI = [
   
   { id: 'viking', status: 'unlocked', img: 'assets/characters/viking/standing.png', hasRotation: true }, 
   
-  { id: 'template', status: 'unlocked', img: 'assets/characters/template/template.png', hasRotation: false },
+  { id: 'locked_1', status: 'locked', img: null, hasRotation: false },
   { id: 'locked_2', status: 'locked', img: null, hasRotation: false },
   { id: 'locked_3', status: 'locked', img: null, hasRotation: false },
 ];
@@ -82,6 +82,15 @@ const InteractiveSprite = ({ spritesheetUrl, frames, isActive }) => {
 
 export default function CharacterSelect({ selectedCharacter, setSelectedCharacter }) {
   const navigate = useNavigate();
+  const [quoteIndex, setQuoteIndex] = useState(0);
+
+  useEffect(() => {
+    // Whenever a new character is selected, pick a random number based on their quote array length
+    if (selectedCharacter && CHARACTER_DB[selectedCharacter]) {
+      const maxQuotes = CHARACTER_DB[selectedCharacter].quotes.length;
+      setQuoteIndex(Math.floor(Math.random() * maxQuotes));
+    }
+  }, [selectedCharacter]);
 
   const activeCharUI = ROSTER_UI.find(c => c.id === selectedCharacter);
   const activeCharData = selectedCharacter ? CHARACTER_DB[selectedCharacter] : null;
@@ -142,7 +151,7 @@ export default function CharacterSelect({ selectedCharacter, setSelectedCharacte
           {activeCharUI && activeCharUI.status === 'unlocked' && activeCharData ? (
             <div className="w-full flex flex-col items-center animate-fade-in">
               <p className="text-[11px] text-red-900/80 tracking-[0.2em] uppercase font-bold mb-6 text-center italic">
-                {activeCharData.quote}
+                {activeCharData.quotes[quoteIndex]}
               </p>
               
               <div className="flex w-full justify-center gap-12 border-t border-b border-red-900/20 py-4">

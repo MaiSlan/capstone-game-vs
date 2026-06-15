@@ -118,29 +118,34 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.collider(this.enemies, this.walls);
 
-    // --- UPDATED WEAPON HIT LOGIC ---
+    // --- PURE POLYMORPHIC WEAPON HIT LOGIC ---
     this.physics.add.overlap(this.playerProjectiles, this.enemies, (projectile, enemy) => {
-      // PREVENT GHOST HITS: If the enemy is already playing its death animation, ignore it
-      if (enemy.isDying) return; 
+      // 1. PREVENT GHOST HITS
+      if (enemy.isDying || !enemy.active || !projectile.active) return;
 
+      // 2. APPLY DAMAGE
       enemy.hp -= (projectile.damage || 10);
-      
-      if (projectile.pierce !== undefined) {
-        projectile.pierce--;
-        if (projectile.pierce <= 0) projectile.destroy();
-      } else if (projectile.isBullet) {
-        projectile.destroy(); 
+
+      // 3. THE SMART PROJECTILE BRAIN
+      // We rely ENTIRELY on the individual weapon classes to dictate their behavior.
+      // If a projectile needs to die on impact, pierce, or bounce, it MUST have an onHit.
+      // If it doesn't have an onHit (like Chaos Pulse or Swirling Books), it safely passes through.
+      if (projectile.onHit) {
+        projectile.onHit(enemy);
       }
-      
+
+      // 4. DEATH & HURT ANIMATIONS
       if (enemy.hp <= 0) {        
         const gemCount = enemy.texture.key === 'tank_boss' ? 5 : 1;
         for (let i = 0; i < gemCount; i++) {
           this.expGems.create(enemy.x + (i * 10), enemy.y + (i * 10), 'exp_gem');
         }
+        
         if (this.player.lifesteal > 0 && this.player.hp < this.player.maxHp) {
           this.player.hp = Math.min(this.player.maxHp, this.player.hp + this.player.lifesteal);
           this.scene.get('UIScene').updateHP(this.player.hp, this.player.maxHp);
         }
+        
         if (typeof enemy.die === 'function') {
           enemy.die(); 
         } else {
@@ -148,22 +153,16 @@ export default class MainScene extends Phaser.Scene {
           enemy.destroy();  
         }
       } else {
-        
-        // --- THE FIX: Trigger the animation instead of flashing white ---
         if (typeof enemy.hurt === 'function') {
-          // Temporarily flash white while playing the hurt animation for extra impact
           enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
           this.time.delayedCall(100, () => { 
             if (enemy && enemy.active && !enemy.deadTriggered) enemy.clearTint() 
           });
-          
-          enemy.hurt(); // Triggers the hit-stun
-          
+          enemy.hurt(); 
         } else {
           enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
           this.time.delayedCall(100, () => { if (enemy && enemy.active && !enemy.isDying) enemy.clearTint() });
         }
-        
       }
     });
 

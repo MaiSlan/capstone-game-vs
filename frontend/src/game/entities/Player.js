@@ -1,19 +1,76 @@
-import AxeCleave from '../weapons/AxeCleave';
-import MagicMissile from '../weapons/MagicMissile';
-import PiercingLance from '../weapons/PiercingLance';
-import SwirlingBook from '../weapons/SwirlingBook';
-import MagicWand from '../weapons/MagicWand';
-import ArcaneNova from '../weapons/ArcaneNova';
 import { ITEM_DB } from '../../data/ItemDB';
 import Phaser from 'phaser';
 
+// -----------------------------------------
+// Ⅰ. Hrogar (Viking)
+// -----------------------------------------
+import BouncingAxe from '../weapons/viking/BouncingAxe';
+import PiercingLance from '../weapons/viking/PiercingLance';
+import SeismicStomp from '../weapons/viking/SeismicStomp';
+import DragonShout from '../weapons/viking/DragonShout';
+
+// -----------------------------------------
+// Ⅱ. Captain Calypso (Pirate)
+// -----------------------------------------
+import Musket from '../weapons/Musket';
+import Molotov from '../weapons/Molotov';
+import TreasureShovel from '../weapons/TreasureShovel';
+import LoadedDice from '../weapons/LoadedDice';
+
+// -----------------------------------------
+// Ⅲ. Galt (Berserker)
+// -----------------------------------------
+import IronSlab from '../weapons/IronSlab';
+import FanOfKnives from '../weapons/FanOfKnives';
+import TrailGrenades from '../weapons/TrailGrenades';
+import ArmCannon from '../weapons/ArmCannon';
+
+// -----------------------------------------
+// Ⅳ. Balian (Paladin)
+// -----------------------------------------
+import ShieldBash from '../weapons/ShieldBash';
+import HolyBroadsword from '../weapons/HolyBroadsword';
+import ConsecratedGround from '../weapons/ConsecratedGround';
+import SpinningCross from '../weapons/SpinningCross';
+
+// -----------------------------------------
+// Ⅴ. Yenna (Witch)
+// -----------------------------------------
+import MagicOrb from '../weapons/witch/MagicOrb';
+import MagicBook from '../weapons/witch/MagicBook';
+import ArcaneNova from '../weapons/witch/ArcaneNova';
+import MagicWand from '../weapons/witch/MagicWand';
+
 const WEAPON_REGISTRY = {
-  'cleave_axe': AxeCleave,
-  'magic_orb': MagicMissile,
-  'lance': PiercingLance,
-  'magic_book': SwirlingBook,
-  'magic_wand': MagicWand,
-  'arcane_nova': ArcaneNova
+  // Viking
+  'bouncing_axe': BouncingAxe,
+  'piercing_lance': PiercingLance,
+  'seismic_stomp': SeismicStomp,
+  'dragon_shout': DragonShout,
+
+  // Pirate
+  'musket': Musket,
+  'molotov': Molotov,
+  'treasure_shovel': TreasureShovel,
+  'loaded_dice': LoadedDice,
+
+  // Berserker
+  'iron_slab': IronSlab,
+  'fan_of_knives': FanOfKnives,
+  'trail_grenades': TrailGrenades,
+  'arm_cannon': ArmCannon,
+
+  // Paladin
+  'shield_bash': ShieldBash,
+  'holy_broadsword': HolyBroadsword,
+  'consecrated_ground': ConsecratedGround,
+  'spinning_cross': SpinningCross,
+
+  // Witch
+  'magic_orb': MagicOrb,
+  'magic_book': MagicBook,
+  'arcane_nova': ArcaneNova,
+  'magic_wand': MagicWand
 };
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
