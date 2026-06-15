@@ -49,22 +49,22 @@ const WEAPON_REGISTRY = {
   'dragon_shout': DragonShout,
 
   // Pirate
-  'musket': Musket,
-  'molotov': Molotov,
-  'treasure_shovel': TreasureShovel,
-  'loaded_dice': LoadedDice,
+  //'musket': Musket,
+  //'molotov': Molotov,
+  //'treasure_shovel': TreasureShovel,
+  //'loaded_dice': LoadedDice,
 
   // Berserker
-  'iron_slab': IronSlab,
-  'fan_of_knives': FanOfKnives,
-  'trail_grenades': TrailGrenades,
-  'arm_cannon': ArmCannon,
+  //'iron_slab': IronSlab,
+  //'fan_of_knives': FanOfKnives,
+  //'trail_grenades': TrailGrenades,
+  //'arm_cannon': ArmCannon,
 
   // Paladin
-  'shield_bash': ShieldBash,
-  'holy_broadsword': HolyBroadsword,
-  'consecrated_ground': ConsecratedGround,
-  'spinning_cross': SpinningCross,
+  //'shield_bash': ShieldBash,
+  //'holy_broadsword': HolyBroadsword,
+  //'consecrated_ground': ConsecratedGround,
+  //'spinning_cross': SpinningCross,
 
   // Witch
   'magic_orb': MagicOrb,
