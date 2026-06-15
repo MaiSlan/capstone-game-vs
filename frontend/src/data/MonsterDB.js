@@ -17,7 +17,7 @@ export const MONSTER_DB = {
     speed: 110,
     damage: 15,
     xp: 8,
-    scale: 1.8
+    scale: 2.5
   },
   tank_boss: { 
     id: 'tank_boss', 
