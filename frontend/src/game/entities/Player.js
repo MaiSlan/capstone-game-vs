@@ -12,26 +12,26 @@ import DragonShout from '../weapons/viking/DragonShout';
 // -----------------------------------------
 // Ⅱ. Captain Calypso (Pirate)
 // -----------------------------------------
-import Musket from '../weapons/Musket';
-import Molotov from '../weapons/Molotov';
-import TreasureShovel from '../weapons/TreasureShovel';
-import LoadedDice from '../weapons/LoadedDice';
+import Musket from '../weapons/pirate/Musket';
+import Molotov from '../weapons/pirate/Molotov';
+import TreasureShovel from '../weapons/pirate/TreasureShovel';
+import LoadedDice from '../weapons/pirate/LoadedDice';
 
 // -----------------------------------------
 // Ⅲ. Galt (Berserker)
 // -----------------------------------------
-import IronSlab from '../weapons/IronSlab';
-import FanOfKnives from '../weapons/FanOfKnives';
-import TrailGrenades from '../weapons/TrailGrenades';
-import ArmCannon from '../weapons/ArmCannon';
+import IronSlab from '../weapons/berserker/IronSlab';
+import FanOfKnives from '../weapons/berserker/FanOfKnives';
+import TrailGrenades from '../weapons/berserker/TrailGrenades';
+import ArmCannon from '../weapons/berserker/ArmCannon';
 
 // -----------------------------------------
 // Ⅳ. Balian (Paladin)
 // -----------------------------------------
-import ShieldBash from '../weapons/ShieldBash';
-import HolyBroadsword from '../weapons/HolyBroadsword';
-import ConsecratedGround from '../weapons/ConsecratedGround';
-import SpinningCross from '../weapons/SpinningCross';
+import ShieldBash from '../weapons/paladin/ShieldBash';
+import HolyBroadsword from '../weapons/paladin/HolyBroadsword';
+import ConsecratedGround from '../weapons/paladin/ConsecratedGround';
+import SpinningCross from '../weapons/paladin/SpinningCross';
 
 // -----------------------------------------
 // Ⅴ. Yenna (Witch)
