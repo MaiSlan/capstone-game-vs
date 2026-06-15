@@ -6,8 +6,8 @@ import Phaser from 'phaser';
 // -----------------------------------------
 import BouncingAxe from '../weapons/viking/BouncingAxe';
 import PiercingLance from '../weapons/viking/PiercingLance';
-//import SeismicStomp from '../weapons/viking/SeismicStomp';
-//import DragonShout from '../weapons/viking/DragonShout';
+import SeismicStomp from '../weapons/viking/SeismicStomp';
+import DragonShout from '../weapons/viking/DragonShout';
 
 // -----------------------------------------
 // Ⅱ. Captain Calypso (Pirate)
