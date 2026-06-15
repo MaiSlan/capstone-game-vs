@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
-import PublicNavbar from '../data/components/PublicNavbar';
+import PublicNavbar from '../components/PublicNavbar';
 import { CHARACTER_DB } from '../data/CharacterDB';
 
 // --- THE FIX: Made the frames generic so both Witch and Viking can use them ---
