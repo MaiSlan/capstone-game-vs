@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 import Witch from '../entities/characters/Witch';
 import Viking from '../entities/characters/Viking';
-import Template from '../entities/characters/Template';
 import WaveManager from '../managers/WaveManager';
 import AnimationManager from '../managers/AnimationManager';
 
