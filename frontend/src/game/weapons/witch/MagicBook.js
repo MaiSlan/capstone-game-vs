@@ -1,97 +1,56 @@
 import Phaser from 'phaser';
 import { WEAPON_DB } from '../../../data/WeaponDB';
 
-export default class SwirlingBook {
+export default class MagicBook {
   constructor(scene) {
     this.scene = scene;
-    this.stats = WEAPON_DB.magic_book;
-    this.orbitAngle = 0;
+    this.stats = WEAPON_DB.magic_book; 
     
-    // --- NEW: Array to hold multiple books ---
-    this.books = []; 
-    
-    // --- NEW: State Machine Variables ---
-    this.isActive = true;
-    this.isInitialized = false;
-    this.nextStateTime = 0;
-    
-    this.activeDuration = 4000;  // Books spin for 4 seconds
-    this.baseCooldown = 3000;    // Books disappear for 3 seconds
+    // We maintain a persistent array of the physical book sprites
+    this.orbitingBooks = []; 
+    this.orbitAngle = 0; // The master angle that rotates them all
   }
 
   update(time, player, enemiesGroup, weaponLevel = 1) {
     const lvlIdx = weaponLevel - 1;
+    // Assume your stats DB dictates how many books spawn per level (e.g., 1 at lvl 1, 4 at lvl 5)
+    const expectedBookCount = this.stats.count ? this.stats.count[lvlIdx] : weaponLevel; 
     
-    // Pull multipliers
-    const currentDamage = this.stats.damage[lvlIdx] * player.damageMult;
-    const currentRotationSpeed = this.stats.rotationSpeed[lvlIdx];
-    const currentRadius = this.stats.radius[lvlIdx];
-    
-    // Apply Player's Cooldown Multiplier (Haste) to the downtime!
-    const actualCooldown = this.baseCooldown * player.cooldownMult;
+    const orbitRadius = 80; // Distance from the player
+    const orbitSpeed = 0.04; // How fast the ring spins
 
-    // 1. Initialize the timer on the very first frame it is equipped
-    if (!this.isInitialized) {
-      this.nextStateTime = time + this.activeDuration;
-      this.isInitialized = true;
-    }
-
-    // 2. Process State Changes (Active vs Cooldown)
-    if (this.isActive && time > this.nextStateTime) {
-      // Time's up! Destroy books and go on cooldown
-      this.isActive = false;
-      this.nextStateTime = time + actualCooldown;
-      this.clearBooks();
-    } 
-    else if (!this.isActive && time > this.nextStateTime) {
-      // Cooldown finished! Reactivate
-      this.isActive = true;
-      this.nextStateTime = time + this.activeDuration;
-    }
-
-    // 3. Process Book Logic if Active
-    if (this.isActive) {
-      // Determine how many books to spawn based on current level
-      let targetBookCount = 1;
-      if (weaponLevel >= 3 && weaponLevel < 5) targetBookCount = 2; // Level 3 & 4
-      if (weaponLevel >= 5) targetBookCount = 4;                    // Level 5 (Max)
-
-      // Spawn new books if we don't have enough
-      while (this.books.length < targetBookCount) {
-        const newBook = this.scene.playerProjectiles.create(player.x, player.y, 'magic_book');
-        newBook.isBullet = false;
-        this.books.push(newBook);
-      }
+    // --- 1. SPAWN MISSING BOOKS ---
+    // If the weapon leveled up, we add new books to match the expected count
+    while (this.orbitingBooks.length < expectedBookCount) {
+      const book = this.scene.playerProjectiles.create(player.x, player.y, 'magic_book');
+      book.setScale(0.6);
       
-      // Advance the master rotation angle
-      this.orbitAngle += currentRotationSpeed;
-
-      // Position every active book symmetrically around the player
-      this.books.forEach((book, index) => {
-        if (!book || !book.active) return;
-        
-        // Calculate the perfectly spaced angle for this specific book
-        const angleOffset = (Math.PI * 2 / targetBookCount) * index;
-        const finalAngle = this.orbitAngle + angleOffset;
-
-        book.damage = currentDamage;
-        
-        book.setPosition(
-          player.x + Math.cos(finalAngle) * currentRadius,
-          player.y + Math.sin(finalAngle) * currentRadius
-        );
-        
-        // Optional: Rotate the book sprite so it looks like it's "flying" forward
-        book.setRotation(finalAngle + Math.PI / 2);
-      });
+      // Because we omit an onHit() method entirely, MainScene will just let it pass through 
+      // enemies without destroying it. We give it fractional damage so it acts as a DoT meat-grinder.
+      book.damage = (this.stats.damage[lvlIdx] * player.damageMult) * 0.05; 
+      
+      this.orbitingBooks.push(book);
     }
-  }
 
-  // Helper method to completely wipe out the books during cooldown
-  clearBooks() {
-    this.books.forEach(book => {
-      if (book && book.active) book.destroy();
+    // --- 2. UPDATE ORBIT POSITIONS ---
+    this.orbitAngle += orbitSpeed;
+
+    // We space the books evenly in a circle using PI * 2 (a full circle in radians)
+    const angleStep = (Math.PI * 2) / this.orbitingBooks.length;
+
+    this.orbitingBooks.forEach((book, index) => {
+      // Calculate this specific book's angle based on its index
+      const currentAngle = this.orbitAngle + (angleStep * index);
+
+      // Lock the book's position relative to the player
+      book.x = player.x + Math.cos(currentAngle) * orbitRadius;
+      book.y = player.y + Math.sin(currentAngle) * orbitRadius;
+      
+      // Make the sprite visually spin as it orbits
+      book.rotation += 0.1;
+      
+      // Update damage continuously in case the player picks up a Damage buff
+      book.damage = (this.stats.damage[lvlIdx] * player.damageMult) * 0.05; 
     });
-    this.books = [];
   }
 }
