@@ -7,14 +7,18 @@ import { REWARD_DB } from '../data/RewardDB';
 export default function PlayArea({ selectedCharacter }) {
   const fullScreenRef = useRef(null);
   const navigate = useNavigate();
+  
   const [isGameOver, setIsGameOver] = useState(false);
   const [finalLevel, setFinalLevel] = useState(1);
   const [gameInstanceKey, setGameInstanceKey] = useState(0);
+  
   const [isLevelUp, setIsLevelUp] = useState(false);
   const [currentChoices, setCurrentChoices] = useState([]);
   
   const [isPaused, setIsPaused] = useState(false);
   const [pauseStats, setPauseStats] = useState(null);
+  const [pauseTab, setPauseTab] = useState('stats'); // --- NEW: Toggle for the Pause Menu ---
+  
   const [gameTime, setGameTime] = useState(0); 
 
   // --- REACT HUD STATE ---
@@ -26,7 +30,6 @@ export default function PlayArea({ selectedCharacter }) {
   const [inventoryWeapons, setInventoryWeapons] = useState([]);
   const [inventoryItems, setInventoryItems] = useState([]);
 
-  // Universal helper for resolving icon paths
   const getAssetIcon = (id) => {
     if (!id) return '';
     const iconMap = {
@@ -106,6 +109,7 @@ export default function PlayArea({ selectedCharacter }) {
     const handlePauseState = (e) => {
       setIsPaused(e.detail.isPaused);
       setPauseStats(e.detail.stats || null);
+      if (e.detail.isPaused) setPauseTab('stats'); // Reset tab on pause
     };    
 
     window.addEventListener('VS_GAME_OVER', handleGameOver);
@@ -156,7 +160,7 @@ export default function PlayArea({ selectedCharacter }) {
   const hpPercent = Math.max(0, Math.min(100, (playerHp / playerMaxHp) * 100));
   const xpPercent = Math.max(0, Math.min(100, (playerXp / playerMaxXp) * 100));
 
-  // Reusable inventory row builder
+  // --- THE FIX: Simplified HUD Inventory Row ---
   const renderInventoryRow = (items, max = 5) => (
     <div className="flex gap-2">
       {Array.from({ length: max }).map((_, i) => {
@@ -164,12 +168,7 @@ export default function PlayArea({ selectedCharacter }) {
         return (
           <div key={i} className="w-10 h-10 bg-black/60 border border-zinc-800 rounded-sm relative backdrop-blur-md flex items-center justify-center shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
             {item ? (
-              <>
-                <img src={getAssetIcon(item.id)} alt="icon" className="w-6 h-6 object-contain filter drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]" />
-                <span className="absolute -bottom-1 -right-1 text-[10px] font-bold text-amber-500 drop-shadow-[0_0_2px_rgba(0,0,0,1)]">
-                  Lv{item.level}
-                </span>
-              </>
+              <img src={getAssetIcon(item.id)} alt="icon" className="w-6 h-6 object-contain filter drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]" />
             ) : null}
           </div>
         );
@@ -186,16 +185,24 @@ export default function PlayArea({ selectedCharacter }) {
       ========================================= */}
       <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden">
         
-        {/* TOP LEFT: Health Bar */}
-        <div className="absolute top-[88px] left-8 w-56 flex flex-col pointer-events-auto">
+        {/* --- THE FIX: Unified Top Left Status Block (Level + HP) --- */}
+        <div className="absolute top-[88px] left-8 w-64 flex flex-col pointer-events-auto">
           <div className="flex justify-between items-end w-full px-1 mb-1">
             <span className="text-[10px] text-zinc-500 uppercase tracking-[0.3em] font-bold">Vitality</span>
-            <span className="text-[10px] text-red-600 uppercase tracking-[0.2em] font-bold drop-shadow-[0_0_2px_rgba(185,28,28,0.8)]">
-              {Math.floor(playerHp)} / {playerMaxHp}
+            <span className="text-[10px] text-zinc-400 uppercase tracking-[0.3em] font-bold">
+              Layer <span className="text-red-600 text-sm">{currentLevel}</span>
             </span>
           </div>
-          <div className="w-full h-2 bg-black/80 border border-zinc-800 rounded overflow-hidden shadow-[0_0_10px_rgba(0,0,0,0.8)]">
+          
+          <div className="w-full h-5 bg-black/80 border border-zinc-800 rounded overflow-hidden shadow-[0_0_10px_rgba(0,0,0,0.8)] relative">
+            {/* The Red Fill */}
             <div className="h-full bg-red-800 transition-all duration-200 ease-out" style={{ width: `${hpPercent}%` }}></div>
+            {/* The Centered White Text */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-[10px] text-white font-bold tracking-[0.2em] drop-shadow-[0_0_2px_rgba(0,0,0,1)]">
+                {Math.floor(playerHp)} / {playerMaxHp}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -208,14 +215,6 @@ export default function PlayArea({ selectedCharacter }) {
           </div>
           <span className="font-royal text-xl font-bold tracking-[0.2em] text-zinc-300 drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
             {formatTime(gameTime)}
-          </span>
-        </div>
-
-        {/* TOP RIGHT: Level Indicator */}
-        <div className="absolute top-[88px] right-8 flex flex-col items-end pointer-events-auto">
-          <span className="text-[10px] text-zinc-500 uppercase tracking-[0.4em] font-bold mb-1">Layer</span>
-          <span className="font-royal text-2xl text-red-800 drop-shadow-[0_0_8px_rgba(153,27,27,0.6)] leading-none">
-            {currentLevel}
           </span>
         </div>
 
@@ -243,31 +242,105 @@ export default function PlayArea({ selectedCharacter }) {
          <PhaserEngine key={gameInstanceKey} selectedCharacter={selectedCharacter} />
       </div>
 
-      {/* --- OVERLAYS --- */}
+      {/* =========================================
+          SUSPENDED / PAUSE MENU
+      ========================================= */}
       {isPaused && !isGameOver && !isLevelUp && (
         <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center z-50 backdrop-blur-md">
-          {/* PAUSE CONTENT (unchanged) */}
-          <div className="flex flex-col items-center animate-fade-in w-full max-w-2xl">
+          <div className="flex flex-col items-center animate-fade-in w-full max-w-3xl">
             <h2 className="font-royal text-5xl md:text-6xl font-black uppercase tracking-[0.4em] mb-4 text-zinc-300 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
               Suspended
             </h2>
-            <div className="flex items-center gap-4 mb-8">
-              <span className="w-8 h-px bg-red-900/50"></span>
-              <p className="text-[10px] uppercase tracking-[0.4em] text-red-900/80 font-bold">The Flow of Time Halts</p>
-              <span className="w-8 h-px bg-red-900/50"></span>
+            
+            {/* --- NEW: Submenu Tabs --- */}
+            <div className="flex gap-12 mb-8 border-b border-red-900/30 pb-3">
+              <button 
+                onClick={() => setPauseTab('stats')} 
+                className={`text-xs uppercase tracking-[0.4em] font-bold transition-colors ${pauseTab === 'stats' ? 'text-red-500 drop-shadow-[0_0_5px_rgba(220,38,38,0.8)]' : 'text-zinc-600 hover:text-zinc-400'}`}
+              >
+                Attributes
+              </button>
+              <button 
+                onClick={() => setPauseTab('inventory')} 
+                className={`text-xs uppercase tracking-[0.4em] font-bold transition-colors ${pauseTab === 'inventory' ? 'text-red-500 drop-shadow-[0_0_5px_rgba(220,38,38,0.8)]' : 'text-zinc-600 hover:text-zinc-400'}`}
+              >
+                Inventory
+              </button>
             </div>
 
-            {pauseStats && (
+            {/* TAB: Stats */}
+            {pauseTab === 'stats' && pauseStats && (
               <div className="w-full max-w-lg mb-10 p-8 border border-red-900/30 bg-zinc-950/50 shadow-[inset_0_0_20px_rgba(139,0,0,0.1)] rounded-sm">
-                <div className="grid grid-cols-2 gap-x-12 gap-y-4">
+                <div className="grid grid-cols-2 gap-x-12 gap-y-6">
                   <div className="flex justify-between items-center border-b border-zinc-800/50 pb-2">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Vitality</span>
-                    <span className="font-royal text-lg text-zinc-300">{pauseStats.hp} / {pauseStats.maxHp}</span>
+                    <span className="font-royal text-xl text-zinc-200">{pauseStats.hp} / {pauseStats.maxHp}</span>
                   </div>
                   <div className="flex justify-between items-center border-b border-zinc-800/50 pb-2">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Agility</span>
-                    <span className="font-royal text-lg text-zinc-300">{pauseStats.speed}</span>
+                    <span className="font-royal text-xl text-zinc-200">{pauseStats.speed}</span>
                   </div>
+                  <div className="flex justify-between items-center border-b border-zinc-800/50 pb-2">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Power</span>
+                    <span className="font-royal text-xl text-zinc-200">{pauseStats.damageMult}%</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-zinc-800/50 pb-2">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Attack Speed</span>
+                    <span className="font-royal text-xl text-zinc-200">{pauseStats.haste}%</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-zinc-800/50 pb-2">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Armor</span>
+                    <span className="font-royal text-xl text-zinc-200">{pauseStats.armor}</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-zinc-800/50 pb-2">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Greed</span>
+                    <span className="font-royal text-xl text-zinc-200">{pauseStats.greed}%</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: Inventory */}
+            {pauseTab === 'inventory' && pauseStats && (
+              <div className="w-full mb-10 p-6 border border-red-900/30 bg-zinc-950/50 shadow-[inset_0_0_20px_rgba(139,0,0,0.1)] rounded-sm max-h-[350px] overflow-y-auto custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Weapons */}
+                  {pauseStats.weapons.map(w => {
+                    const dbInfo = REWARD_DB.weapons[selectedCharacter]?.find(x => x.id === w.id) || { title: w.id.replace('_', ' ').toUpperCase(), desc: 'A relic of the abyss.' };
+                    return (
+                      <div key={`w-${w.id}`} className="flex items-start gap-4 p-3 border border-zinc-800/80 bg-black/40 rounded-sm">
+                        <div className="w-12 h-12 shrink-0 bg-black/60 border border-zinc-700 flex items-center justify-center rounded">
+                          <img src={getAssetIcon(w.id)} className="w-8 h-8 object-contain" alt="" />
+                        </div>
+                        <div className="flex flex-col">
+                          <div className="flex justify-between items-center w-full">
+                            <span className="text-sm font-royal text-zinc-200 uppercase tracking-widest">{dbInfo.title}</span>
+                            <span className="text-[10px] font-bold text-amber-500 tracking-widest">LVL {w.level}</span>
+                          </div>
+                          <span className="text-[10px] text-zinc-500 mt-1 leading-relaxed uppercase">{dbInfo.desc}</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                  
+                  {/* Items */}
+                  {pauseStats.items.map(i => {
+                    const dbInfo = REWARD_DB.items.common.find(x => x.id === i.id) || { title: i.id.toUpperCase(), desc: 'Passive augmentation.' };
+                    return (
+                      <div key={`i-${i.id}`} className="flex items-start gap-4 p-3 border border-zinc-800/80 bg-black/40 rounded-sm">
+                        <div className="w-12 h-12 shrink-0 bg-black/60 border border-zinc-700 flex items-center justify-center rounded">
+                          <img src={getAssetIcon(i.id)} className="w-8 h-8 object-contain" alt="" />
+                        </div>
+                        <div className="flex flex-col">
+                          <div className="flex justify-between items-center w-full">
+                            <span className="text-sm font-royal text-zinc-200 uppercase tracking-widest">{dbInfo.title}</span>
+                            <span className="text-[10px] font-bold text-amber-500 tracking-widest">LVL {i.level}</span>
+                          </div>
+                          <span className="text-[10px] text-zinc-500 mt-1 leading-relaxed uppercase">{dbInfo.desc}</span>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -280,9 +353,11 @@ export default function PlayArea({ selectedCharacter }) {
         </div>
       )}
 
+      {/* =========================================
+          GAME OVER MENU
+      ========================================= */}
       {isGameOver && (
         <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center z-50 backdrop-blur-md">
-          {/* GAME OVER CONTENT (unchanged) */}
            <div className="flex flex-col items-center">
             <h2 className="font-royal text-5xl md:text-6xl font-black uppercase tracking-[0.4em] mb-4 text-red-800 drop-shadow-[0_0_20px_rgba(139,0,0,0.5)]">
               Vessel Shattered
@@ -301,9 +376,11 @@ export default function PlayArea({ selectedCharacter }) {
         </div>
       )}
 
+      {/* =========================================
+          LEVEL UP MENU
+      ========================================= */}
       {isLevelUp && (
         <div className="absolute inset-0 bg-black/85 flex items-center justify-center z-50 backdrop-blur-md">
-          {/* LEVEL UP CONTENT (unchanged) */}
            <div className="flex flex-col items-center">
             <h2 className="font-royal text-3xl font-black uppercase tracking-[0.4em] text-zinc-200 mb-2">Evolution</h2>
             <div className="flex gap-8 mt-8">
@@ -313,6 +390,18 @@ export default function PlayArea({ selectedCharacter }) {
                     {reward.icon.includes('.png') ? <img src={reward.icon} alt={reward.id} className="w-16 h-16 object-contain" /> : reward.icon}
                   </div>
                   <h3 className="font-royal text-sm font-bold uppercase tracking-widest text-zinc-300 mb-2">{reward.title}</h3>
+                  
+                  {/* --- THE FIX: Enhanced Level Readout --- */}
+                  {reward.isUpgrade ? (
+                    <div className="text-[10px] text-amber-600 font-bold tracking-[0.2em] uppercase mb-2 animate-pulse">
+                      Level {reward.currentLevel} ➔ {reward.currentLevel + 1}
+                    </div>
+                  ) : (
+                    <div className="text-[10px] text-zinc-400 font-bold tracking-[0.2em] uppercase mb-2">
+                      Level 1
+                    </div>
+                  )}
+
                   <div className="w-4 h-px bg-red-900/40 mb-3"></div>
                   <p className="text-[10px] text-zinc-500 tracking-widest leading-relaxed uppercase">{reward.desc}</p>
                 </div>

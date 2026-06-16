@@ -2,46 +2,39 @@ import Phaser from 'phaser';
 
 export default class UIScene extends Phaser.Scene {
   constructor() {
-    super('UIScene');
+    super({ key: 'UIScene', active: true }); // Make sure it stays active!
     this.isPaused = false;
   }
 
   create() {
-    // Escape Key logic for pausing
+    // 1. The Input Listener for Pausing
     const escKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
     escKey.on('down', () => this.togglePause());
 
+    // Listen for React telling us to unpause
     window.addEventListener('VS_RESUME_GAME', () => {
       if (this.isPaused) this.togglePause();
     });
 
-    // Initial HUD trigger
-    this.time.delayedCall(10, () => {
+    // 2. Initial HUD Data Broadcast
+    this.time.delayedCall(100, () => {
       const mainScene = this.scene.get('MainScene');
       if (mainScene && mainScene.player) {
         this.updateHP(mainScene.player.hp, mainScene.player.maxHp);
-        this.updateLevelText(mainScene.player.level);
+        this.updateXP(mainScene.player.xp, mainScene.player.nextLevelXp, mainScene.player.level);
         this.updateInventory(mainScene.player.weapons, mainScene.player.items);
       }
     });
   }
 
-  updateLevelText(level) {
-    window.dispatchEvent(new CustomEvent('VS_UPDATE_LEVEL', { detail: { level } }));
-  }
-
-  updateInventory(weaponsArray, itemsArray = []) {
-    window.dispatchEvent(new CustomEvent('VS_UPDATE_INVENTORY', { 
-      detail: { weapons: weaponsArray, items: itemsArray } 
-    }));
-  }
-  
   togglePause() {
     this.isPaused = !this.isPaused;
     const mainScene = this.scene.get('MainScene');
 
     if (this.isPaused) {
-      mainScene.scene.pause(); 
+      // --- THE FIX: We must explicitly pause the MainScene so physics stop! ---
+      this.scene.pause('MainScene'); 
+      
       const p = mainScene.player;
       let stats = null;
       if (p) {
@@ -52,13 +45,16 @@ export default class UIScene extends Phaser.Scene {
           damageMult: (p.damageMult * 100).toFixed(0),
           haste: ((1 / p.cooldownMult) * 100).toFixed(0), 
           armor: p.armor || 0,
-          lifesteal: p.lifesteal || 0,
-          greed: (p.pickupMult * 100).toFixed(0)
+          greed: (p.pickupMult * 100).toFixed(0),
+          // --- NEW: Pass the inventory to React for the Submenu ---
+          weapons: p.weapons || [],
+          items: p.items || []
         };
       }
       window.dispatchEvent(new CustomEvent('VS_PAUSE_STATE', { detail: { isPaused: true, stats } }));
     } else {
-      mainScene.scene.resume(); 
+      // Unpause the MainScene
+      this.scene.resume('MainScene'); 
       window.dispatchEvent(new CustomEvent('VS_PAUSE_STATE', { detail: { isPaused: false, stats: null } }));
     }
   }
@@ -69,9 +65,14 @@ export default class UIScene extends Phaser.Scene {
 
   updateXP(current, max, level) {
     window.dispatchEvent(new CustomEvent('VS_UPDATE_XP', { detail: { xp: current, maxXp: max } }));
-    this.updateLevelText(level); // Keep level in sync with XP
+    window.dispatchEvent(new CustomEvent('VS_UPDATE_LEVEL', { detail: { level } }));
   }
 
-  // We leave an empty handleResize so the engine doesn't crash if it tries to call it
-  handleResize(gameSize) {}
+  updateInventory(weaponsArray, itemsArray = []) {
+    window.dispatchEvent(new CustomEvent('VS_UPDATE_INVENTORY', { 
+      detail: { weapons: weaponsArray, items: itemsArray } 
+    }));
+  }
+
+  handleResize(gameSize) { } // Keep empty to prevent crash
 }
