@@ -11,16 +11,17 @@ export default class MagicOrb {
 
   update(time, player, enemiesGroup, weaponLevel = 1) {
     const lvlIdx = weaponLevel - 1;
-    const currentSpeed = this.stats.speed[lvlIdx];
+    
+    // --- THE FIX: Dynamic Speed Scaling ---
+    // Starts at a very slow 120 speed, and gains 75 speed per level (Max 420)
+    const currentSpeed = 120 + (lvlIdx * 75);
 
     // --- 1. ACTIVE TRACKING (HOMING LOGIC) ---
     this.activeOrbs = this.activeOrbs.filter(orb => orb && orb.active);
-    
-    // PERFORMANCE FIX: Calculate the living targets exactly once per frame
     const validTargets = this.scene.enemies.getChildren().filter(e => e.active && !e.isDying);
     
     this.activeOrbs.forEach(orb => {
-      orb.rotation += 0.05; // Unstable magical spin
+      orb.rotation += 0.05;
 
       if (validTargets.length > 0) {
         const closest = this.scene.physics.closest(orb, validTargets);
@@ -42,12 +43,10 @@ export default class MagicOrb {
       
       this.scene.physics.velocityFromRotation(player.currentAimAngle, currentSpeed, orb.body.velocity);
 
-      // SAFETY FIX: If an orb gets lost or stuck, destroy it after 5 seconds to prevent memory leaks
       this.scene.time.delayedCall(5000, () => {
         if (orb && orb.active) orb.destroy();
       });
 
-      // --- THE CUSTOM BRAIN ---
       orb.onHit = (enemy) => {
         if (weaponLevel >= 5) {
           this.triggerVoidImplosion(orb.x, orb.y, currentDamage);
@@ -73,14 +72,11 @@ export default class MagicOrb {
     blackHole.body.setCircle(implosionRadius);
     blackHole.body.setOffset(-implosionRadius, -implosionRadius);
     
-    // DoT Tick
     blackHole.damage = baseDamage * 0.02; 
 
     blackHole.onHit = (enemy) => {
       enemy.isSlowed = true;
       enemy.slowRecoverTime = this.scene.time.now + 100;
-      
-      // VISUAL FIX: Apply the purple tint slightly after MainScene's white flash
       this.scene.time.delayedCall(10, () => {
         if (enemy && enemy.active) enemy.setTint(0x9333ea); 
       });

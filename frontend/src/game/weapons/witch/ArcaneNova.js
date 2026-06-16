@@ -1,90 +1,74 @@
 import Phaser from 'phaser';
 import { WEAPON_DB } from '../../../data/WeaponDB';
 
-export default class ChaosPulse {
+export default class MagicBook {
   constructor(scene) {
     this.scene = scene;
-    this.stats = WEAPON_DB.chaos_pulse; // Ensure this matches the ID in your WeaponDB
+    this.stats = WEAPON_DB.magic_book; 
+    
+    this.orbitingBooks = []; 
+    this.orbitAngle = 0;
+    
+    // Tracking duration and cooldown phases
     this.lastFired = 0;
+    this.activeEndTime = 0;
   }
 
   update(time, player, enemiesGroup, weaponLevel = 1) {
+    const lvlIdx = weaponLevel - 1;
+    const currentDamage = this.stats.damage[lvlIdx] * player.damageMult;
+    const currentCooldown = this.stats.cooldown[lvlIdx] * player.cooldownMult;
+    const expectedBookCount = this.stats.count ? this.stats.count[lvlIdx] : weaponLevel; 
+
+    // --- THE FIX: Dynamic Duration and Orbit Speed ---
+    // Starts at 3 seconds active, gains 1 second per level. Level 5 is nearly permanent.
+    const activeDuration = weaponLevel >= 5 ? 15000 : 3000 + (lvlIdx * 1000); 
+    
+    // Starts spinning slowly, gets aggressively faster as it levels
+    const orbitSpeed = 0.02 + (lvlIdx * 0.015);
+    // Radius slightly expands at higher levels
+    const orbitRadius = 75 + (lvlIdx * 5); 
+
+    // --- 1. SPAWN BOOKS (When off cooldown) ---
     if (time > this.lastFired) {
-      const lvlIdx = weaponLevel - 1;
-      const currentDamage = this.stats.damage[lvlIdx] * player.damageMult;
-      const currentCooldown = this.stats.cooldown[lvlIdx] * player.cooldownMult;
+      this.activeEndTime = time + activeDuration;
       
-      // Calculate radius dynamically (e.g., starts at 150px, grows by 30px per level)
-      const currentRadius = this.stats.radius ? this.stats.radius[lvlIdx] : 150 + (lvlIdx * 30);
+      // The weapon cooldown starts AFTER the active duration finishes
+      this.lastFired = time + currentCooldown + activeDuration;
 
-      // --- 1. VISUAL EFFECTS ---
-      // We draw it at the player's exact local coordinates so it scales outward perfectly
-      const pulseVisual = this.scene.add.graphics({ x: player.x, y: player.y });
-      
-      // Inner transparent fill
-      pulseVisual.fillStyle(0xd8b4fe, 0.3); // Light arcane purple
-      pulseVisual.fillCircle(0, 0, 10);
-      
-      // Outer bright rim
-      pulseVisual.lineStyle(4, 0xa855f7, 0.8); // Deep vivid purple
-      pulseVisual.strokeCircle(0, 0, 10);
+      // Create the ring of books
+      for (let i = 0; i < expectedBookCount; i++) {
+        const book = this.scene.playerProjectiles.create(player.x, player.y, 'magic_book');
+        book.setScale(0.6);
+        // Fractional DoT damage
+        book.damage = currentDamage * 0.1; 
+        this.orbitingBooks.push(book);
+      }
+    }
 
-      // Expand and fade out the visuals over 400 milliseconds
-      this.scene.tweens.add({
-        targets: pulseVisual,
-        scaleX: currentRadius / 10,
-        scaleY: currentRadius / 10,
-        alpha: 0,
-        duration: 400,
-        ease: 'Sine.easeOut',
-        onComplete: () => pulseVisual.destroy()
-      });
+    // --- 2. UPDATE ORBIT OR DESTROY ---
+    if (time < this.activeEndTime) {
+      // Rotate the master angle
+      this.orbitAngle += orbitSpeed;
+      const angleStep = (Math.PI * 2) / this.orbitingBooks.length;
 
-      // --- 2. PHYSICS HITBOX ---
-      const pulseHitbox = this.scene.playerProjectiles.create(player.x, player.y, null).setVisible(false);
-      pulseHitbox.body.setCircle(10);
-      pulseHitbox.body.setOffset(-10, -10);
-      pulseHitbox.damage = currentDamage;
-      
-      // VERY IMPORTANT: Track who we hit so the pulse only damages them once per wave
-      pulseHitbox.hitEnemies = []; 
+      this.orbitingBooks.forEach((book, index) => {
+        if (book && book.active) {
+          const currentAngle = this.orbitAngle + (angleStep * index);
 
-      // Expand the physics body to perfectly match the visual wave
-      this.scene.tweens.add({
-        targets: pulseHitbox.body,
-        radius: currentRadius,
-        duration: 400,
-        onUpdate: () => {
-          // Phaser requires us to manually re-center the offset when a physics radius changes
-          pulseHitbox.body.setOffset(-pulseHitbox.body.radius, -pulseHitbox.body.radius);
-        },
-        onComplete: () => {
-          if (pulseHitbox.active) pulseHitbox.destroy();
+          book.x = player.x + Math.cos(currentAngle) * orbitRadius;
+          book.y = player.y + Math.sin(currentAngle) * orbitRadius;
+          book.rotation += 0.1; // Book spins on its own axis
+          
+          book.damage = currentDamage * 0.1; 
         }
       });
-
-      // --- 3. THE CUSTOM BRAIN ---
-      pulseHitbox.onHit = (enemy) => {
-        // If we already hit this enemy with this specific pulse, ignore them
-        if (pulseHitbox.hitEnemies.includes(enemy)) return;
-        
-        pulseHitbox.hitEnemies.push(enemy);
-
-        // --- MAX LEVEL: ARCANE REPULSION ---
-        if (weaponLevel >= 5) {
-          enemy.isKnockedBack = true;
-          enemy.knockbackRecoverTime = this.scene.time.now + 250; // Stunned for a quarter-second
-          
-          // Calculate angle exactly away from the Witch
-          const pushAngle = Phaser.Math.Angle.Between(player.x, player.y, enemy.x, enemy.y);
-          const pushForce = 400; // A solid shove backward
-          
-          this.scene.physics.velocityFromRotation(pushAngle, pushForce, enemy.body.velocity);
-          enemy.setTint(0xe9d5ff); // Tint them a pale arcane color during the knockback
-        }
-      };
-
-      this.lastFired = time + currentCooldown;
+    } else if (this.orbitingBooks.length > 0) {
+      // The active duration expired! Destroy all books and wait for cooldown.
+      this.orbitingBooks.forEach(book => {
+        if (book && book.active) book.destroy();
+      });
+      this.orbitingBooks = []; // Clear the array
     }
   }
 }
