@@ -64,12 +64,12 @@ export default class PreloadScene extends Phaser.Scene {
     // --- 4. THE MASTER ENGINE PRELOAD LIST ---
     // Characters
     // --- WITCH CHARACTER ---
-    this.load.image('witch_sprite', 'assets/characters/witch.png');
+    this.load.image('witch_sprite', 'assets/characters/witch/witch.png');
     const witchConfig = { frameWidth: 256, frameHeight: 256 };
     this.load.spritesheet('witch_walk', 'assets/characters/witch/walk/witch_walk.png', witchConfig);
 
     // --- VIKING CHARACTER ---
-    this.load.image('viking_sprite', 'assets/characters/viking.png');
+    this.load.image('viking_sprite', 'assets/characters/viking/viking.png');
     const vikingConfig = { frameWidth: 256, frameHeight: 256 };
     this.load.spritesheet('viking_walk', 'assets/characters/viking/walk/viking_walk.png', vikingConfig);
 
