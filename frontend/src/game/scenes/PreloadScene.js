@@ -73,13 +73,6 @@ export default class PreloadScene extends Phaser.Scene {
     const vikingConfig = { frameWidth: 256, frameHeight: 256 };
     this.load.spritesheet('viking_walk', 'assets/characters/viking/walk/viking_walk.png', vikingConfig);
 
-    // --- TEMPLATE CHARACTER ---
-    const templateConfig = { frameWidth: 64, frameHeight: 64 };     
-    this.load.spritesheet('template_walk', 'assets/characters/template/Unarmed_Walk_with_shadow.png', templateConfig);
-    this.load.spritesheet('template_idle', 'assets/characters/template/Unarmed_Idle_with_shadow.png', templateConfig);
-    this.load.spritesheet('template_hurt', 'assets/characters/template/Unarmed_Hurt_with_shadow.png', templateConfig);
-    this.load.spritesheet('template_death', 'assets/characters/template/Unarmed_Death_with_shadow.png', templateConfig);
-
     // --- SLIME MONSTER ---
     const slimeConfig = { frameWidth: 64, frameHeight: 64 };
     this.load.spritesheet('slime_walk', 'assets/monsters/slime/Slime2_Walk_with_shadow.png', slimeConfig);

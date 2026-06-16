@@ -16,48 +16,57 @@ export default class DragonShout {
       const currentKnockback = this.stats.knockbackForce[lvlIdx];
 
       // 1. The Physics Hitbox
-      // We spawn an invisible circle that travels incredibly fast and scales up
       const shout = this.scene.playerProjectiles.create(player.x, player.y, null).setVisible(false);
       shout.body.setCircle(30);
       shout.body.setOffset(-30, -30);
       shout.damage = currentDamage;
-      shout.hitEnemies = []; // Prevent multi-hitting the same enemy
+      shout.hitEnemies = [];
 
-      // Shoot it forward like a shockwave
       this.scene.physics.velocityFromRotation(player.currentAimAngle, 1000, shout.body.velocity);
 
-      // 2. Visual Effects: The Soundwave Arcs
-      const drawWave = (offset, alpha, scale) => {
-        const wave = this.scene.add.graphics();
-        wave.lineStyle(4, 0xe5e5e5, alpha); // Pale white/gray sonic wave
+      // --- THE FIX: The Visual Effects ---
+      const drawWave = (delay, alphaMultiplier) => {
+        // Create the graphic EXACTLY at the player's coordinates
+        const wave = this.scene.add.graphics({ x: player.x, y: player.y });
+        wave.lineStyle(6, 0xffffff, alphaMultiplier); // Thick white line
+        
+        // Draw the arc at local 0,0 so it scales perfectly from the center
         wave.beginPath();
-        // Draw an arc facing the aim direction
-        wave.arc(player.x, player.y, 40, player.currentAimAngle - 0.6, player.currentAimAngle + 0.6, false);
+        wave.arc(0, 0, 40, -0.6, 0.6, false);
         wave.strokePath();
 
-        // Push the visual wave forward to match the physics hitbox
-        this.scene.physics.add.existing(wave);
-        this.scene.physics.velocityFromRotation(player.currentAimAngle, 1000, wave.body.velocity);
+        // Rotate to face the aim direction
+        wave.rotation = player.currentAimAngle;
 
+        // Calculate where the visual should fly to (matches the 1000 velocity)
+        const flyDistance = 300; 
+        const targetX = player.x + Math.cos(player.currentAimAngle) * flyDistance;
+        const targetY = player.y + Math.sin(player.currentAimAngle) * flyDistance;
+
+        // Tween the visual independently of the physics body
         this.scene.tweens.add({
           targets: wave,
-          scaleX: scale,
-          scaleY: scale,
+          x: targetX,
+          y: targetY,
+          scaleX: 4,  // Scales up beautifully into a massive cone
+          scaleY: 4,
           alpha: 0,
-          duration: 300,
+          duration: 350,
+          delay: delay,
           onComplete: () => wave.destroy()
         });
       };
 
       // Draw three overlapping waves for a visceral "shout" effect
-      drawWave(0, 0.8, 3);
-      drawWave(-20, 0.5, 4);
-      drawWave(-40, 0.2, 5);
+      drawWave(0, 1);       // The primary shockwave
+      drawWave(50, 0.6);    // Follow-up echo
+      drawWave(100, 0.3);   // Faint trailing echo
+      // ------------------------------------
 
-      // 3. Expand the physics hitbox rapidly to simulate the cone, then destroy it
+      // 3. Expand the physics hitbox rapidly to simulate the cone
       this.scene.tweens.add({
         targets: shout.body,
-        radius: 120, // Increases the hit area as it travels
+        radius: 120, 
         duration: 300,
         onComplete: () => { if (shout.active) shout.destroy(); }
       });
@@ -67,23 +76,20 @@ export default class DragonShout {
         if (shout.hitEnemies.includes(enemy)) return;
         shout.hitEnemies.push(enemy);
 
-        // Inject the Knockback state flags (which our upcoming BaseMonster will read!)
+        // Inject the Knockback state flags!
         enemy.isKnockedBack = true;
-        // They are stunned/pushed for 400 milliseconds
         enemy.knockbackRecoverTime = this.scene.time.now + 400; 
 
-        // Calculate the exact angle from the player to the enemy to push them outward
+        // Apply the violent push
         const pushAngle = Phaser.Math.Angle.Between(player.x, player.y, enemy.x, enemy.y);
-        
-        // Apply the violent push!
         this.scene.physics.velocityFromRotation(pushAngle, currentKnockback, enemy.body.velocity);
 
         // --- MAX LEVEL: THE SHATTER CURSE ---
         if (weaponLevel >= 5) {
-          enemy.hasShatterCurse = true; // BaseMonster will instantly kill them if they hit the wall
-          enemy.setTint(0x7dd3fc); // Tint them frosty blue
+          enemy.hasShatterCurse = true; 
+          enemy.setTint(0x7dd3fc); 
         } else {
-          enemy.setTint(0xd4d4d8); // Normal dust tint
+          enemy.setTint(0xd4d4d8); 
         }
       };
 

@@ -20,9 +20,11 @@ const ROSTER_UI = [
   
   { id: 'viking', status: 'unlocked', img: 'assets/characters/viking/standing.png', hasRotation: true }, 
   
-  { id: 'locked_1', status: 'locked', img: null, hasRotation: false },
-  { id: 'locked_2', status: 'locked', img: null, hasRotation: false },
-  { id: 'locked_3', status: 'locked', img: null, hasRotation: false },
+  { id: 'paladin', status: 'locked', img: 'assets/characters/paladin/standing.png', hasRotation: true },
+
+  { id: 'pirate', status: 'locked', img: 'assets/characters/pirate/standing.png', hasRotation: true },
+
+  { id: 'berserker', status: 'locked', img: 'assets/characters/berserker/standing.png', hasRotation: true },
 ];
 
 const InteractiveSprite = ({ spritesheetUrl, frames, isActive }) => {

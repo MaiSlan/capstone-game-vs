@@ -247,7 +247,7 @@ export default class MainScene extends Phaser.Scene {
 
     // 3. Update all active enemies
     this.enemies.getChildren().forEach((enemy) => {
-      if (enemy && enemy.active) enemy.update(this.player);
+      if (enemy && enemy.active) enemy.update(time); 
     });
 
     // 4. Magnetize EXP Gems (Modified by Thief Gloves multiplier)
