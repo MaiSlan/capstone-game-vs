@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { WEAPON_DB } from '../../data/WeaponDB';
+import { WEAPON_DB } from '../../../data/WeaponDB';
 
 export default class MagicWand {
   constructor(scene) {
