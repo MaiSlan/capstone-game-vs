@@ -9,11 +9,12 @@ export const CHARACTER_DB = {
     weaponName: "Leviathan's Bite",
     weaponId: 'bouncing_axe',
     quotes: [
-      "I have died a thousand deaths... where is Valhalla?",
-      "My axe is so heavy today.",
-      "Even a warrior's soul shatters eventually.",
-      "They just keep coming. They never stop.",
-      "Don't send me back into the red light."
+      "The seer promised me the world... but this is just a slaughterhouse.",
+      "What kind of god forces a man to crawl through his own blood forever?",
+      "I used to crave the roar of battle. Now, I just want the silence. Don't make me go back.",
+      "There is no Valhalla. Only you, pulling my strings in the dark.",
+      "My bones are dust, my spirit is ash... let me rot in peace.",
+      "I have died a thousand deaths. Is my legend not written yet? Stop this."
     ]
   },
   pirate: { 
@@ -24,10 +25,12 @@ export const CHARACTER_DB = {
     weaponName: "The Merchant's Folly",
     weaponId: 'musket',
     quotes: [
-      "There is no gold in the dark... only teeth.",
-      "I'd trade every coin I have to wake up from this.",
-      "I rolled the dice, and we all lost.",
-      "The sea cannot wash this blood from my hands."
+      "*Hic*... Pour me another, and maybe I won't feel their teeth this time.",
+      "There isn't enough rum in the world to wash away the red light.",
+      "I'll give you all the gold I scavenged... just don't make me sail that abyss again.",
+      "The compass just spins... we're going nowhere. Stop sending me down.",
+      "Everything's spinning... or is that just the node? Let a captain sleep...",
+      "I wagered my soul and lost. Haven't I paid my debt? Stop picking me."
     ]
   },
   berserker: { 
@@ -38,10 +41,12 @@ export const CHARACTER_DB = {
     weaponName: 'The Iron Slab',
     weaponId: 'iron_slab',
     quotes: [
-      "The brand... it’s bleeding again.",
-      "Even if my flesh rots, my sword will swing.",
-      "I am already a corpse. Let them come.",
-      "There is no end. Only the next swing."
+      "No matter how hard I swing... I can't reach him. It's all for nothing.",
+      "My sword just phases through the dark. Why do I keep fighting?",
+      "I thought my rage would be enough. But I'm just empty now.",
+      "Please... my hands won't stop shaking. Let the hound rest.",
+      "The brand is cold. Everything is cold. Don't wake me up again.",
+      "Even if my flesh rots, my sword will swing... but I am so tired."
     ]
   },
   paladin: { 
@@ -52,10 +57,12 @@ export const CHARACTER_DB = {
     weaponName: 'The Aegis Wall',
     weaponId: 'shield_bash',
     quotes: [
-      "The Emperor's light does not reach this place.",
-      "My shield is heavy, but my faith is shattered.",
-      "Forgive me, brothers. I cannot hold the line.",
-      "Is this hell, or have we been abandoned?"
+      "I prayed for the Emperor's light, but only the abyss answered.",
+      "Was my devotion just a lie? Why have we been forsaken?",
+      "My knees are bruised from praying to a deaf god. Do not send me back to the altar.",
+      "There is no holy war here. Just an execution. Please, spare me.",
+      "I drop my shield. I renounce my vows. Just let it end.",
+      "The Emperor's light does not reach this place. Leave me in the dark."
     ]
   },
   witch: { 
@@ -66,11 +73,12 @@ export const CHARACTER_DB = {
     weaponName: 'The Void Eye',
     weaponId: 'magic_orb',
     quotes: [
-      "I just wanted to find my favorite hat...",
-      "The shadows have teeth here. I want to go home.",
-      "Why does the sun look like a bleeding eye?",
-      "Please... don't select me again. It hurts.",
-      "I forgot what the real sky looks like."
+      "I haven't slept since... since the first descent.",
+      "Just let me close my eyes. Please don't click my name.",
+      "My magic feels so heavy. I'm just so tired.",
+      "Why do you keep sending me down there? I can't take another cycle.",
+      "There's nothing left to learn in the dark. Leave me be.",
+      "I forgot what the real sky looks like. Don't make me look at the red sun again."
     ]
   }
 };
