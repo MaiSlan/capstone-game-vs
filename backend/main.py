@@ -11,7 +11,7 @@ app = FastAPI(title="VS Cloud Engine Backend")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://capstone-game-vs.vercel.app", "http://localhost:5173", "http://localhost:5000"],
+    allow_origins=["https://capstone-game-vs.vercel.app", "http://localhost:5173", "http://localhost:5000", "https://capstone-game-vs.onrender.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
