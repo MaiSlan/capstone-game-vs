@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { TIMELINE_DB } from '../../data/TimelineDB';
+import { TIMELINE_DB } from '../../data/TimeLineDB';
 import { MONSTER_DB } from '../../data/MonsterDB';
 
 // --- WE WILL IMPORT THE SPECIFIC CLASSES HERE AS WE BUILD THEM IN PHASE 4 ---
