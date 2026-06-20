@@ -11,6 +11,7 @@ const UPGRADE_CATALOG = [
 ];
 
 export default function BoneFireShop() {
+  const API_URL = import.meta.env.DEV ? 'http://127.0.0.1:5000' : 'https://capstone-game-vs.onrender.com';
   const [goldBalance, setGoldBalance] = useState(0);
   const [userUpgrades, setUserUpgrades] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +22,7 @@ export default function BoneFireShop() {
     const fetchShopData = async () => {
       try {
         const token = localStorage.getItem('game_token'); 
-        const response = await fetch('/api/v1/shop/data', {
+        const response = await fetch(`${API_URL}/api/v1/shop/data`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
@@ -58,7 +59,7 @@ export default function BoneFireShop() {
 
     try {
       const token = localStorage.getItem('game_token');
-      const response = await fetch('/api/v1/shop/purchase', {
+      const response = await fetch(`${API_URL}/api/v1/shop/purchase`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -66,7 +67,6 @@ export default function BoneFireShop() {
         },
         body: JSON.stringify({ upgrade_id: upgradeId, cost: cost })
       });
-
       if (!response.ok) throw new Error('The transaction was rejected by the void.');
 
       // Optimistically update the UI so we don't have to refetch
