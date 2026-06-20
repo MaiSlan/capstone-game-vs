@@ -110,14 +110,14 @@ export default class MainScene extends Phaser.Scene {
     // DEV MODE: UNSTOPPABLE POWER
     // Comment these out when you are ready to balance the real game!
     // ==========================================
-    this.player.damageMult = 5.0; // Deal 500% Damage instantly
-    this.player.xpMult = 5.0;     // Level up 5x faster
-    this.player.baseSpeed = 250;  // Run incredibly fast to dodge anything
-    this.player.hp = 5000;        // Massive health pool
-    this.player.maxHp = 5000;
+    //this.player.damageMult = 5.0; // Deal 500% Damage instantly
+    //this.player.xpMult = 5.0;     // Level up 5x faster
+    //this.player.baseSpeed = 250;  // Run incredibly fast to dodge anything
+    //this.player.hp = 5000;        // Massive health pool
+    //this.player.maxHp = 5000;
     
     // Optional Time Skip: Uncomment this to start the game directly at Minute 19!
-    this.surviveSeconds = 1190; 
+    //this.surviveSeconds = 1190; 
     // ==========================================
 
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
