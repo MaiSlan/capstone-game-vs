@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import CharacterSelect from './pages/CharacterSelect';
 import PlayArea from './pages/PlayArea';
 import ProtectedRoute from './components/ProtectedRoute';
+import CampfireShop from './pages/BoneFireShop';
 
 export default function App() {
   const [selectedCharacter, setSelectedCharacter] = useState('witch');
@@ -30,6 +31,13 @@ export default function App() {
               selectedCharacter={selectedCharacter} 
               setSelectedCharacter={setSelectedCharacter} 
             />
+          </ProtectedRoute>
+        } />
+
+        {/* --- NEW: The BoneFire Shop Route --- */}
+        <Route path="/shop" element={
+          <ProtectedRoute>
+            <CampfireShop />
           </ProtectedRoute>
         } />
         

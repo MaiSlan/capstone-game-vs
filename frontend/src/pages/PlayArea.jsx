@@ -33,6 +33,11 @@ export default function PlayArea({ selectedCharacter }) {
   const [inventoryWeapons, setInventoryWeapons] = useState([]);
   const [inventoryItems, setInventoryItems] = useState([]);
 
+  // --- BOSS HUD STATE ---
+  const [bossName, setBossName] = useState(null);
+  const [bossHp, setBossHp] = useState(0);
+  const [bossMaxHp, setBossMaxHp] = useState(100);
+
   const getAssetIcon = (id) => {
     if (!id) return '';
     const iconMap = {
@@ -65,6 +70,19 @@ export default function PlayArea({ selectedCharacter }) {
     const handleUpdateInventory = (e) => {
       if (e.detail.weapons) setInventoryWeapons(e.detail.weapons);
       if (e.detail.items) setInventoryItems(e.detail.items);
+    };
+
+    const handleShowBoss = (e) => {
+      setBossName(e.detail.name);
+      setBossHp(e.detail.hp);
+      setBossMaxHp(e.detail.maxHp);
+    };
+    const handleUpdateBoss = (e) => {
+      setBossHp(e.detail.hp);
+      setBossMaxHp(e.detail.maxHp);
+    };
+    const handleHideBoss = () => {
+      setBossName(null);
     };
 
     const handleLevelUp = (e) => {
@@ -141,6 +159,9 @@ export default function PlayArea({ selectedCharacter }) {
     window.addEventListener('VS_UPDATE_XP', handleUpdateXp);
     window.addEventListener('VS_UPDATE_LEVEL', handleUpdateLevel);
     window.addEventListener('VS_UPDATE_INVENTORY', handleUpdateInventory);
+    window.addEventListener('VS_SHOW_BOSS_BAR', handleShowBoss);
+    window.addEventListener('VS_UPDATE_BOSS_HP', handleUpdateBoss);
+    window.addEventListener('VS_HIDE_BOSS_BAR', handleHideBoss);
     
     return () => {
       window.removeEventListener('VS_GAME_OVER', handleGameOver);
@@ -152,6 +173,9 @@ export default function PlayArea({ selectedCharacter }) {
       window.removeEventListener('VS_UPDATE_XP', handleUpdateXp);
       window.removeEventListener('VS_UPDATE_LEVEL', handleUpdateLevel);
       window.removeEventListener('VS_UPDATE_INVENTORY', handleUpdateInventory);
+      window.removeEventListener('VS_SHOW_BOSS_BAR', handleShowBoss);
+      window.removeEventListener('VS_UPDATE_BOSS_HP', handleUpdateBoss);
+      window.removeEventListener('VS_HIDE_BOSS_BAR', handleHideBoss);
     };
   }, [selectedCharacter]);
 
@@ -227,6 +251,23 @@ export default function PlayArea({ selectedCharacter }) {
             </div>
           </div>
         </div>
+
+        {/* =========================================
+            TOP CENTER: BOSS HEALTH BAR
+        ========================================= */}
+        {bossName && (
+          <div className="absolute top-8 left-1/2 -translate-x-1/2 w-full max-w-2xl flex flex-col items-center pointer-events-auto z-40 animate-fade-in">
+            <span className="font-royal text-xl text-red-300 uppercase tracking-[0.3em] mb-2 drop-shadow-[0_0_5px_rgba(220,38,38,0.8)]">
+              {bossName}
+            </span>
+            <div className="w-full h-4 bg-black/80 border border-red-900 rounded-sm overflow-hidden shadow-[0_0_15px_rgba(0,0,0,0.9)] relative">
+              <div 
+                className="h-full bg-red-700 transition-all duration-100 ease-out" 
+                style={{ width: `${Math.max(0, Math.min(100, (bossHp / bossMaxHp) * 100))}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
 
         {/* TOP CENTER: Eclipse Clock */}
         <div className="absolute top-20 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/30 px-6 py-2 rounded-full border border-red-900/30 shadow-[0_0_15px_rgba(0,0,0,0.8)] backdrop-blur-sm pointer-events-auto">

@@ -77,8 +77,20 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image('ground_rocks_img', 'assets/maps/tiles.png'); 
     this.load.image('border_top', 'assets/maps/TopBorder.png');
     this.load.image('border_bottom', 'assets/maps/BottomBorder.png');
-    this.load.audio('bgm_skyrim', 'assets/sounds/bgm/skyrim.ogg');
-    this.load.audio('bgm_boss', 'assets/sounds/bgm/boss_theme.ogg');
+    
+    // Phase 1 & 2 Background Music
+    this.load.audio('bgm_phase1', 'assets/sounds/bgm/PerfectBGM.ogg');
+    this.load.audio('bgm_phase2', 'assets/sounds/bgm/GoodBGM.ogg');
+    
+    // Mid-Boss Music
+    this.load.audio('bgm_zodd', 'assets/sounds/bgm/BossBGM.ogg');
+    
+    // Eclipse Lord Music
+    this.load.audio('bgm_femto', 'assets/sounds/bgm/femto.ogg');    // For Obsidian Falcon
+    this.load.audio('bgm_slan', 'assets/sounds/bgm/slan.ogg');      // For Bramble Queen
+    this.load.audio('bgm_conrad', 'assets/sounds/bgm/conrad.ogg');  // For Rot-Bringer
+    this.load.audio('bgm_ubic', 'assets/sounds/bgm/BossBGM2.ogg');  // For Mad Puppeteer
+    this.load.audio('bgm_void', 'assets/sounds/bgm/BossBGM3.ogg');  // For Grand Haruspex
 
     // Weapons
     this.load.image('cleave_axe', 'assets/weapons/axe.png');

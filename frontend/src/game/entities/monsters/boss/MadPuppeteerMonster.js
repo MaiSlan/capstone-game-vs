@@ -8,6 +8,7 @@ export default class MadPuppeteerMonster extends EclipseLordBase {
     this.setTint(0x9333ea); // Chaotic Purple
     this.setScale(1.5);
     this.clonesSpawned = false;
+    this.initializeBossUI('MAD PUPPETEER, THE ECLIPSE LORD');
   }
 
   update(time) {

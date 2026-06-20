@@ -8,6 +8,17 @@ export default class EclipseLordBase extends BaseMonster {
       ...waveConfig
     });
     this.isEclipseLord = true;
+    
+    // --- CENTRALIZED BOSS LOGIC ---
+    this.isBoss = true;
+    this.maxHp = this.hp; 
+  }
+
+  // Child classes will call this once they are ready
+  initializeBossUI(bossName) {
+    window.dispatchEvent(new CustomEvent('VS_SHOW_BOSS_BAR', { 
+      detail: { name: bossName, hp: this.hp, maxHp: this.maxHp } 
+    }));
   }
 
   // Absolute immunity to crowd control
@@ -20,7 +31,7 @@ export default class EclipseLordBase extends BaseMonster {
     this.isDying = true;
     
     this.setVelocity(0);
-    this.body.enable = false;
+    if (this.body) this.body.enable = false;
 
     this.scene.cameras.main.flash(1000, 255, 255, 255); // Massive white flash
 
@@ -32,10 +43,13 @@ export default class EclipseLordBase extends BaseMonster {
       duration: 3000,
       ease: 'Sine.in',
       onComplete: () => {
-        // TRIGGER THE VICTORY SCREEN
+        // --- CENTRALIZED UI HIDING & VICTORY ---
+        window.dispatchEvent(new CustomEvent('VS_HIDE_BOSS_BAR'));
+        
         window.dispatchEvent(new CustomEvent('VS_GAME_WON', { 
           detail: { timeSurvived: this.scene.surviveSeconds } 
         }));
+        
         this.destroy();
       }
     });

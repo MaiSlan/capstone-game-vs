@@ -19,6 +19,13 @@ export default class KarnokMonster extends BaseMonster {
     this.currentPhase = 1;
     this.isEnraging = false;
     this.isLeaping = false;
+
+    // --- TAG AS BOSS & TRIGGER UI ---
+    this.isBoss = true;
+    this.maxHp = this.hp; // Ensure maxHp is strictly set
+    window.dispatchEvent(new CustomEvent('VS_SHOW_BOSS_BAR', { 
+      detail: { name: 'KARNOK, THE BLOOD BEAST', hp: this.hp, maxHp: this.maxHp } 
+    }));
   }
 
   // --- BOSS IMMUNITIES ---
@@ -251,6 +258,10 @@ export default class KarnokMonster extends BaseMonster {
           gem.setTint(0xff0000); // Tint them red to show they are boss gems
           gem.setScale(2);
         }
+        
+        // --- NEW: Tell the engine the mid-boss is dead! ---
+        window.dispatchEvent(new CustomEvent('VS_MID_BOSS_DEAD'));
+        window.dispatchEvent(new CustomEvent('VS_HIDE_BOSS_BAR'));
         this.destroy();
       }
     });

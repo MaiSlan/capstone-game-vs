@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../components/PublicNavbar';
 import { CHARACTER_DB } from '../data/CharacterDB';
-import { REWARD_DB } from '../data/RewardDB'; // --- NEW: Imported to fetch relic descriptions ---
+import { REWARD_DB } from '../data/RewardDB';
 
 const ROTATION_FRAMES = [
   { x: 1, y: 517 },   // 0: South 

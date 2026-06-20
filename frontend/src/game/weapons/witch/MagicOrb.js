@@ -6,7 +6,8 @@ export default class MagicOrb {
     this.scene = scene;
     this.stats = WEAPON_DB.magic_orb;
     this.lastFired = 0;
-    this.activeOrbs = []; 
+    this.activeOrbs = [];
+    this.lastImplosionTime = 0;
   }
 
   update(time, player, enemiesGroup, weaponLevel = 1) {
@@ -31,13 +32,18 @@ export default class MagicOrb {
 
     // --- 2. FIRE NEW ORB ---
     if (time > this.lastFired) {
-      const currentDamage = this.stats.damage[lvlIdx] * player.damageMult;
-      const currentCooldown = this.stats.cooldown[lvlIdx] * player.cooldownMult;
+      // MASSIVE DAMAGE BUFF: Multiply the base damage by 3 so it hits like a truck
+      const baseDamage = this.stats.damage ? this.stats.damage[lvlIdx] : 15;
+      const currentDamage = baseDamage * player.damageMult * 3.0; 
+      
+      // Enforce a slower cooldown so it isn't a machine gun
+      const baseCooldown = this.stats.cooldown ? this.stats.cooldown[lvlIdx] : 2000;
+      const currentCooldown = Math.max(1000, baseCooldown * player.cooldownMult);
 
       const orb = this.scene.playerProjectiles.create(player.x, player.y, 'magic_orb');
-      orb.setScale(0.7);
+      orb.setScale(0.8);
       orb.damage = currentDamage;
-      orb.hasImploded = false; // Prevent multi-spawning
+      orb.hasImploded = false;
       
       this.scene.physics.velocityFromRotation(player.currentAimAngle, currentSpeed, orb.body.velocity);
 
@@ -49,7 +55,10 @@ export default class MagicOrb {
         // Only trigger the implosion ONCE per orb
         if (weaponLevel >= 5 && !orb.hasImploded) {
           orb.hasImploded = true;
-          this.triggerVoidImplosion(orb.x, orb.y, currentDamage);
+          if (time > this.lastImplosionTime) {
+            this.triggerVoidImplosion(orb.x, orb.y, currentDamage);
+            this.lastImplosionTime = time + 2500; // Lock out new implosions for 2.5s
+          }
         }
         orb.destroy(); 
       };
@@ -60,12 +69,10 @@ export default class MagicOrb {
   }
 
   triggerVoidImplosion(x, y, baseDamage) {
-    const implosionRadius = 100;
+    const implosionRadius = 120;
 
-    // FIX 1: Set the Graphics object EXACTLY at the impact coordinates
     const blastVisual = this.scene.add.graphics({ x: x, y: y });
     blastVisual.fillStyle(0x050202, 1); 
-    // Draw the circle at local (0, 0) so it scales perfectly into its own center
     blastVisual.fillCircle(0, 0, implosionRadius);
     blastVisual.lineStyle(3, 0x9333ea, 0.8); 
     blastVisual.strokeCircle(0, 0, implosionRadius);
@@ -74,15 +81,15 @@ export default class MagicOrb {
     blackHole.body.setCircle(implosionRadius);
     blackHole.body.setOffset(-implosionRadius, -implosionRadius);
     
-    // FIX 2: Completely lock the physics body so monsters can't push it
     blackHole.body.moves = false; 
     blackHole.body.immovable = true;
     
-    blackHole.damage = baseDamage * 0.02; 
+    // Increased DoT damage while they are stuck in it
+    blackHole.damage = baseDamage * 0.05; 
 
     blackHole.onHit = (enemy) => {
       enemy.isSlowed = true;
-      enemy.slowRecoverTime = this.scene.time.now + 100;
+      enemy.slowRecoverTime = this.scene.time.now + 200; // Increased slow duration
       this.scene.time.delayedCall(10, () => {
         if (enemy && enemy.active) enemy.setTint(0x9333ea); 
       });
@@ -94,7 +101,7 @@ export default class MagicOrb {
       scaleX: 0,
       scaleY: 0,
       alpha: 0,
-      duration: 3000,
+      duration: 6000, 
       ease: 'Cubic.in', 
       onComplete: () => {
         blastVisual.destroy();
@@ -102,8 +109,7 @@ export default class MagicOrb {
       }
     });
 
-    // Destroy the physics hitbox exactly when the visual finishes
-    this.scene.time.delayedCall(3000, () => {
+    this.scene.time.delayedCall(6000, () => {
       if (blackHole.active) blackHole.destroy();
     });
   }

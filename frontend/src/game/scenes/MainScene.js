@@ -20,7 +20,7 @@ export default class MainScene extends Phaser.Scene {
     AnimationManager.initializeAnimations(this);
 
     // --- AUDIO INIT ---
-    this.bgm = this.sound.add('bgm_skyrim', { volume: 0.3, loop: true });    
+    this.bgm = this.sound.add('bgm_phase1', { volume: 0.3, loop: true }); // THE FIX: Use Phase 1 BGM    
     this.bgm.play();
 
     // --- TIMER INIT ---
@@ -106,18 +106,43 @@ export default class MainScene extends Phaser.Scene {
     } else {
       this.player = new Template(this, 4000, 4000); // Note: Ensure Template class exists if this fallback is hit
     }
+    
     // ==========================================
     // DEV MODE: UNSTOPPABLE POWER
     // Comment these out when you are ready to balance the real game!
     // ==========================================
-    //this.player.damageMult = 5.0; // Deal 500% Damage instantly
-    //this.player.xpMult = 5.0;     // Level up 5x faster
-    //this.player.baseSpeed = 250;  // Run incredibly fast to dodge anything
-    //this.player.hp = 5000;        // Massive health pool
-    //this.player.maxHp = 5000;
+    this.player.damageMult = 5.0; // Deal 500% Damage instantly
+    this.player.xpMult = 5.0;     // Level up 5x faster
+    this.player.baseSpeed = 250;  // Run incredibly fast to dodge anything
+    this.player.hp = 5000;        // Massive health pool
+    this.player.maxHp = 5000;
+
+    // DEV MODE: Grant character-specific weapons at Level 5 (Max)
+    let devWeapons = [];
+    
+    if (this.selectedCharacter === 'witch') {
+      devWeapons = ['magic_orb', 'magic_book', 'magic_wand', 'arcane_nova'];
+    } else if (this.selectedCharacter === 'viking') {
+      // --- THE FIX: Updated to match exact Viking WeaponDB IDs ---
+      devWeapons = ['bouncing_axe', 'piercing_lance', 'seismic_stomp', 'dragon_shout'];
+    }
+
+    devWeapons.forEach(weaponId => {
+      for (let i = 0; i < 5; i++) {
+        try {
+          this.player.addOrUpgradeWeapon(weaponId);
+        } catch (error) {
+          console.warn(`Dev Mode: Skipped ${weaponId} - Not mapped for this character.`);
+        }
+      }
+    });
     
     // Optional Time Skip: Uncomment this to start the game directly at Minute 19!
-    //this.surviveSeconds = 1190; 
+    this.surviveSeconds = 1190; 
+    // ==========================================
+    
+    // Optional Time Skip: Uncomment this to start the game directly at Minute 19!
+    this.surviveSeconds = 1190; 
     // ==========================================
 
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
@@ -135,6 +160,12 @@ export default class MainScene extends Phaser.Scene {
       if (enemy.isDying || !enemy.active || !projectile.active) return;
 
       enemy.hp -= (projectile.damage || 10);
+
+      if (enemy.isBoss) {
+        window.dispatchEvent(new CustomEvent('VS_UPDATE_BOSS_HP', { 
+          detail: { hp: enemy.hp, maxHp: enemy.maxHp } 
+        }));
+      }
 
       if (projectile.onHit) {
         projectile.onHit(enemy);
@@ -254,37 +285,66 @@ export default class MainScene extends Phaser.Scene {
     };
     window.addEventListener('VS_PAUSE_STATE', this.pauseListener);
 
+
+    // ==========================================
+    // AUDIO CROSSFADE MANAGER & MID-BOSS LOGIC
+    // ==========================================
+    // A helper function to smoothly transition between tracks
+    this.crossfadeMusic = (newTrackKey) => {
+      if (!this.bgm) return;
+      this.tweens.add({
+        targets: this.bgm,
+        volume: 0,
+        duration: 2000,
+        onComplete: () => {
+          this.bgm.stop();
+          this.bgm = this.sound.add(newTrackKey, { volume: 0, loop: true });
+          this.bgm.play();
+          this.tweens.add({ targets: this.bgm, volume: 0.3, duration: 2000 });
+        }
+      });
+    };
+
+    // Listen for Zodd (Karnok) spawning
+    this.midBossStartListener = () => {
+      this.crossfadeMusic('bgm_zodd');
+    };
+    window.addEventListener('VS_MID_BOSS_STARTED', this.midBossStartListener);
+
+    // Listen for Zodd dying (Transition to Phase 2)
+    this.midBossDeadListener = () => {
+      this.crossfadeMusic('bgm_phase2');
+    };
+    window.addEventListener('VS_MID_BOSS_DEAD', this.midBossDeadListener);
+
     // ==========================================
     // THE ECLIPSE SEQUENCE HANDLER
     // ==========================================
-    this.eclipseListener = () => {
+    // THE FIX: Accept the event 'e' so we can read the bossId
+    this.eclipseListener = (e) => {
       // 1. Camera Shake Impact
       this.cameras.main.shake(2000, 0.015);
 
-      // 2. Crossfade the Music
-      if (this.bgm) {
-        this.tweens.add({
-          targets: this.bgm,
-          volume: 0,
-          duration: 2000,
-          onComplete: () => {
-            this.bgm.stop();
-            this.bgm = this.sound.add('bgm_boss', { volume: 0, loop: true });
-            this.bgm.play();
-            // Fade the boss music in
-            this.tweens.add({ targets: this.bgm, volume: 0.2, duration: 2000 });
-          }
-        });
-      }
+      // 2. Crossfade to the Specific God-Hand Music
+      const bossMusicMap = {
+        'obsidian_falcon': 'bgm_femto',
+        'bramble_queen': 'bgm_slan',
+        'grand_haruspex': 'bgm_void',
+        'rot_bringer': 'bgm_conrad',
+        'mad_puppeteer': 'bgm_ubic'
+      };
+      
+      // Look up the track based on the boss ID passed from WaveManager, default to phase 2 if missing
+      const nextTrack = (e.detail && e.detail.bossId) ? bossMusicMap[e.detail.bossId] : 'bgm_phase2';
+      this.crossfadeMusic(nextTrack);
 
       // 3. Smoothly Tint the World Blood-Red
       this.tweens.addCounter({
-        from: 255, // White (Normal)
-        to: 100,   // Dark Red (0x3f)
+        from: 255, 
+        to: 100,   
         duration: 3000,
         onUpdate: (tween) => {
           const val = Math.floor(tween.getValue());
-          // Lock Green and Blue to 0, keep Red fading down to a dark crimson
           const color = Phaser.Display.Color.GetColor(val, 0, 0);
           this.floorLayer.setTint(color);
         }
@@ -332,6 +392,8 @@ export default class MainScene extends Phaser.Scene {
       window.removeEventListener('VS_APPLY_REWARD', this.rewardListener);
       window.removeEventListener('VS_PAUSE_STATE', this.pauseListener);
       window.removeEventListener('VS_ECLIPSE_STARTED', this.eclipseListener);
+      window.removeEventListener('VS_MID_BOSS_STARTED', this.midBossStartListener);
+      window.removeEventListener('VS_MID_BOSS_DEAD', this.midBossDeadListener);
       if (this.bgm) this.bgm.stop(); 
     });
   }

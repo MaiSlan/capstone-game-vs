@@ -195,6 +195,7 @@ export default class WaveManager {
       // MID-GAME BOSS
       case 'karnok_blood_beast':
         this.enemies.add(new KarnokMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        window.dispatchEvent(new CustomEvent('VS_MID_BOSS_STARTED'));
         break;
 
       // ECLIPSE LORDS
@@ -244,6 +245,8 @@ export default class WaveManager {
     this.spawnMonsterFactory(chosenLordId, this.player.x, this.player.y - 300, eclipseMultiplier);
 
     // 3. Visual Flair (Handled by the MainScene, but we can trigger an event here)
-    window.dispatchEvent(new CustomEvent('VS_ECLIPSE_STARTED'));
+    window.dispatchEvent(new CustomEvent('VS_ECLIPSE_STARTED', { 
+      detail: { bossId: chosenLordId } 
+    }));
   }
 }

@@ -31,16 +31,24 @@ export default function PublicNavbar() {
 
       {/* Dynamic Center Links */}
       <div className="hidden md:flex items-center gap-12 text-[10px] uppercase tracking-[0.4em] font-bold z-10">
-        {!isAuthenticated ? (
+        
+        {/* Always visible */}
+        <span onClick={() => navigate('/documentation')} className="text-zinc-500 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] cursor-pointer transition-all duration-300">
+          Documentation
+        </span>
+
+        {/* Visible only when authenticated */}
+        {isAuthenticated && (
           <>
-            <a href="#dogma" className="text-zinc-500 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] transition-all duration-300">Dogma</a>
-            <a href="#architecture" className="text-zinc-500 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] transition-all duration-300">Architecture</a>
-            <a href="#relics" className="text-zinc-500 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] transition-all duration-300">Relics</a>
-          </>
-        ) : (
-          <>
-            <span onClick={() => navigate('/leaderboard')} className="text-zinc-500 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] cursor-pointer transition-all duration-300">Leaderboard</span>
-            <span onClick={() => navigate('/compendium')} className="text-zinc-500 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] cursor-pointer transition-all duration-300">Compendium</span>
+            <span onClick={() => navigate('/bestiary')} className="text-zinc-500 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] cursor-pointer transition-all duration-300">
+              Bestiary
+            </span>
+            <span onClick={() => navigate('/shop')} className="text-zinc-500 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] cursor-pointer transition-all duration-300">
+              BoneFire
+            </span>
+            <span onClick={() => navigate('/select')} className="text-zinc-500 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] cursor-pointer transition-all duration-300">
+              Character Selection
+            </span>
           </>
         )}
       </div>
@@ -53,7 +61,7 @@ export default function PublicNavbar() {
               onClick={() => navigate('/auth')}
               className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] transition-all duration-300"
             >
-              Forge Pact
+              SignIn/Register
             </button>
           )
         ) : (
@@ -61,7 +69,7 @@ export default function PublicNavbar() {
             onClick={handleSignOut}
             className="text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-500 hover:text-red-600 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] transition-all duration-300"
           >
-            Sever Link
+            Sign Out
           </button>
         )}
       </div>

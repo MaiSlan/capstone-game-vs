@@ -8,6 +8,7 @@ export default class ObsidianFalconMonster extends EclipseLordBase {
     this.setTint(0x1e1b4b); // Deep space indigo
     this.setScale(2);
     this.blackHoleTimer = 0;
+    this.initializeBossUI('OBSIDIAN FALCON, THE ECLIPSE LORD');
   }
 
   update(time) {

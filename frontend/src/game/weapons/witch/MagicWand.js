@@ -42,23 +42,38 @@ export default class MagicWand {
     if (time < this.sweepEndTime) {
       this.beamGraphics.clear();
       
+      // --- THE FIX: Offset the starting position so it spawns at the tip of her wand ---
+      const offsetDist = 40; // Push it 40px away from her actual center
+      const startX = player.x + Math.cos(player.currentAimAngle) * offsetDist;
+      const startY = player.y + Math.sin(player.currentAimAngle) * offsetDist;
+
       // Calculate the end point of the laser (far off-screen)
       const length = 1200; 
-      const endX = player.x + Math.cos(player.currentAimAngle) * length;
-      const endY = player.y + Math.sin(player.currentAimAngle) * length;
+      const endX = startX + Math.cos(player.currentAimAngle) * length;
+      const endY = startY + Math.sin(player.currentAimAngle) * length;
 
-      // Draw the Outer Violet Aura
-      this.beamGraphics.lineStyle(beamWidth, 0xa855f7, 0.4); // Semi-transparent purple
-      this.beamGraphics.strokeLineShape(new Phaser.Geom.Line(player.x, player.y, endX, endY));
+      // --- THE FIX: Draw rounded caps at the start of the beam ---
+      // Outer Violet Aura Cap
+      this.beamGraphics.fillStyle(0xa855f7, 0.4); 
+      this.beamGraphics.fillCircle(startX, startY, beamWidth / 2);
+
+      // Draw the Outer Violet Aura Line
+      this.beamGraphics.lineStyle(beamWidth, 0xa855f7, 0.4); 
+      this.beamGraphics.strokeLineShape(new Phaser.Geom.Line(startX, startY, endX, endY));
       
-      // Draw the Inner White-Hot Core
+      // Inner White-Hot Core Cap
+      this.beamGraphics.fillStyle(0xffffff, 1);
+      this.beamGraphics.fillCircle(startX, startY, (beamWidth * 0.3) / 2);
+
+      // Draw the Inner White-Hot Core Line
       this.beamGraphics.lineStyle(beamWidth * 0.3, 0xffffff, 1); 
-      this.beamGraphics.strokeLineShape(new Phaser.Geom.Line(player.x, player.y, endX, endY));
+      this.beamGraphics.strokeLineShape(new Phaser.Geom.Line(startX, startY, endX, endY));
 
       // --- 3. THE PHYSICS STREAM ---
       // Fire an invisible, high-speed physics circle every 40ms to simulate a solid beam
       if (time > this.lastTick) {
-        const segment = this.scene.playerProjectiles.create(player.x, player.y, null).setVisible(false);
+        // Ensure the physics object ALSO spawns from the offset position
+        const segment = this.scene.playerProjectiles.create(startX, startY, null).setVisible(false);
         segment.body.setCircle(beamWidth / 2);
         segment.body.setOffset(-beamWidth / 2, -beamWidth / 2);
         

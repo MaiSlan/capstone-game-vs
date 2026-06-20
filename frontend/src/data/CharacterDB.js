@@ -19,7 +19,7 @@ export const CHARACTER_DB = {
   },
   pirate: { 
     id: 'pirate',
-    name: 'Captain Calypso', 
+    name: 'Captain Calypso, the Blood Siren', 
     hp: 100,        
     speed: 250,     
     weaponName: "The Merchant's Folly",

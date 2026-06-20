@@ -10,6 +10,10 @@ export default class BrambleQueenMonster extends EclipseLordBase {
     this.setTint(0x166534); // Deep forest green
     this.setScale(2);
     this.thrallTimer = 0;
+
+    this.isBoss = true;
+    this.maxHp = this.hp; 
+    this.initializeBossUI('BRAMBLE QUEEN, THE ECLIPSE LORD');
   }
 
   triggerAttack(time) {

@@ -146,8 +146,8 @@ export const WEAPON_DB = {
   magic_orb: { // The Void Eye
     id: 'magic_orb',
     maxLevel: 5,
-    damage: [15, 22, 32, 45, 65], 
-    cooldown: [900, 800, 700, 550, 400],
+    damage: [15, 25, 40, 60, 90],
+    cooldown: [2000, 1800, 1600, 1400, 1200],
     speed: [300, 350, 400, 450, 500] 
   },
   magic_book: { // Forbidden Folios

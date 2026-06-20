@@ -7,6 +7,7 @@ export default class GrandHaruspexMonster extends EclipseLordBase {
     this.body.setSize(80, 80);
     this.setTint(0xf472b6); // Brain pink
     this.setScale(2.5);
+    this.initializeBossUI('GRAND HARUSPEX, THE ECLIPSE LORD');
   }
 
   update(time) {
