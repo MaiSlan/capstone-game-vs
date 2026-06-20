@@ -154,6 +154,8 @@ export const WEAPON_DB = {
     id: 'magic_book',
     maxLevel: 5,
     damage: [10, 15, 22, 30, 45],
+    cooldown: [5000, 4800, 4500, 4200, 4000],
+    count: [2, 3, 4, 5, 6],
     rotationSpeed: [0.015, 0.02, 0.025, 0.03, 0.04], 
     radius: [80, 100, 120, 140, 170] 
   },
