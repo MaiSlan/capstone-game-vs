@@ -27,6 +27,40 @@ export default class UIScene extends Phaser.Scene {
         this.updateInventory(mainScene.player.weapons, mainScene.player.items);
       }
     });
+
+
+    // ==========================================
+    // THE ECLIPSE WARNING
+    // ==========================================
+    this.eclipseListener = () => {
+      const { width, height } = this.scale;
+      
+      const warningText = this.add.text(width / 2, height / 2 - 100, 'THE ECLIPSE HAS BEGUN', {
+        fontFamily: 'serif',
+        fontSize: '48px',
+        color: '#dc2626', // Blood red
+        stroke: '#050202', 
+        strokeThickness: 8,
+        letterSpacing: '8px',
+        align: 'center'
+      }).setOrigin(0.5);
+
+      // Flash the text and slowly fade it out over 4 seconds
+      this.tweens.add({
+        targets: warningText,
+        alpha: { from: 1, to: 0 },
+        duration: 4000,
+        ease: 'Cubic.easeIn',
+        onComplete: () => warningText.destroy()
+      });
+    };
+
+    window.addEventListener('VS_ECLIPSE_STARTED', this.eclipseListener);
+
+    // 3. Clean up listeners on destroy
+    this.events.on('destroy', () => {
+      window.removeEventListener('VS_ECLIPSE_STARTED', this.eclipseListener);
+    });
   }
 
   // ==========================================

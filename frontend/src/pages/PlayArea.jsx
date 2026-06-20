@@ -11,6 +11,9 @@ export default function PlayArea({ selectedCharacter }) {
   const [isGameOver, setIsGameOver] = useState(false);
   const [finalLevel, setFinalLevel] = useState(1);
   const [gameInstanceKey, setGameInstanceKey] = useState(0);
+
+  const [isVictory, setIsVictory] = useState(false);
+  const [finalTime, setFinalTime] = useState(0);
   
   const [isLevelUp, setIsLevelUp] = useState(false);
   const [currentChoices, setCurrentChoices] = useState([]);
@@ -48,6 +51,12 @@ export default function PlayArea({ selectedCharacter }) {
       if (document.fullscreenElement) document.exitFullscreen();
     };
 
+    const handleVictory = (e) => {
+      setIsVictory(true);
+      if (e.detail && e.detail.timeSurvived) setFinalTime(e.detail.timeSurvived);
+      if (document.fullscreenElement) document.exitFullscreen();
+    };
+
     const handleUpdateTimer = (e) => setGameTime(e.detail.seconds);
     const handleUpdateHp = (e) => { setPlayerHp(e.detail.hp); setPlayerMaxHp(e.detail.maxHp); };
     const handleUpdateXp = (e) => { setPlayerXp(e.detail.xp); setPlayerMaxXp(e.detail.maxXp); };
@@ -64,45 +73,56 @@ export default function PlayArea({ selectedCharacter }) {
       
       let pool = [];
 
-      if (lvl % 5 === 0) {
-        weapons.forEach(equippedWeapon => {
-          if (equippedWeapon.level < 5) {
-            const dbRef = REWARD_DB.weapons[selectedCharacter].find(w => w.id === equippedWeapon.id);
-            if (dbRef) pool.push({ ...dbRef, isUpgrade: true, currentLevel: equippedWeapon.level });
-          }
-        });
-        if (weapons.length < 5) {
-          REWARD_DB.weapons[selectedCharacter].forEach(dbWeapon => {
-            if (!weapons.find(w => w.id === dbWeapon.id)) pool.push(dbWeapon);
-          });
+      // --- THE FIX: Unlocked Universal Pool ---
+      
+      // 1. Weapon Upgrades
+      weapons.forEach(equippedWeapon => {
+        if (equippedWeapon.level < 5) {
+          let dbRef = REWARD_DB.weapons[selectedCharacter].find(w => w.id === equippedWeapon.id);
+          if (!dbRef) dbRef = { id: equippedWeapon.id, type: 'weapon', title: equippedWeapon.id.replace('_', ' ').toUpperCase(), desc: 'Enhance your primary relic.', icon: getAssetIcon(equippedWeapon.id) };
+          pool.push({ ...dbRef, isUpgrade: true, currentLevel: equippedWeapon.level });
         }
-      } else {
-        weapons.forEach(equippedWeapon => {
-          if (equippedWeapon.level < 5) {
-            let dbRef = REWARD_DB.weapons[selectedCharacter].find(w => w.id === equippedWeapon.id);
-            if (!dbRef) {
-              dbRef = { id: equippedWeapon.id, type: 'weapon', title: equippedWeapon.id.replace('_', ' ').toUpperCase(), desc: 'Enhance your primary relic.', icon: getAssetIcon(equippedWeapon.id) };
-            }
-            pool.push({ ...dbRef, isUpgrade: true, currentLevel: equippedWeapon.level });
-          }
+      });
+
+      // 2. New Weapons (if slots available)
+      if (weapons.length < 5) {
+        REWARD_DB.weapons[selectedCharacter].forEach(dbWeapon => {
+          if (!weapons.find(w => w.id === dbWeapon.id)) pool.push(dbWeapon);
         });
-        items.forEach(equippedItem => {
-          if (equippedItem.level < 5) {
-            const dbRef = REWARD_DB.items.common.find(i => i.id === equippedItem.id);
-            if (dbRef) pool.push({ ...dbRef, isUpgrade: true, currentLevel: equippedItem.level });
-          }
+      }
+
+      // 3. Item Upgrades
+      items.forEach(equippedItem => {
+        if (equippedItem.level < 5) {
+          const dbRef = REWARD_DB.items.common.find(i => i.id === equippedItem.id);
+          if (dbRef) pool.push({ ...dbRef, isUpgrade: true, currentLevel: equippedItem.level });
+        }
+      });
+
+      // 4. New Items (if slots available)
+      if (items.length < 5) {
+        REWARD_DB.items.common.forEach(dbItem => {
+          if (!items.find(i => i.id === dbItem.id)) pool.push(dbItem);
         });
-        if (items.length < 5) {
-          REWARD_DB.items.common.forEach(dbItem => {
-            if (!items.find(i => i.id === dbItem.id)) pool.push(dbItem);
-          });
+      }
+
+      // 5. The "Limit Break" Infinite Stat Pool (Fallback)
+      if (pool.length < 3) {
+        const infiniteStats = [
+          { id: 'stat_might', type: 'stat', title: 'LIMIT BREAK: MIGHT', desc: '+10% Base Damage.', icon: 'assets/items/equipable/dagger.png' },
+          { id: 'stat_haste', type: 'stat', title: 'LIMIT BREAK: HASTE', desc: '+5% Attack Speed.', icon: 'assets/items/equipable/boots.png' },
+          { id: 'stat_swift', type: 'stat', title: 'LIMIT BREAK: SWIFTNESS', desc: '+10% Movement Speed.', icon: 'assets/items/equipable/necklace.png' },
+          { id: 'stat_vitality', type: 'stat', title: 'LIMIT BREAK: VITALITY', desc: 'Heal 50% Max HP.', icon: 'assets/items/equipable/ring.png' }
+        ];
+        const shuffledStats = infiniteStats.sort(() => 0.5 - Math.random());
+        while (pool.length < 3 && shuffledStats.length > 0) {
+          pool.push(shuffledStats.pop());
         }
       }
 
-      if (pool.length === 0) pool.push(REWARD_DB.items.consumables.find(i => i.id === 'heal'));
-
-      const shuffled = pool.sort(() => 0.5 - Math.random());
-      setCurrentChoices(shuffled.slice(0, 3));
+      // 6. Shuffle and present exactly 3 choices
+      const shuffledPool = pool.sort(() => 0.5 - Math.random());
+      setCurrentChoices(shuffledPool.slice(0, 3));
       setIsLevelUp(true);
     };
 
@@ -113,6 +133,7 @@ export default function PlayArea({ selectedCharacter }) {
     };    
 
     window.addEventListener('VS_GAME_OVER', handleGameOver);
+    window.addEventListener('VS_GAME_WON', handleVictory);
     window.addEventListener('VS_LEVEL_UP', handleLevelUp);
     window.addEventListener('VS_PAUSE_STATE', handlePauseState);
     window.addEventListener('VS_UPDATE_TIMER', handleUpdateTimer);
@@ -123,6 +144,7 @@ export default function PlayArea({ selectedCharacter }) {
     
     return () => {
       window.removeEventListener('VS_GAME_OVER', handleGameOver);
+      window.removeEventListener('VS_GAME_WON', handleVictory)
       window.removeEventListener('VS_LEVEL_UP', handleLevelUp);
       window.removeEventListener('VS_PAUSE_STATE', handlePauseState);
       window.removeEventListener('VS_UPDATE_TIMER', handleUpdateTimer);
@@ -371,6 +393,32 @@ export default function PlayArea({ selectedCharacter }) {
             <div className="flex gap-6 mt-4">
               <button onClick={handleRestart} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em]">Resurrect</button>
               <button onClick={() => navigate('/select')} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em]">New Vessel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================
+          VICTORY MENU
+      ========================================= */}
+      {isVictory && (
+        <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center z-50 backdrop-blur-md">
+           <div className="flex flex-col items-center">
+            <h2 className="font-royal text-5xl md:text-6xl font-black uppercase tracking-[0.4em] mb-4 text-amber-500 drop-shadow-[0_0_20px_rgba(217,119,6,0.5)]">
+              Eclipse Survived
+            </h2>
+            <div className="flex items-center gap-4 mb-12">
+              <span className="w-8 h-px bg-amber-900/50"></span>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-400 font-bold">
+                Time Alive: {formatTime(finalTime)}
+              </p>
+              <span className="w-8 h-px bg-amber-900/50"></span>
+            </div>
+
+            <div className="flex gap-6 mt-4">
+              <button onClick={() => navigate('/select')} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em] text-amber-500 hover:text-amber-400">
+                Ascend
+              </button>
             </div>
           </div>
         </div>

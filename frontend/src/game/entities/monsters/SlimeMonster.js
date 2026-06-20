@@ -1,19 +1,18 @@
-import { MONSTER_DB } from '../../../data/MonsterDB';
 import BaseMonster from '../BaseMonster';
 
 export default class SlimeMonster extends BaseMonster {
-  constructor(scene, x, y) {
-    // 1. Fetch stats
-    const stats = MONSTER_DB.slime || { hp: 40, speed: 50, damage: 10, xp: 5 };
+  // --- THE FIX: Constructor now accepts dbStats and multiplier from WaveManager ---
+  constructor(scene, x, y, dbStats, multiplier, waveConfig = {}) {
     
-    // 2. Pass everything to the BaseMonster
-    // (scene, x, y, textureKey, animationPrefix, stats, customConfig)
-    super(scene, x, y, 'slime_walk', 'slime', stats, {
+    // Pass everything up to BaseMonster
+    // (scene, x, y, textureKey, animationPrefix, dbStats, multiplier, customConfig)
+    super(scene, x, y, 'slime_walk', 'slime', dbStats, multiplier, {
       attackDistance: 65, 
-      attackSpeedCooldown: 1000
+      attackSpeedCooldown: 1000,
+      ...waveConfig
     });
     
-    // 3. Apply Slime-specific physics and sizing
+    // Slime-specific physics and sizing
     this.setScale(2.5);
     this.body.setSize(30, 30);
     this.body.setOffset(17, 17); 

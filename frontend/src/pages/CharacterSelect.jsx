@@ -29,9 +29,9 @@ const PALADIN_FRAMES = [
 const ROSTER_UI = [
   { id: 'witch', status: 'unlocked', img: 'assets/characters/witch/standing.png', hasRotation: true, frames: ROTATION_FRAMES },
   { id: 'viking', status: 'unlocked', img: 'assets/characters/viking/standing.png', hasRotation: true, frames: ROTATION_FRAMES }, 
-  { id: 'paladin', status: 'unlocked', img: 'assets/characters/paladin/standing.png', hasRotation: true, frames: PALADIN_FRAMES },
-  { id: 'pirate', status: 'unlocked', img: 'assets/characters/pirate/standing.png', hasRotation: true, frames: ROTATION_FRAMES },
-  { id: 'berserker', status: 'unlocked', img: 'assets/characters/berserker/standing.png', hasRotation: true, frames: ROTATION_FRAMES },
+  { id: 'paladin', status: 'locked', img: 'assets/characters/paladin/standing.png', hasRotation: true, frames: PALADIN_FRAMES },
+  { id: 'pirate', status: 'locked', img: 'assets/characters/pirate/standing.png', hasRotation: true, frames: ROTATION_FRAMES },
+  { id: 'berserker', status: 'locked', img: 'assets/characters/berserker/standing.png', hasRotation: true, frames: ROTATION_FRAMES },
 ];
 
 const InteractiveSprite = ({ spritesheetUrl, frames, isActive }) => {

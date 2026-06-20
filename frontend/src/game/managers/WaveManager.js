@@ -1,7 +1,23 @@
 import Phaser from 'phaser';
+import { TIMELINE_DB } from '../../data/TimelineDB';
+import { MONSTER_DB } from '../../data/MonsterDB';
+
+// --- WE WILL IMPORT THE SPECIFIC CLASSES HERE AS WE BUILD THEM IN PHASE 4 ---
 import SlimeMonster from '../entities/monsters/SlimeMonster';
+import GoreThrallMonster from '../entities/monsters/GoreThrallMonster';
 import VampireMonster from '../entities/monsters/VampireMonster';
-import TankBoss from '../entities/monsters/TankBoss';
+import PlaceholderMonster from '../entities/monsters/PlaceholderMonster';
+import LegionnaireMonster from '../entities/monsters/LegionnaireMonster';
+import BatMonster from '../entities/monsters/BatMonster';
+import BehemothMonster from '../entities/monsters/BehemothMonster';
+import SentinelMonster from '../entities/monsters/SentinelMonster';
+import EchoMonster from '../entities/monsters/EchoMonster';
+import KarnokMonster from '../entities/monsters/KarnokMonster';
+import ObsidianFalconMonster from '../entities/monsters/boss/ObsidianFalconMonster';
+import BrambleQueenMonster from '../entities/monsters/boss/BrambleQueenMonster';
+import GrandHaruspexMonster from '../entities/monsters/boss/GrandHaruspexMonster';
+import RotBringerMonster from '../entities/monsters/boss/RotBringerMonster';
+import MadPuppeteerMonster from '../entities/monsters/boss/MadPuppeteerMonster';
 
 export default class WaveManager {
   constructor(scene, enemyGroup, player) {
@@ -9,74 +25,227 @@ export default class WaveManager {
     this.enemies = enemyGroup;
     this.player = player;
     
-    this.spawnTimer = 0;
-    this.bossSpawnedAtMinute2 = false;
-    this.hasSpawnedInitialBurst = false; // --- NEW: Track the start of the game
+    // Tracks the next allowed spawn time for each specific timeline event
+    this.eventTimers = new Map(); 
+    
+    this.eclipseTriggered = false;
   }
 
   update(timeMs, runTimeSeconds) {
-    // --- NEW: Instant Action ---
-    // Spawn 10 slimes immediately when the game boots up
-    if (!this.hasSpawnedInitialBurst) {
-      for (let i = 0; i < 10; i++) {
-        const point = this.getOffScreenSpawnPoint();
-        this.enemies.add(new SlimeMonster(this.scene, point.x, point.y));
+    if (this.eclipseTriggered) return;
+
+    // --- THE ECLIPSE TRIGGER (Minute 20) ---
+    if (runTimeSeconds >= 1200) {
+      this.triggerEclipse();
+      return;
+    }
+
+    // --- DYNAMIC SCALING MATH ---
+    // Monsters gain +40% Base Stats (HP, Damage, Speed) for every minute survived
+    const currentMinute = Math.floor(runTimeSeconds / 60);
+    const globalMultiplier = 1 + (currentMinute * 0.40);
+
+    // --- THE DIRECTOR SCRIPT ---
+    TIMELINE_DB.forEach((event, index) => {
+      // Is this event currently active according to the clock?
+      if (runTimeSeconds >= event.startTime && runTimeSeconds < event.endTime) {
+        
+        // Initialize the timer for this event if it just started
+        if (!this.eventTimers.has(index)) {
+          this.eventTimers.set(index, timeMs); // Trigger immediately
+        }
+
+        // Is it time to spawn the next wave for this event?
+        if (timeMs >= this.eventTimers.get(index)) {
+          this.executePattern(event, globalMultiplier);
+          
+          // Set the timer for the next wave of this specific event
+          this.eventTimers.set(index, timeMs + event.spawnRateMs);
+        }
       }
-      this.hasSpawnedInitialBurst = true;
-    }
-
-    // --- NEW: Faster Spawns (Every 1 second instead of 2) ---
-    if (timeMs > this.spawnTimer) {
-      this.spawnWave(runTimeSeconds);
-      this.spawnTimer = timeMs + 1000; 
-    }
-
-    if (runTimeSeconds >= 120 && !this.bossSpawnedAtMinute2) {
-      this.spawnBoss();
-      this.bossSpawnedAtMinute2 = true;
-    }
+    });
   }
-  
-  getOffScreenSpawnPoint() {
+
+  // ==========================================
+  // PATTERN GENERATORS
+  // ==========================================
+
+  executePattern(event, multiplier) {
+    const { pattern, countPerSpawn, monsterId } = event;
+    const spawnData = []; // Store coordinates AND config
+
     const cam = this.scene.cameras.main;
-    const safeRadius = Math.max(cam.width, cam.height) / 2 + 150;
+    const safeRadius = Math.max(cam.width, cam.height) / 2 + 100;
+
+    switch (pattern) {
+      case 'random_edge':
+        for (let i = 0; i < countPerSpawn; i++) {
+          spawnData.push({ coord: this.getRandomEdgePoint(cam, safeRadius), config: {} });
+        }
+        break;
+
+      case 'circle':
+        const angleStep = (Math.PI * 2) / countPerSpawn;
+        for (let i = 0; i < countPerSpawn; i++) {
+          const angle = angleStep * i;
+          spawnData.push({
+            coord: { x: this.player.x + Math.cos(angle) * safeRadius, y: this.player.y + Math.sin(angle) * safeRadius },
+            config: {}
+          });
+        }
+        break;
+
+      case 'wall_horizontal':
+        const isTop = Math.random() > 0.5;
+        const startY = isTop ? cam.midPoint.y - cam.height / 2 - 100 : cam.midPoint.y + cam.height / 2 + 100;
+        const startX = cam.midPoint.x - cam.width / 2;
+        const spacingX = cam.width / countPerSpawn;
+
+        for (let i = 0; i < countPerSpawn; i++) {
+          spawnData.push({
+            coord: { x: startX + (spacingX * i), y: startY },
+            config: { 
+              aiOverride: 'sweep', 
+              sweepVelocity: { x: 0, y: isTop ? 30 : -30 }, // Very slow crawl
+              lifeTime: 9000 // Fades out and disappears after 9 seconds
+            }
+          });
+        }
+        break;
+
+      case 'wall_vertical':
+        const isLeft = Math.random() > 0.5;
+        const wallStartX = isLeft ? cam.midPoint.x - cam.width / 2 - 100 : cam.midPoint.x + cam.width / 2 + 100;
+        const wallStartY = cam.midPoint.y - cam.height / 2;
+        const spacingY = cam.height / countPerSpawn;
+
+        for (let i = 0; i < countPerSpawn; i++) {
+          spawnData.push({
+            coord: { x: wallStartX, y: wallStartY + (spacingY * i) },
+            config: { 
+              aiOverride: 'sweep', 
+              sweepVelocity: { x: isLeft ? 30 : -30, y: 0 }, // Very slow crawl
+              lifeTime: 9000 
+            }
+          });
+        }
+        break;
+
+      case 'boss':
+        spawnData.push({ coord: this.getRandomEdgePoint(cam, safeRadius), config: {} });
+        break;
+    }
+
+    spawnData.forEach(data => {
+      const clampedX = Phaser.Math.Clamp(data.coord.x, 100, 7900);
+      const clampedY = Phaser.Math.Clamp(data.coord.y, 100, 7900);
+      this.spawnMonsterFactory(monsterId, clampedX, clampedY, multiplier, data.config);
+    });
+  }
+
+  // Helper for random edge spawns
+  getRandomEdgePoint(cam, safeRadius) {
     const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
-
-    let spawnX = cam.midPoint.x + Math.cos(angle) * safeRadius;
-    let spawnY = cam.midPoint.y + Math.sin(angle) * safeRadius;
-
-    // --- THE BOUNDARY FIX ---
-    // If the math places the monster outside the 8000x8000 walls...
-    if (spawnX < 100 || spawnX > 7900 || spawnY < 100 || spawnY > 7900) {
-      // Flip the angle 180 degrees to spawn them on the opposite side of the player!
-      const oppositeAngle = angle + Math.PI;
-      spawnX = cam.midPoint.x + Math.cos(oppositeAngle) * safeRadius;
-      spawnY = cam.midPoint.y + Math.sin(oppositeAngle) * safeRadius;
-      
-      // Final clamp just in case the player is perfectly in a corner
-      spawnX = Phaser.Math.Clamp(spawnX, 100, 7900);
-      spawnY = Phaser.Math.Clamp(spawnY, 100, 7900);
-    }
-
-    return { x: spawnX, y: spawnY };
+    return {
+      x: cam.midPoint.x + Math.cos(angle) * safeRadius,
+      y: cam.midPoint.y + Math.sin(angle) * safeRadius
+    };
   }
 
-  spawnWave(runTimeSeconds) {
-    const baseSpawnCount = 2 + Math.floor(runTimeSeconds / 15);
-    
-    for (let i = 0; i < baseSpawnCount; i++) {
-      const spawnPoint = this.getOffScreenSpawnPoint();
+  // ==========================================
+  // THE MONSTER FACTORY
+  // ==========================================
+  spawnMonsterFactory(monsterId, x, y, multiplier, waveConfig) {
+    const dbStats = MONSTER_DB[monsterId];
+    if (!dbStats) return;
 
-      if (runTimeSeconds >= 60 && Math.random() < 0.3) {
-        this.enemies.add(new VampireMonster(this.scene, spawnPoint.x, spawnPoint.y));
-      } else {
-        this.enemies.add(new SlimeMonster(this.scene, spawnPoint.x, spawnPoint.y));
+    switch (monsterId) {
+      // REAL ASSETS
+      case 'abyssal_sludge':
+        this.enemies.add(new SlimeMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+        
+      case 'crimson_strigoi':
+        this.enemies.add(new VampireMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+
+      case 'blighted_gore_thrall': 
+        this.enemies.add(new GoreThrallMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+
+      case 'hollowed_legionnaire': 
+        this.enemies.add(new LegionnaireMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+
+      case 'night_terror':         
+        this.enemies.add(new BatMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+
+      case 'abyssal_behemoth':
+        this.enemies.add(new BehemothMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+   
+      case 'ocular_sentinel':      
+        this.enemies.add(new SentinelMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+
+      case 'echo_of_the_vessel':
+        this.enemies.add(new EchoMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+
+      // MID-GAME BOSS
+      case 'karnok_blood_beast':
+        this.enemies.add(new KarnokMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+
+      // ECLIPSE LORDS
+      case 'obsidian_falcon':
+        this.enemies.add(new ObsidianFalconMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+      case 'bramble_queen':
+        this.enemies.add(new BrambleQueenMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+      case 'grand_haruspex':
+        this.enemies.add(new GrandHaruspexMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+      case 'rot_bringer':
+        this.enemies.add(new RotBringerMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+      case 'mad_puppeteer':
+        this.enemies.add(new MadPuppeteerMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+
+      default:
+        this.enemies.add(new PlaceholderMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        break;
+    }
+  }
+
+  // ==========================================
+  // THE ECLIPSE TRIGGER (MINUTE 20)
+  // ==========================================
+  triggerEclipse() {
+    this.eclipseTriggered = true;
+
+    // 1. Instantly kill all minor enemies on screen
+    this.enemies.getChildren().forEach(enemy => {
+      if (enemy.active && !enemy.isDying) {
+        enemy.isDying = true;
+        enemy.destroy();
       }
-    }
-  }
+    });
 
-  spawnBoss() {
-    const spawnPoint = this.getOffScreenSpawnPoint();
-    this.enemies.add(new TankBoss(this.scene, spawnPoint.x, spawnPoint.y));
+    // 2. Select a random Final Boss from the 5 God Hand inspired Lords
+    const eclipseLords = ['obsidian_falcon', 'bramble_queen', 'grand_haruspex', 'rot_bringer', 'mad_puppeteer'];
+    const chosenLordId = eclipseLords[Math.floor(Math.random() * eclipseLords.length)];
+    
+    // We pass a massive multiplier because the player survived 20 minutes
+    const eclipseMultiplier = 1 + (20 * 0.40); 
+
+    // Spawn them dead center above the player
+    this.spawnMonsterFactory(chosenLordId, this.player.x, this.player.y - 300, eclipseMultiplier);
+
+    // 3. Visual Flair (Handled by the MainScene, but we can trigger an event here)
+    window.dispatchEvent(new CustomEvent('VS_ECLIPSE_STARTED'));
   }
 }

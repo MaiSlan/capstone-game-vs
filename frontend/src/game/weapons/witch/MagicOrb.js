@@ -11,9 +11,6 @@ export default class MagicOrb {
 
   update(time, player, enemiesGroup, weaponLevel = 1) {
     const lvlIdx = weaponLevel - 1;
-    
-    // --- THE FIX: Dynamic Speed Scaling ---
-    // Starts at a very slow 120 speed, and gains 75 speed per level (Max 420)
     const currentSpeed = 120 + (lvlIdx * 75);
 
     // --- 1. ACTIVE TRACKING (HOMING LOGIC) ---
@@ -40,6 +37,7 @@ export default class MagicOrb {
       const orb = this.scene.playerProjectiles.create(player.x, player.y, 'magic_orb');
       orb.setScale(0.7);
       orb.damage = currentDamage;
+      orb.hasImploded = false; // Prevent multi-spawning
       
       this.scene.physics.velocityFromRotation(player.currentAimAngle, currentSpeed, orb.body.velocity);
 
@@ -48,7 +46,9 @@ export default class MagicOrb {
       });
 
       orb.onHit = (enemy) => {
-        if (weaponLevel >= 5) {
+        // Only trigger the implosion ONCE per orb
+        if (weaponLevel >= 5 && !orb.hasImploded) {
+          orb.hasImploded = true;
           this.triggerVoidImplosion(orb.x, orb.y, currentDamage);
         }
         orb.destroy(); 
@@ -62,15 +62,21 @@ export default class MagicOrb {
   triggerVoidImplosion(x, y, baseDamage) {
     const implosionRadius = 100;
 
-    const blastVisual = this.scene.add.graphics();
+    // FIX 1: Set the Graphics object EXACTLY at the impact coordinates
+    const blastVisual = this.scene.add.graphics({ x: x, y: y });
     blastVisual.fillStyle(0x050202, 1); 
-    blastVisual.fillCircle(x, y, implosionRadius);
+    // Draw the circle at local (0, 0) so it scales perfectly into its own center
+    blastVisual.fillCircle(0, 0, implosionRadius);
     blastVisual.lineStyle(3, 0x9333ea, 0.8); 
-    blastVisual.strokeCircle(x, y, implosionRadius);
+    blastVisual.strokeCircle(0, 0, implosionRadius);
 
     const blackHole = this.scene.playerProjectiles.create(x, y).setVisible(false);
     blackHole.body.setCircle(implosionRadius);
     blackHole.body.setOffset(-implosionRadius, -implosionRadius);
+    
+    // FIX 2: Completely lock the physics body so monsters can't push it
+    blackHole.body.moves = false; 
+    blackHole.body.immovable = true;
     
     blackHole.damage = baseDamage * 0.02; 
 
@@ -82,6 +88,7 @@ export default class MagicOrb {
       });
     };
 
+    // Fade and shrink out nicely
     this.scene.tweens.add({
       targets: blastVisual,
       scaleX: 0,
@@ -95,6 +102,7 @@ export default class MagicOrb {
       }
     });
 
+    // Destroy the physics hitbox exactly when the visual finishes
     this.scene.time.delayedCall(3000, () => {
       if (blackHole.active) blackHole.destroy();
     });

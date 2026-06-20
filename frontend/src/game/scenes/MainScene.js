@@ -15,6 +15,7 @@ export default class MainScene extends Phaser.Scene {
 
   preload() {
   }
+  
   create() {
     AnimationManager.initializeAnimations(this);
 
@@ -24,12 +25,10 @@ export default class MainScene extends Phaser.Scene {
 
     // --- TIMER INIT ---
     this.surviveSeconds = 0;    
-    // Phaser's time events automatically pause when the scene pauses!
     this.time.addEvent({
       delay: 1000,
       callback: () => {
         this.surviveSeconds++;
-        // Send the exact time to the React overlay
         window.dispatchEvent(new CustomEvent('VS_UPDATE_TIMER', { 
           detail: { seconds: this.surviveSeconds } 
         }));
@@ -52,11 +51,11 @@ export default class MainScene extends Phaser.Scene {
     });
 
     const tileset = map.addTilesetImage('ground_rocks', 'ground_rocks_img');
-    const floorLayer = map.createBlankLayer('BaseFloor', tileset, 0, 0);
+    this.floorLayer = map.createBlankLayer('BaseFloor', tileset, 0, 0);
 
     const paleStoneTiles = [0, 2, 4, 6, 8];
-    floorLayer.randomize(0, 0, mapWidthInTiles, mapHeightInTiles, paleStoneTiles);
-    floorLayer.setScale(2);
+    this.floorLayer.randomize(0, 0, mapWidthInTiles, mapHeightInTiles, paleStoneTiles);
+    this.floorLayer.setScale(2);
 
     this.physics.world.setBounds(0, 0, mapWidth, mapHeight);
     this.cameras.main.setBounds(-500, -500, mapWidth + 1000, mapHeight + 1000);
@@ -64,24 +63,20 @@ export default class MainScene extends Phaser.Scene {
     // --- 2. THE SOLID WALLS ---
     this.walls = this.physics.add.staticGroup();
 
-    // Top Wall
     const topWall = this.add.tileSprite(mapWidth / 2, 28, mapWidth, 56, 'border_top');
-    this.physics.add.existing(topWall, true); // Force static physics body
+    this.physics.add.existing(topWall, true); 
     this.walls.add(topWall);
 
-    // Bottom Wall
     const bottomWall = this.add.tileSprite(mapWidth / 2, mapHeight - 36, mapWidth, 72, 'border_bottom');
     this.physics.add.existing(bottomWall, true);
     this.walls.add(bottomWall);
 
-    // Left Wall
     const leftWall = this.add.tileSprite(28, mapHeight / 2, mapHeight, 56, 'border_top');
     this.physics.add.existing(leftWall, true);
     leftWall.setAngle(-90);
     leftWall.body.setSize(56, mapHeight); 
     this.walls.add(leftWall);
 
-    // Right Wall
     const rightWall = this.add.tileSprite(mapWidth - 28, mapHeight / 2, mapHeight, 56, 'border_top');
     this.physics.add.existing(rightWall, true);
     rightWall.setAngle(90);
@@ -89,11 +84,11 @@ export default class MainScene extends Phaser.Scene {
     this.walls.add(rightWall);
 
     const graphics = this.add.graphics();
-    graphics.clear(); graphics.fillStyle(0xf97316, 1); graphics.fillRect(0, 0, 96, 96); graphics.generateTexture('tank_boss', 96, 96);
     graphics.clear(); graphics.fillStyle(0xffff00, 1); graphics.fillCircle(8, 8, 8); graphics.generateTexture('magic_bullet', 16, 16);
     graphics.clear(); graphics.fillStyle(0x06b6d4, 1); graphics.fillRect(0, 0, 12, 12); graphics.generateTexture('exp_gem', 12, 12);
     graphics.clear(); graphics.fillStyle(0x3b82f6, 1); graphics.fillRect(0, 0, 16, 16); graphics.generateTexture('magic_book', 16, 16);
     graphics.clear(); graphics.fillStyle(0x94a3b8, 1); graphics.fillRect(0, 0, 40, 8); graphics.generateTexture('lance', 40, 8);
+    graphics.clear(); graphics.fillStyle(0xffffff, 1); graphics.fillRect(0, 0, 40, 40); graphics.generateTexture('placeholder_square', 40, 40);
     graphics.destroy();
 
     // Groups
@@ -109,8 +104,26 @@ export default class MainScene extends Phaser.Scene {
     } else if (this.selectedCharacter === 'viking') {
       this.player = new Viking(this, 4000, 4000);
     } else {
-      this.player = new Template(this, 4000, 4000);
+      this.player = new Template(this, 4000, 4000); // Note: Ensure Template class exists if this fallback is hit
     }
+    // ==========================================
+    // DEV MODE: UNSTOPPABLE POWER
+    // Comment these out when you are ready to balance the real game!
+    // ==========================================
+    this.player.damageMult = 5.0; // Deal 500% Damage instantly
+    this.player.xpMult = 5.0;     // Level up 5x faster
+    this.player.baseSpeed = 250;  // Run incredibly fast to dodge anything
+    this.player.hp = 5000;        // Massive health pool
+    this.player.maxHp = 5000;
+    
+    // Optional Time Skip: Uncomment this to start the game directly at Minute 19!
+    this.surviveSeconds = 1190; 
+    // ==========================================
+
+    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+    this.waveManager = new WaveManager(this, this.enemies, this.player);
+
+
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     this.waveManager = new WaveManager(this, this.enemies, this.player);
 
@@ -119,30 +132,24 @@ export default class MainScene extends Phaser.Scene {
 
     // --- PURE POLYMORPHIC WEAPON HIT LOGIC ---
     this.physics.add.overlap(this.playerProjectiles, this.enemies, (projectile, enemy) => {
-      // 1. PREVENT GHOST HITS
       if (enemy.isDying || !enemy.active || !projectile.active) return;
 
-      // 2. APPLY DAMAGE
       enemy.hp -= (projectile.damage || 10);
 
-      // 3. THE SMART PROJECTILE BRAIN
-      // We rely ENTIRELY on the individual weapon classes to dictate their behavior.
-      // If a projectile needs to die on impact, pierce, or bounce, it MUST have an onHit.
-      // If it doesn't have an onHit (like Chaos Pulse or Swirling Books), it safely passes through.
       if (projectile.onHit) {
         projectile.onHit(enemy);
       }
 
-      // 4. DEATH & HURT ANIMATIONS
       if (enemy.hp <= 0) {        
-        const gemCount = enemy.texture.key === 'tank_boss' ? 5 : 1;
-        for (let i = 0; i < gemCount; i++) {
-          this.expGems.create(enemy.x + (i * 10), enemy.y + (i * 10), 'exp_gem');
-        }
         
+        // THE FIX: Spawn a single gem, but assign it the enemy's Database XP value!
+        const gem = this.expGems.create(enemy.x, enemy.y, 'exp_gem');
+        gem.xpValue = enemy.xpValue || 1; 
+        
+        // Lifesteal UI Fix
         if (this.player.lifesteal > 0 && this.player.hp < this.player.maxHp) {
           this.player.hp = Math.min(this.player.maxHp, this.player.hp + this.player.lifesteal);
-          this.scene.get('UIScene').updateHP(this.player.hp, this.player.maxHp);
+          window.dispatchEvent(new CustomEvent('VS_UPDATE_HP', { detail: { hp: this.player.hp, maxHp: this.player.maxHp } }));
         }
         
         if (typeof enemy.die === 'function') {
@@ -165,14 +172,13 @@ export default class MainScene extends Phaser.Scene {
       }
     });
 
-    // --- NEW: Player hitting Enemy (Take Damage)
+    // --- Player hitting Enemy (Take Damage) ---
     this.physics.add.overlap(this.player, this.enemies, (player, enemy) => {
       if (this.isDead || enemy.isDying) return; 
 
-      player.takeDamage(10, this);
-      this.scene.get('UIScene').updateHP(player.hp, player.maxHp);
+      player.takeDamage(enemy.damage || 10, this); // Use DB damage if available
+      window.dispatchEvent(new CustomEvent('VS_UPDATE_HP', { detail: { hp: player.hp, maxHp: player.maxHp } }));
       
-      // --- THE FIX: Tell the enemy to play its attack animation! ---
       if (typeof enemy.attack === 'function') {
         enemy.attack();
       }
@@ -188,11 +194,20 @@ export default class MainScene extends Phaser.Scene {
       }
     });
 
-    // --- NEW: Player collecting Gem
+    // --- Player collecting Gem ---
     this.physics.add.overlap(this.player, this.expGems, (player, gem) => {
+      // Pass the gem's specific DB value to the player
+      player.gainXP(gem.xpValue || 1);
       gem.destroy();
-      player.gainXP(10);
-      this.scene.get('UIScene').updateXP(player.xp, player.xpToNextLevel, player.level);
+      
+      // THE FIX: Changed 'player.nextLevelXp' to the correct 'player.xpToNextLevel'
+      window.dispatchEvent(new CustomEvent('VS_UPDATE_XP', { 
+        detail: { xp: player.xp, maxXp: player.xpToNextLevel } 
+      }));
+      
+      window.dispatchEvent(new CustomEvent('VS_UPDATE_LEVEL', { 
+        detail: { level: player.level } 
+      }));
     });
 
     this.isDead = false;
@@ -201,15 +216,29 @@ export default class MainScene extends Phaser.Scene {
     this.scene.launch('UIScene');
 
     this.rewardListener = (e) => {
-      const reward = e.detail.reward; // This is now an object!
+      const reward = e.detail.reward; 
       
       if (reward.type === 'consumable' && reward.id === 'heal') {
         this.player.hp = this.player.maxHp;
-        this.scene.get('UIScene').updateHP(this.player.hp, this.player.maxHp);
+        window.dispatchEvent(new CustomEvent('VS_UPDATE_HP', { detail: { hp: this.player.hp, maxHp: this.player.maxHp } }));
       } else if (reward.type === 'weapon') {
         this.player.addOrUpgradeWeapon(reward.id);
       } else if (reward.type === 'item') {
-        this.player.addOrUpgradeItem(reward.id); // We will build this next
+        this.player.addOrUpgradeItem(reward.id); 
+      } 
+      // --- THE FIX: Handle the Infinite Stats ---
+      else if (reward.type === 'stat') {
+        if (reward.id === 'stat_might') {
+          this.player.damageMult += 0.10; 
+        } else if (reward.id === 'stat_haste') {
+          this.player.cooldownMult *= 0.95; // Reduces cooldowns by 5%
+        } else if (reward.id === 'stat_swift') {
+          this.player.baseSpeed *= 1.10; // Increases movement by 10%
+          this.player.currentSpeed = this.player.baseSpeed;
+        } else if (reward.id === 'stat_vitality') {
+          this.player.hp = Math.min(this.player.maxHp, this.player.hp + (this.player.maxHp * 0.5));
+          window.dispatchEvent(new CustomEvent('VS_UPDATE_HP', { detail: { hp: this.player.hp, maxHp: this.player.maxHp } }));
+        }
       }
 
       this.scene.resume('MainScene');
@@ -220,18 +249,89 @@ export default class MainScene extends Phaser.Scene {
     this.pauseListener = (e) => {
       const isPaused = e.detail.isPaused;
       if (this.bgm && this.bgm.isPlaying) {
-        // Drop the volume to a faint 5% when suspended, restore to 30% when active
         this.bgm.setVolume(isPaused ? 0.05 : 0.3);
       }
     };
     window.addEventListener('VS_PAUSE_STATE', this.pauseListener);
 
-    // Clean up the event listeners if the scene restarts
+    // ==========================================
+    // THE ECLIPSE SEQUENCE HANDLER
+    // ==========================================
+    this.eclipseListener = () => {
+      // 1. Camera Shake Impact
+      this.cameras.main.shake(2000, 0.015);
+
+      // 2. Crossfade the Music
+      if (this.bgm) {
+        this.tweens.add({
+          targets: this.bgm,
+          volume: 0,
+          duration: 2000,
+          onComplete: () => {
+            this.bgm.stop();
+            this.bgm = this.sound.add('bgm_boss', { volume: 0, loop: true });
+            this.bgm.play();
+            // Fade the boss music in
+            this.tweens.add({ targets: this.bgm, volume: 0.2, duration: 2000 });
+          }
+        });
+      }
+
+      // 3. Smoothly Tint the World Blood-Red
+      this.tweens.addCounter({
+        from: 255, // White (Normal)
+        to: 100,   // Dark Red (0x3f)
+        duration: 3000,
+        onUpdate: (tween) => {
+          const val = Math.floor(tween.getValue());
+          // Lock Green and Blue to 0, keep Red fading down to a dark crimson
+          const color = Phaser.Display.Color.GetColor(val, 0, 0);
+          this.floorLayer.setTint(color);
+        }
+      });
+
+      // 4. Trap the Player (The Circular Arena)
+      this.eclipseActive = true;
+      this.eclipseCenter = { x: this.player.x, y: this.player.y };
+      
+      // EXPANDED: Increased from 600 to 900 to give plenty of dodging room
+      this.eclipseRadius = 900; 
+
+      // --- THE VISUAL BLOOD-BARRIER (DONUT TRICK) ---
+      const arenaVisual = this.add.graphics({ x: this.eclipseCenter.x, y: this.eclipseCenter.y });
+
+      // The Fix: Instead of complex path-winding, we draw a circle with an impossibly thick border.
+      // This perfectly frames the arena and guarantees the center is 100% clear.
+      const borderThickness = 4000;
+      arenaVisual.lineStyle(borderThickness, 0x020000, 0.9); // 90% opaque dark void
+      
+      // The stroke grows outward from the center of the line, so we offset the radius
+      arenaVisual.strokeCircle(0, 0, this.eclipseRadius + (borderThickness / 2));
+
+      // Draw the glowing red boundary ring
+      arenaVisual.lineStyle(8, 0xdc2626, 1); 
+      arenaVisual.strokeCircle(0, 0, this.eclipseRadius);
+      
+      // Add a secondary inner glow
+      arenaVisual.lineStyle(3, 0xffa3a3, 0.8);
+      arenaVisual.strokeCircle(0, 0, this.eclipseRadius - 6);
+
+      // Flash the barrier into existence
+      arenaVisual.setAlpha(0);
+      this.tweens.add({
+        targets: arenaVisual,
+        alpha: 1,
+        duration: 2000,
+        ease: 'Sine.easeIn'
+      });
+    };
+
+    window.addEventListener('VS_ECLIPSE_STARTED', this.eclipseListener);
+
     this.events.on('destroy', () => {
       window.removeEventListener('VS_APPLY_REWARD', this.rewardListener);
       window.removeEventListener('VS_PAUSE_STATE', this.pauseListener);
-      
-      // Stop the music if the player dies and leaves the scene
+      window.removeEventListener('VS_ECLIPSE_STARTED', this.eclipseListener);
       if (this.bgm) this.bgm.stop(); 
     });
   }
@@ -239,18 +339,13 @@ export default class MainScene extends Phaser.Scene {
   update(time, delta) {
     if (this.isDead) return;
 
-    // 1. Update the Player and Weapons
     this.player.update(time, this.enemies);
-    
-    // 2. Pass the time and our new clean surviveSeconds to the WaveManager
     this.waveManager.update(time, this.surviveSeconds);
 
-    // 3. Update all active enemies
     this.enemies.getChildren().forEach((enemy) => {
       if (enemy && enemy.active) enemy.update(time); 
     });
 
-    // 4. Magnetize EXP Gems (Modified by Thief Gloves multiplier)
     const magnetRadius = 150 * this.player.pickupMult;
     
     this.expGems.getChildren().forEach((gem) => {
@@ -263,5 +358,32 @@ export default class MainScene extends Phaser.Scene {
         }
       }
     });
+
+    // --- CIRCULAR ARENA ENFORCEMENT ---
+    if (this.eclipseActive) {
+      // Helper function to keep an entity inside the circle
+      const constrainToCircle = (sprite, radiusOffset) => {
+        if (!sprite || !sprite.active) return;
+        
+        // Calculate how far the entity is from the center
+        const dist = Phaser.Math.Distance.Between(this.eclipseCenter.x, this.eclipseCenter.y, sprite.x, sprite.y);
+        const maxDist = this.eclipseRadius - radiusOffset;
+
+        // If they stepped outside the line, pull them exactly back to the edge!
+        if (dist > maxDist) {
+          const angle = Phaser.Math.Angle.Between(this.eclipseCenter.x, this.eclipseCenter.y, sprite.x, sprite.y);
+          sprite.x = this.eclipseCenter.x + Math.cos(angle) * maxDist;
+          sprite.y = this.eclipseCenter.y + Math.sin(angle) * maxDist;
+        }
+      };
+
+      // 1. Constrain the player (20px offset for their hitbox)
+      constrainToCircle(this.player, 20);
+
+      // 2. Constrain the Boss and any minions (30px offset)
+      this.enemies.getChildren().forEach(enemy => {
+        constrainToCircle(enemy, 30);
+      });
+    }
   }
 }
