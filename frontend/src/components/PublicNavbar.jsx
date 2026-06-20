@@ -43,6 +43,9 @@ export default function PublicNavbar() {
             <span onClick={() => navigate('/bestiary')} className="text-zinc-500 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] cursor-pointer transition-all duration-300">
               Bestiary
             </span>
+            <span onClick={() => navigate('/profile')} className="text-zinc-500 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] cursor-pointer transition-all duration-300">
+              Statistics
+            </span>
             <span onClick={() => navigate('/shop')} className="text-zinc-500 hover:text-red-500 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] cursor-pointer transition-all duration-300">
               BoneFire
             </span>

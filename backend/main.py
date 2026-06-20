@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client, Client
 from dotenv import load_dotenv
+import traceback
 
 load_dotenv()
 
@@ -151,3 +152,87 @@ async def process_end_run(req: EndRunRequest, user = Depends(verify_token)):
         return {"status": "success", "message": "Run processed successfully", "gold_deposited": req.gold_earned}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to process run data: {str(e)}")
+    
+# ==========================================
+# 4. BESTIARY & STATS ROUTES
+# ==========================================
+
+class BestiaryUpdate(BaseModel):
+    monster_id: str
+    kills: int = 0
+    encounters: int = 0
+    wins: int = 0
+
+class StatsUpdate(BaseModel):
+    kills: int
+    time: int
+    is_win: bool
+    gold: int
+    level: int
+    character: str
+
+@app.get("/api/v1/bestiary/data")
+async def get_bestiary(user = Depends(verify_token)):
+    """Fetch all bestiary entries for the user."""
+    try:
+        res = supabase.table("user_bestiary").select("*").eq("user_id", user.id).execute()
+        return res.data or []
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/bestiary/update")
+async def update_bestiary_entry(req: BestiaryUpdate, user = Depends(verify_token)):
+    """Update kills/encounters/wins using the SQL RPC."""
+    try:
+        supabase.rpc("update_bestiary", {
+            "p_user_id": user.id,
+            "p_monster_id": req.monster_id,
+            "p_kills": req.kills,
+            "p_encounters": req.encounters,
+            "p_wins": req.wins
+        }).execute()
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Bestiary update failed: {str(e)}")
+
+@app.get("/api/v1/stats/data")
+async def get_stats(user = Depends(verify_token)):
+    try:
+        # We execute the query
+        res = supabase.table("user_stats").select("*").eq("user_id", user.id).maybe_single().execute()
+        
+        # If res.data exists, return it. 
+        # If res.data is None (because the table is empty), return the default object.
+        if res and res.data:
+            return res.data
+        else:
+            # Table is empty, return default empty stats
+            return {
+                "total_runs": 0,
+                "total_wins": 0,
+                "total_gold_earned": 0,
+                "total_time_seconds": 0,
+                "highest_level_reached": 0,
+                "most_played_character": None
+            }
+            
+    except Exception as e:
+        print(f"!!! STATS ERROR: {str(e)} !!!")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/stats/update")
+async def update_user_stats(req: StatsUpdate, user = Depends(verify_token)):
+    """Update global stats using the SQL RPC."""
+    try:
+        supabase.rpc("update_global_stats", {
+            "p_user_id": user.id,
+            "p_kills": req.kills,
+            "p_time": req.time,
+            "p_is_win": req.is_win,
+            "p_gold": req.gold,
+            "p_level": req.level,
+            "p_character": req.character
+        }).execute()
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Stats update failed: {str(e)}")
