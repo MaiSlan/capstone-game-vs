@@ -6,7 +6,6 @@ import { MONSTER_DB } from '../../data/MonsterDB';
 import SlimeMonster from '../entities/monsters/SlimeMonster';
 import GoreThrallMonster from '../entities/monsters/GoreThrallMonster';
 import VampireMonster from '../entities/monsters/VampireMonster';
-import PlaceholderMonster from '../entities/monsters/PlaceholderMonster';
 import LegionnaireMonster from '../entities/monsters/LegionnaireMonster';
 import BatMonster from '../entities/monsters/BatMonster';
 import BehemothMonster from '../entities/monsters/BehemothMonster';
@@ -216,7 +215,6 @@ export default class WaveManager {
         break;
 
       default:
-        this.enemies.add(new PlaceholderMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
         break;
     }
   }
