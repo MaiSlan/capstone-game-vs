@@ -13,6 +13,7 @@ export default class MainScene extends Phaser.Scene {
 
   init(data) {
     this.selectedCharacter = data.character || 'witch';
+    this.userUpgrades = data.userUpgrades || [];
   }
 
   preload() {
@@ -108,22 +109,44 @@ export default class MainScene extends Phaser.Scene {
 
     // --- SPAWN SELECTION ---
     if (this.selectedCharacter === 'witch') {
-      this.player = new Witch(this, 4000, 4000);
+      this.player = new Witch(this, 4000, 4000, this.userUpgrades);
     } else if (this.selectedCharacter === 'viking') {
-      this.player = new Viking(this, 4000, 4000);
+      this.player = new Viking(this, 4000, 4000, this.userUpgrades);
     } else {
-      this.player = new Template(this, 4000, 4000); 
+      this.player = new Template(this, 4000, 4000, this.userUpgrades); 
     }
     
     // ==========================================
     // DEV MODE: UNSTOPPABLE POWER
+    // Comment these out when you are ready to balance the real game!
     // ==========================================
-    //this.player.damageMult = 5.0; 
-    //this.player.xpMult = 5.0;     
-    //this.player.baseSpeed = 250;  
-    //this.player.hp = 5000;        
+    //this.player.damageMult = 5.0; // Deal 500% Damage instantly
+    //this.player.xpMult = 5.0;     // Level up 5x faster
+    //this.player.baseSpeed = 250;  // Run incredibly fast to dodge anything
+    //this.player.hp = 5000;        // Massive health pool
     //this.player.maxHp = 5000;
+
+    // DEV MODE: Grant character-specific weapons at Level 5 (Max)
+    //let devWeapons = [];
     
+    //if (this.selectedCharacter === 'witch') {
+    //  devWeapons = ['magic_orb', 'magic_book', 'magic_wand', 'arcane_nova'];
+    //} else if (this.selectedCharacter === 'viking') {
+    //  // --- THE FIX: Updated to match exact Viking WeaponDB IDs ---
+    //  devWeapons = ['bouncing_axe', 'piercing_lance', 'seismic_stomp', 'dragon_shout'];
+    //}
+
+    //devWeapons.forEach(weaponId => {
+    //  for (let i = 0; i < 5; i++) {
+    //    try {
+    //      this.player.addOrUpgradeWeapon(weaponId);
+    //    } catch (error) {
+    //      console.warn(`Dev Mode: Skipped ${weaponId} - Not mapped for this character.`);
+     //   }
+     // }
+    //});
+    
+    // Optional Time Skip: Uncomment this to start the game directly at Minute 19!
     //this.surviveSeconds = 240; 
     // ==========================================
 
@@ -227,7 +250,12 @@ export default class MainScene extends Phaser.Scene {
         player.setTint(0xff0000); 
         
         window.dispatchEvent(new CustomEvent('VS_GAME_OVER', {
-          detail: { level: player.level, coins: player.coins }
+          detail: { 
+            character_used: this.selectedCharacter,
+            level_reached: player.level, 
+            survival_time_seconds: this.surviveSeconds,
+            gold_earned: player.coins 
+          }
         }));
       }
     });

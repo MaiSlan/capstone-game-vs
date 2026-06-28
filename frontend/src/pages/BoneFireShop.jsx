@@ -11,7 +11,7 @@ const UPGRADE_CATALOG = [
 ];
 
 export default function BoneFireShop() {
-  const API_URL = import.meta.env.DEV ? 'http://127.0.0.1:5000' : 'https://capstone-game-vs.onrender.com';
+  const API_URL = import.meta.env.DEV ? 'http://localhost:5000' : 'https://capstone-game-vs.onrender.com';
   const [goldBalance, setGoldBalance] = useState(0);
   const [userUpgrades, setUserUpgrades] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

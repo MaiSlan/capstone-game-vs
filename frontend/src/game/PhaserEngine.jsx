@@ -4,7 +4,7 @@ import PreloadScene from './scenes/PreloadScene';
 import MainScene from './scenes/MainScene';
 import UIScene from './scenes/UIScene';
 
-export default function PhaserEngine({ selectedCharacter }) {
+export default function PhaserEngine({ selectedCharacter, userUpgrades }) {
   const gameRef = useRef(null);
 
   useEffect(() => {
@@ -27,13 +27,16 @@ export default function PhaserEngine({ selectedCharacter }) {
       game.scene.add('PreloadScene', PreloadScene);
       game.scene.add('MainScene', MainScene);
       game.scene.add('UIScene', UIScene);
-      game.scene.start('PreloadScene', { character: selectedCharacter });
+      game.scene.start('PreloadScene', { 
+        character: selectedCharacter, 
+        userUpgrades: userUpgrades || [] 
+      });
     });
 
     return () => {
       game.destroy(true);
     };
-  }, [selectedCharacter]);
+  }, [selectedCharacter, userUpgrades]);
 
   return <div ref={gameRef} className="w-full h-full" />;
 }

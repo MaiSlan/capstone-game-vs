@@ -12,7 +12,14 @@ app = FastAPI(title="VS Cloud Engine Backend")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://capstone-game-vs.vercel.app", "http://localhost:5173", "http://localhost:5000", "https://capstone-game-vs.onrender.com"],
+    allow_origins=[
+        "https://capstone-game-vs.vercel.app", 
+        "https://capstone-game-7asw2nbg5-maislans-projects.vercel.app", # Your specific preview branch
+        "http://localhost:5173", 
+        "http://127.0.0.1:5173", # Add 127.0.0.1 explicitly
+        "http://localhost:5000", 
+        "https://capstone-game-vs.onrender.com"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -90,23 +97,33 @@ class PurchaseRequest(BaseModel):
 
 @app.get("/api/v1/shop/data")
 async def get_shop_data(user = Depends(verify_token)):
-    """Fetches the player's current gold balance and their purchased upgrades."""
+    """Fetches the player's current gold balance and their purchased upgrades safely."""
     try:
-        # 1. Get Gold Balance
-        profile_res = supabase.table("profiles").select("gold_balance").eq("id", user.id).single().execute()
-        gold_balance = profile_res.data.get("gold_balance", 0)
+        # 1. Safely check for the profile
+        profile_res = supabase.table("profiles").select("gold_balance").eq("id", user.id).maybe_single().execute()
+        
+        gold_balance = 0
+        # If the profile exists and the cell isn't literally 'None'
+        if profile_res and profile_res.data:
+            gold_balance = profile_res.data.get("gold_balance") or 0 
 
-        # 2. Get Upgrades
+        # 2. Safely get the upgrades
         upgrades_res = supabase.table("user_upgrades").select("upgrade_id, level").eq("user_id", user.id).execute()
+        
+        upgrades = []
+        if upgrades_res and upgrades_res.data:
+            upgrades = upgrades_res.data
         
         return {
             "status": "success",
             "gold_balance": gold_balance,
-            "upgrades": upgrades_res.data
+            "upgrades": upgrades
         }
     except Exception as e:
+        import traceback
+        print(traceback.format_exc()) # This forces the exact error to print in your local python terminal
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
+    
 @app.post("/api/v1/shop/purchase")
 async def purchase_shop_upgrade(req: PurchaseRequest, user = Depends(verify_token)):
     """Calls the secure Supabase RPC to deduct gold and apply the upgrade."""

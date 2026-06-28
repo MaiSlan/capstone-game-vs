@@ -2,9 +2,10 @@
 import Phaser from 'phaser';
 import WeaponManager from '../managers/WeaponManager';
 import ItemManager from '../managers/ItemManager';
+import MetaStatsManager from '../managers/MetaStatsManager';
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, textureKey, baseSpeed = 200, maxHp = 100) {
+  constructor(scene, x, y, textureKey, baseSpeed = 200, maxHp = 100, metaUpgrades = []) {
     super(scene, x, y, textureKey); 
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -32,6 +33,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.dashVelocity = new Phaser.Math.Vector2(0, 0);
 
     // --- INVENTORY MANAGERS ---
+    this.metaManager = new MetaStatsManager(metaUpgrades);
     this.weaponManager = new WeaponManager(scene, this);
     this.itemManager = new ItemManager();
     
@@ -92,22 +94,29 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   recalculateStats() {
-    const stats = this.itemManager.getStatMultipliers();
+    const itemStats = this.itemManager.getStatMultipliers();
+    const metaStats = this.metaManager.getModifiers();
 
-    this.damageMult = stats.damageMult;
-    this.cooldownMult = stats.cooldownMult;
-    this.pickupMult = stats.pickupMult;
-    this.xpMult = stats.xpMult;
-    this.lifesteal = stats.lifesteal;
-    this.hpDrainPerSec = stats.hpDrainPerSec;
-    this.armor = stats.armor;
-    this.curseMult = stats.curseMult;
-    this.coinMult = stats.coinMult;
+    // Combine Meta Progression + In-Run Items
+    this.damageMult = itemStats.damageMult * metaStats.damageMult;
+    this.cooldownMult = itemStats.cooldownMult * metaStats.cooldownMult;
+    this.coinMult = itemStats.coinMult * metaStats.greedMult; // Apply Greed
+    
+    // Unchanged stats (assuming no meta-upgrades for these yet)
+    this.pickupMult = itemStats.pickupMult;
+    this.xpMult = itemStats.xpMult;
+    this.lifesteal = itemStats.lifesteal;
+    this.hpDrainPerSec = itemStats.hpDrainPerSec;
+    this.armor = itemStats.armor;
+    this.curseMult = itemStats.curseMult;
 
-    this.currentSpeed = this.baseSpeed * stats.speedMult;
+    this.currentSpeed = this.baseSpeed * itemStats.speedMult;
+    
+    // Combine HP Multipliers
+    const combinedHpMult = itemStats.hpMult * metaStats.hpMult;
     
     const oldMaxHp = this.maxHp;
-    this.maxHp = Math.floor(this.baseMaxHp * stats.hpMult);
+    this.maxHp = Math.floor(this.baseMaxHp * combinedHpMult);
     
     if (this.maxHp > oldMaxHp) this.hp += (this.maxHp - oldMaxHp);
     if (this.hp > this.maxHp) this.hp = this.maxHp; 

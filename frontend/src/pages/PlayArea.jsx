@@ -22,14 +22,18 @@ export default function PlayArea({ selectedCharacter }) {
   const [pauseStats, setPauseStats] = useState(null);
   const [pauseTab, setPauseTab] = useState('stats');
   
-  const [gameTime, setGameTime] = useState(0); 
+  const [gameTime, setGameTime] = useState(0);
+  const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:5000' : 'https://capstone-game-vs.onrender.com';
+
+  const [metaUpgrades, setMetaUpgrades] = useState([]);
+  const [isEngineReady, setIsEngineReady] = useState(false);
 
   // --- REACT HUD STATE ---
   const [playerHp, setPlayerHp] = useState(100);
   const [playerMaxHp, setPlayerMaxHp] = useState(100);
   const [playerXp, setPlayerXp] = useState(0);
   const [playerMaxXp, setPlayerMaxXp] = useState(100);
-  const [playerCoins, setPlayerCoins] = useState(0); // NEW: Coin Tracker
+  const [playerCoins, setPlayerCoins] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(1);
   const [inventoryWeapons, setInventoryWeapons] = useState([]);
   const [inventoryItems, setInventoryItems] = useState([]);
@@ -61,10 +65,71 @@ export default function PlayArea({ selectedCharacter }) {
   };
 
   useEffect(() => {
-    const handleGameOver = (e) => {
+    const fetchMetaStats = async () => {
+      try {
+        const token = localStorage.getItem('game_token');
+        if (!token) {
+          setIsEngineReady(true);
+          return; // No token, just start the game with base stats
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/api/v1/shop/data`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setMetaUpgrades(data.upgrades || []);
+        }
+      } catch (error) {
+        console.error("Failed to load meta stats:", error);
+      } finally {
+        setIsEngineReady(true);
+      }
+    };
+
+    fetchMetaStats();
+  }, []);
+
+  useEffect(() => {
+    const handleGameOver = async (e) => {
+      // 1. Trigger the React UI updates
       setIsGameOver(true);
       if (e.detail && e.detail.level) setFinalLevel(e.detail.level);
       if (document.fullscreenElement) document.exitFullscreen();
+
+      // 2. Extract the exact payload sent from MainScene.js
+      const runData = e.detail; 
+      
+      // 3. Grab the auth token
+      const token = localStorage.getItem('game_token');
+
+      if (!token) {
+        console.error("No soul bound (token missing). Cannot save run data.");
+        return;
+      }
+
+      // 4. Send the payload to the Python Backend
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/game/end_run`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(runData)
+        });
+
+        if (!response.ok) {
+          throw new Error('The backend rejected the run data.');
+        }
+
+        const result = await response.json();
+        console.log("Run successfully recorded in the abyss:", result);
+        
+      } catch (error) {
+        console.error("Failed to sync run data:", error);
+      }
     };
 
     const handleVictory = (e) => {
@@ -77,7 +142,7 @@ export default function PlayArea({ selectedCharacter }) {
     const handleUpdateHp = (e) => { setPlayerHp(e.detail.hp); setPlayerMaxHp(e.detail.maxHp); };
     const handleUpdateXp = (e) => { setPlayerXp(e.detail.xp); setPlayerMaxXp(e.detail.maxXp); };
     const handleUpdateLevel = (e) => setCurrentLevel(e.detail.level);
-    const handleUpdateCoins = (e) => setPlayerCoins(e.detail.coins); // NEW: Coin Listener
+    const handleUpdateCoins = (e) => setPlayerCoins(e.detail.coins);
     
     const handleUpdateInventory = (e) => {
       if (e.detail.weapons) setInventoryWeapons(e.detail.weapons);
@@ -311,9 +376,19 @@ export default function PlayArea({ selectedCharacter }) {
           THE GAME ENGINE
       ========================================= */}
       <div className="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center bg-[#050202] cursor-none">
-         <PhaserEngine key={gameInstanceKey} selectedCharacter={selectedCharacter} />
+        {isEngineReady ? (
+          <PhaserEngine 
+            key={gameInstanceKey} 
+            selectedCharacter={selectedCharacter} 
+            userUpgrades={metaUpgrades} 
+          />
+        ) : (
+          <div className="font-royal text-xl text-zinc-600 uppercase tracking-[0.4em] animate-pulse">
+            Forging Vessel...
+          </div>
+        )}
       </div>
-
+      
       {/* =========================================
           SUSPENDED / PAUSE MENU
       ========================================= */}
