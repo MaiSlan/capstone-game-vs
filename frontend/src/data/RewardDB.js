@@ -3,8 +3,8 @@
 export const REWARD_DB = {
   weapons: {
     viking: [
-      { id: 'bouncing_axe', type: 'weapon', title: 'Leviathan\'s Bite', desc: 'A frosted axe that seeks warmth, leaping from vein to vein.', icon: 'assets/weapons/axe_icon.png' },
-      { id: 'piercing_lance', type: 'weapon', title: 'Wyrm-Spit', desc: 'A great harpoon meant to pierce scales thick as mountains.', icon: 'assets/weapons/lance_icon.png' },
+      { id: 'bouncing_axe', type: 'weapon', title: 'Leviathan\'s Bite', desc: 'A frosted axe that seeks warmth, leaping from vein to vein.', icon: 'assets/weapons/axe.png' },
+      { id: 'piercing_lance', type: 'weapon', title: 'Wyrm-Spit', desc: 'A great harpoon meant to pierce scales thick as mountains.', icon: 'assets/weapons/spear.png' },
       { id: 'seismic_stomp', type: 'weapon', title: 'Surtur\'s Wake', desc: 'Shatter the earth to ensnare the foolish. Leaves burning ruins.', icon: 'assets/weapons/stomp_icon.png' },
       { id: 'dragon_shout', type: 'weapon', title: 'World-Eater\'s Voice', desc: 'Guttural words of power. Blasts the swarm backward into dust.', icon: 'assets/weapons/shout_icon.png' }
     ],
@@ -27,10 +27,16 @@ export const REWARD_DB = {
       { id: 'spinning_cross', type: 'weapon', title: 'Inquisitor\'s Halo', desc: 'A heavy cruciform that spins like a star of judgment to grind the wicked.', icon: 'assets/weapons/cross_icon.png' }
     ],
     witch: [
-      { id: 'magic_orb', type: 'weapon', title: 'The Void Eye', desc: 'A sphere of abyssal gravity that hungers for life. Seeks the nearest soul.', icon: 'assets/weapons/orb_icon.png' },
-      { id: 'magic_book', type: 'weapon', title: 'Forbidden Folios', desc: 'Ancient texts that orbit your vessel, ripping the marrow from those who step close.', icon: 'assets/weapons/book_icon.png' },
+      { id: 'magic_orb', type: 'weapon', title: 'The Void Eye', desc: 'A sphere of abyssal gravity that hungers for life. Seeks the nearest soul.', icon: 'assets/weapons/magic_orb.png' },
+      { id: 'magic_book', type: 'weapon', title: 'Forbidden Folios', desc: 'Ancient texts that orbit your vessel, ripping the marrow from those who step close.', icon: 'assets/weapons/spellbook.png' },
       { id: 'arcane_nova', type: 'weapon', title: 'Chaos Pulse', desc: 'A violent rejection of the physical world. Tears the veil to shatter the swarm.', icon: 'assets/weapons/nova_icon.png' },
       { id: 'magic_wand', type: 'weapon', title: 'Violet Comet', desc: 'A concentrated beam of agonizing starlight. Sweeps the earth clean of the unworthy.', icon: 'assets/weapons/wand_icon.png' }
+    ],
+    drifter: [
+      { id: 'meteorite_blade', type: 'weapon', title: 'The Meteorite Blade', desc: 'A rapid, forward-lunging dash-strike that pierces through enemies in a line.', icon: 'assets/weapons/meteorite_blade_icon.png' },
+      { id: 'phantom_strike', type: 'weapon', title: 'Tear in the Veil', desc: 'Rip open micro-fissures, sending phantoms to violently chain-strike the swarm.', icon: 'assets/weapons/phantom_strike_icon.png' },
+      { id: 'chilling_aura', type: 'weapon', title: 'Echo of the Frost', desc: 'A localized blast of freezing wind that coats the earth in unnatural rime.', icon: 'assets/weapons/frost_aura_icon.png' },
+      { id: 'conjunction_sphere', type: 'weapon', title: 'Conjunction Sphere', desc: 'Harness catastrophic energy to call down stellar debris on the densest clusters.', icon: 'assets/weapons/conjunction_sphere_icon.png' }
     ]
   },
   items: {

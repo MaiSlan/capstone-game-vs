@@ -157,7 +157,7 @@ export const WEAPON_DB = {
     cooldown: [5000, 4800, 4500, 4200, 4000],
     count: [2, 3, 4, 5, 6],
     rotationSpeed: [0.015, 0.02, 0.025, 0.03, 0.04], 
-    radius: [80, 100, 120, 140, 170] 
+    radius: [120, 140, 160, 180, 200] 
   },
   arcane_nova: { // Chaos Pulse
     id: 'arcane_nova',
@@ -172,5 +172,41 @@ export const WEAPON_DB = {
     damage: [8, 12, 18, 25, 35], 
     cooldown: [2000, 1800, 1500, 1200, 1000], 
     width: [10, 15, 20, 30, 45] 
+  },
+
+  // ==========================================
+  // Ⅵ. THE ASHEN SWALLOW (DRIFTER)
+  // ==========================================
+  meteorite_blade: { // The Meteorite Blade
+    id: 'meteorite_blade',
+    maxLevel: 5,
+    damage: [25, 35, 50, 75, 110],
+    cooldown: [1500, 1300, 1100, 900, 600],
+    lungeDistance: [100, 120, 150, 180, 220],
+    speed: [600, 700, 800, 900, 1000] // Extremely fast dash
+  },
+  phantom_strike: { // Tear in the Veil
+    id: 'phantom_strike',
+    maxLevel: 5,
+    damage: [15, 25, 35, 50, 75],
+    cooldown: [2500, 2200, 1900, 1500, 1200],
+    chainCount: [2, 3, 4, 6, 8], // Number of enemies the phantom chains to
+    speed: [800, 850, 900, 950, 1000]
+  },
+  chilling_aura: { // Echo of the Frost
+    id: 'chilling_aura',
+    maxLevel: 5,
+    damage: [10, 15, 25, 40, 60], // Initial blast damage
+    cooldown: [3000, 2800, 2500, 2200, 1800],
+    radius: [80, 100, 120, 150, 200],
+    freezeDuration: [500, 750, 1000, 1500, 2000] // CC duration in milliseconds
+  },
+  conjunction_sphere: { // Conjunction Sphere
+    id: 'conjunction_sphere',
+    maxLevel: 5,
+    damage: [40, 60, 85, 120, 170], // High burst, slow cooldown
+    cooldown: [4000, 3600, 3200, 2800, 2200],
+    meteorCount: [1, 2, 3, 4, 6],
+    radius: [60, 75, 90, 110, 140] // Impact explosion radius
   }
 };

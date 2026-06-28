@@ -80,5 +80,21 @@ export const CHARACTER_DB = {
       "There's nothing left to learn in the dark. Leave me be.",
       "I forgot what the real sky looks like. Don't make me look at the red sun again."
     ]
+  },
+  drifter: { 
+    id: 'drifter',
+    name: 'Cira, the Ashen Swallow', 
+    hp: 110,         
+    speed: 240,     
+    weaponName: 'The Meteorite Blade',
+    weaponId: 'meteorite_blade',
+    quotes: [
+      "I have outrun the frost across a dozen worlds... but there are no doors here.",
+      "My blood was supposed to be a gift. In this dark, it is just bait.",
+      "Another timeline, another slaughter. Will I ever just rest?",
+      "I can feel the space tearing around me, but it never leads out. Stop pushing me.",
+      "My blade is heavy with the blood of endless cycles. Just let me sleep.",
+      "I used to jump between stars... now I'm just a rat in a cage. Don't make me go back."
+    ]
   }
 };

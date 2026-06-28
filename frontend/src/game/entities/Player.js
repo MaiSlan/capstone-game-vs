@@ -1,80 +1,9 @@
-import { ITEM_DB } from '../../data/ItemDB';
+// src/game/entities/Player.js
 import Phaser from 'phaser';
-
-// -----------------------------------------
-// Ⅰ. Hrogar (Viking)
-// -----------------------------------------
-import BouncingAxe from '../weapons/viking/BouncingAxe';
-import PiercingLance from '../weapons/viking/PiercingLance';
-import SeismicStomp from '../weapons/viking/SeismicStomp';
-import DragonShout from '../weapons/viking/DragonShout';
-
-// -----------------------------------------
-// Ⅱ. Captain Calypso (Pirate)
-// -----------------------------------------
-//import Musket from '../weapons/pirate/Musket';
-//import Molotov from '../weapons/pirate/Molotov';
-//import TreasureShovel from '../weapons/pirate/TreasureShovel';
-//import LoadedDice from '../weapons/pirate/LoadedDice';
-
-// -----------------------------------------
-// Ⅲ. Galt (Berserker)
-// -----------------------------------------
-//import IronSlab from '../weapons/berserker/IronSlab';
-//import FanOfKnives from '../weapons/berserker/FanOfKnives';
-//import TrailGrenades from '../weapons/berserker/TrailGrenades';
-//import ArmCannon from '../weapons/berserker/ArmCannon';
-
-// -----------------------------------------
-// Ⅳ. Balian (Paladin)
-// -----------------------------------------
-//import ShieldBash from '../weapons/paladin/ShieldBash';
-//import HolyBroadsword from '../weapons/paladin/HolyBroadsword';
-//import ConsecratedGround from '../weapons/paladin/ConsecratedGround';
-//import SpinningCross from '../weapons/paladin/SpinningCross';
-
-// -----------------------------------------
-// Ⅴ. Yenna (Witch)
-// -----------------------------------------
-import MagicOrb from '../weapons/witch/MagicOrb';
-import MagicBook from '../weapons/witch/MagicBook';
-import ArcaneNova from '../weapons/witch/ArcaneNova';
-import MagicWand from '../weapons/witch/MagicWand';
-
-const WEAPON_REGISTRY = {
-  // Viking
-  'bouncing_axe': BouncingAxe,
-  'piercing_lance': PiercingLance,
-  'seismic_stomp': SeismicStomp,
-  'dragon_shout': DragonShout,
-
-  // Pirate
-  //'musket': Musket,
-  //'molotov': Molotov,
-  //'treasure_shovel': TreasureShovel,
-  //'loaded_dice': LoadedDice,
-
-  // Berserker
-  //'iron_slab': IronSlab,
-  //'fan_of_knives': FanOfKnives,
-  //'trail_grenades': TrailGrenades,
-  //'arm_cannon': ArmCannon,
-
-  // Paladin
-  //'shield_bash': ShieldBash,
-  //'holy_broadsword': HolyBroadsword,
-  //'consecrated_ground': ConsecratedGround,
-  //'spinning_cross': SpinningCross,
-
-  // Witch
-  'magic_orb': MagicOrb,
-  'magic_book': MagicBook,
-  'arcane_nova': ArcaneNova,
-  'magic_wand': MagicWand
-};
+import WeaponManager from '../managers/WeaponManager';
+import ItemManager from '../managers/ItemManager';
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
-  // We added textureKey and baseSpeed as arguments
   constructor(scene, x, y, textureKey, baseSpeed = 200, maxHp = 100) {
     super(scene, x, y, textureKey); 
     scene.add.existing(this);
@@ -84,167 +13,116 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.setScale(this.baseScale);
     this.setCollideWorldBounds(true);
     
-    // Set the injected stats
     this.baseSpeed = baseSpeed;
     this.baseMaxHp = maxHp;
     this.currentSpeed = baseSpeed;
     this.maxHp = maxHp;
     this.hp = maxHp;
+    
+    // --- PROGRESSION & LOOT ---
     this.xp = 0;
     this.xpToNextLevel = 50;
     this.level = 1;
-    this.isInvincible = false;
-    // ----------------------
+    this.coins = 0; // Ready for the LootManager
 
-    // --- INVENTORY TRACKING ---
-    this.weapons = []; // Array of { id: 'weapon_name', level: 1 }
-    this.items = [];   // Array of { id: 'item_name', level: 1 }
-    this.maxWeapons = 5;
-    this.maxItems = 5;
-    this.weaponCooldowns = {
-      lance: 0
-    };
+    // --- INVINCIBILITY & DASH STATE ---
+    this.damageInvincible = false;
+    this.isDashing = false;
+    this.dashReady = true;
+    this.dashVelocity = new Phaser.Math.Vector2(0, 0);
+
+    // --- INVENTORY MANAGERS ---
+    this.weaponManager = new WeaponManager(scene, this);
+    this.itemManager = new ItemManager();
+    
     this.orbitAngle = 0;
     this.orbitals = [];
-    // -------------------------------
 
+    // --- INPUTS ---
     this.cursors = scene.input.keyboard.createCursorKeys();
     this.wasd = scene.input.keyboard.addKeys({
-      up: Phaser.Input.Keyboard.KeyCodes.W, 
-      down: Phaser.Input.Keyboard.KeyCodes.S,
-      left: Phaser.Input.Keyboard.KeyCodes.A, 
-      right: Phaser.Input.Keyboard.KeyCodes.D,
-      // --- THE FIX: Add native AZERTY support ---
-      z: Phaser.Input.Keyboard.KeyCodes.Z,
-      q: Phaser.Input.Keyboard.KeyCodes.Q
+      up: Phaser.Input.Keyboard.KeyCodes.W, down: Phaser.Input.Keyboard.KeyCodes.S,
+      left: Phaser.Input.Keyboard.KeyCodes.A, right: Phaser.Input.Keyboard.KeyCodes.D,
+      z: Phaser.Input.Keyboard.KeyCodes.Z, q: Phaser.Input.Keyboard.KeyCodes.Q
     });
-    // --- TARGETING SYSTEM ---
+    this.spacebar = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
     this.isManualAim = false;
     this.currentAimAngle = 0;
-
-    // 1. The Ghostly Targeting Laser
+    
     this.laserGraphic = scene.add.graphics();
-    this.laserGraphic.setDepth(10); // Sits on the floor, under entities
-
-    // 2. The Qliphoth Reticle (Custom Cursor)
+    this.laserGraphic.setDepth(10); 
+    
     this.reticle = scene.add.graphics();
-    this.reticle.lineStyle(1, 0x8b0000, 0.8); // Dark blood red outer ring
+    this.reticle.lineStyle(1, 0x8b0000, 0.8);
     this.reticle.strokeCircle(0, 0, 8);
-    this.reticle.fillStyle(0xff1a1a, 1);      // Bright glowing center
+    this.reticle.fillStyle(0xff1a1a, 1);      
     this.reticle.fillCircle(0, 0, 2);
-    this.reticle.setDepth(100);               // Floats above everything
-    this.reticle.setVisible(false);           // Hidden by default
+    this.reticle.setDepth(100);               
+    this.reticle.setVisible(false);           
 
-    // Listen for a left-click to toggle the aim mode
     scene.input.on('pointerdown', (pointer) => {
       if (pointer.button === 0) {
         this.isManualAim = !this.isManualAim;
-        
-        // Toggle the reticle visibility instantly
         this.reticle.setVisible(this.isManualAim);
       }
     });
+
     this.recalculateStats();
   }
 
   addOrUpgradeItem(itemId) {
-    const existingItem = this.items.find(i => i.id === itemId);
-    
-    if (existingItem) {
-      const maxLvl = ITEM_DB[itemId].maxLevel;
-      if (existingItem.level < maxLvl) {
-        existingItem.level++;
-      }
-    } else if (this.items.length < this.maxItems) {
-      this.items.push({ id: itemId, level: 1 });
-    }
-
+    this.itemManager.addOrUpgradeItem(itemId);
     this.recalculateStats();
-
-    // Update the UI
-    if (this.scene && this.scene.scene.get('UIScene')) {
-      const cleanWeapons = this.weapons.map(w => ({ id: w.id, level: w.level }));
-      const cleanItems = this.items.map(i => ({ id: i.id, level: i.level }));
-      this.scene.scene.get('UIScene').updateInventory(cleanWeapons, cleanItems);
-      this.scene.scene.get('UIScene').updateHP(this.hp, this.maxHp); // Update HP bar just in case
-    }
+    this.updateUIInventory();
   }
 
   addOrUpgradeWeapon(weaponId) {
-    const existingWeapon = this.weapons.find(w => w.id === weaponId);
-    
-    if (existingWeapon) {
-      if (existingWeapon.level < 5) existingWeapon.level++;
-    } else if (this.weapons.length < this.maxWeapons) {
-      const WeaponClass = WEAPON_REGISTRY[weaponId];
-      this.weapons.push({ 
-        id: weaponId, 
-        level: 1,
-        instance: new WeaponClass(this.scene) 
-      });
-    }
+    this.weaponManager.addOrUpgradeWeapon(weaponId);
+    this.updateUIInventory();
+  }
 
+  updateUIInventory() {
     if (this.scene && this.scene.scene.get('UIScene')) {
-      // --- THE FIX: Clean the arrays for the UI Scene ---
-      const cleanWeapons = this.weapons.map(w => ({ id: w.id, level: w.level }));
-      const cleanItems = this.items.map(i => ({ id: i.id, level: i.level }));
+      const cleanWeapons = this.weaponManager.getCleanWeaponData();
+      const cleanItems = this.itemManager.getCleanItemData();
       this.scene.scene.get('UIScene').updateInventory(cleanWeapons, cleanItems);
+      this.scene.scene.get('UIScene').updateHP(this.hp, this.maxHp);
     }
   }
 
   recalculateStats() {
-    let speedMult = 1.0;
-    let hpMult = 1.0;
-    
-    // --- NEW STAT TRACKERS ---
-    this.damageMult = 1.0;
-    this.cooldownMult = 1.0;
-    this.pickupMult = 1.0;
-    this.xpMult = 1.0;
-    this.lifesteal = 0;
-    this.hpDrainPerSec = 0;
-    this.armor = 0;
+    const stats = this.itemManager.getStatMultipliers();
 
-    this.items.forEach(item => {
-      const data = ITEM_DB[item.id];
-      if (!data) return;
-      const lvl = item.level - 1;
+    this.damageMult = stats.damageMult;
+    this.cooldownMult = stats.cooldownMult;
+    this.pickupMult = stats.pickupMult;
+    this.xpMult = stats.xpMult;
+    this.lifesteal = stats.lifesteal;
+    this.hpDrainPerSec = stats.hpDrainPerSec;
+    this.armor = stats.armor;
+    this.curseMult = stats.curseMult;
+    this.coinMult = stats.coinMult;
 
-      if (data.speed_multiplier) speedMult += data.speed_multiplier[lvl];
-      if (data.max_hp_multiplier) hpMult += data.max_hp_multiplier[lvl];
-      if (data.damage_multiplier) this.damageMult += data.damage_multiplier[lvl];
-      if (data.cooldown_multiplier) this.cooldownMult += data.cooldown_multiplier[lvl];
-      if (data.pickup_multiplier) this.pickupMult += data.pickup_multiplier[lvl];
-      if (data.xp_multiplier) this.xpMult += data.xp_multiplier[lvl];
-      if (data.lifesteal) this.lifesteal += data.lifesteal[lvl];
-      if (data.hp_drain_per_sec) this.hpDrainPerSec += data.hp_drain_per_sec[lvl];
-      if (data.armor) this.armor += data.armor[lvl];
-    });
-
-    this.currentSpeed = this.baseSpeed * speedMult;
+    this.currentSpeed = this.baseSpeed * stats.speedMult;
     
     const oldMaxHp = this.maxHp;
-    this.maxHp = Math.floor(this.baseMaxHp * hpMult);
-    if (this.maxHp > oldMaxHp) this.hp += (this.maxHp - oldMaxHp);
+    this.maxHp = Math.floor(this.baseMaxHp * stats.hpMult);
     
-    // Ensure HP doesn't exceed new max if max dropped (e.g. Dagger)
+    if (this.maxHp > oldMaxHp) this.hp += (this.maxHp - oldMaxHp);
     if (this.hp > this.maxHp) this.hp = this.maxHp; 
   }
 
   updateAimTarget(enemiesGroup) {
     if (this.isManualAim) {
-      // --- MOUSE AIM ---
-      // Crucial: Use worldX/worldY so it accurately tracks across the camera
       const pointer = this.scene.input.activePointer;
       this.currentAimAngle = Phaser.Math.Angle.Between(this.x, this.y, pointer.worldX, pointer.worldY);
     } else {
-      // --- AUTO AIM ---
       if (enemiesGroup && enemiesGroup.getChildren().length > 0) {
         const closestEnemy = this.scene.physics.closest(this, enemiesGroup.getChildren());
         if (closestEnemy && closestEnemy.active) {
           this.currentAimAngle = Phaser.Math.Angle.Between(this.x, this.y, closestEnemy.x, closestEnemy.y);
         } else {
-          // Fallback: If no enemies, aim in the direction we are facing
           this.currentAimAngle = this.flipX ? 0 : Math.PI;
         }
       } else {
@@ -254,24 +132,23 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   takeDamage(amount, scene) {
-    if (this.isInvincible) return; // Ignore damage if in I-Frames
+    // I-Frames from either taking damage or currently dashing
+    if (this.damageInvincible || this.isDashing) return; 
     
-    this.hp -= amount;
-    this.isInvincible = true;
+    const finalDamage = Math.max(1, amount - this.armor);
     
-    // Flash red
+    this.hp -= finalDamage;
+    this.damageInvincible = true;
     this.setTint(0xff0000);
     
-    // 1-second invincibility cooldown
     scene.time.delayedCall(1000, () => {
-      this.isInvincible = false;
+      this.damageInvincible = false;
       this.clearTint();
     });
   }
   
   gainXP(amount) {
     this.xp += (amount * this.xpMult);
-    
     if (this.scene && this.scene.scene.get('UIScene')) {
       this.scene.scene.get('UIScene').updateXP(this.xp, this.xpToNextLevel, this.level);
     }
@@ -292,96 +169,129 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
       this.scene.scene.pause('MainScene');
       
-      // Clean the arrays before sending them across the React bridge
-      const cleanWeapons = this.weapons.map(w => ({ id: w.id, level: w.level }));
-      const cleanItems = this.items.map(i => ({ id: i.id, level: i.level }));
+      const cleanWeapons = this.weaponManager.getCleanWeaponData();
+      const cleanItems = this.itemManager.getCleanItemData();
       
       window.dispatchEvent(new CustomEvent('VS_LEVEL_UP', {
-        detail: { 
-          level: this.level,
-          weapons: cleanWeapons, 
-          items: cleanItems      
-        }
+        detail: { level: this.level, weapons: cleanWeapons, items: cleanItems }
       }));
     }
+  }
+
+  // Hook for the future LootManager
+  collectCoin(amount) {
+    this.coins += Math.floor(amount * this.coinMult);
+    // UI Event to be wired up later
+    window.dispatchEvent(new CustomEvent('VS_UPDATE_COINS', { detail: { coins: this.coins } }));
+  }
+
+  startDash(moveX, moveY) {
+    this.isDashing = true;
+    this.dashReady = false;
+
+    // If no directional input, dash in the direction the character is facing
+    if (moveX === 0 && moveY === 0) {
+      moveX = this.flipX ? 1 : -1;
+    }
+
+    // Dash speed is 3.5x normal speed
+    const dashVector = new Phaser.Math.Vector2(moveX, moveY).normalize();
+    this.dashVelocity.x = dashVector.x * (this.currentSpeed * 3.5);
+    this.dashVelocity.y = dashVector.y * (this.currentSpeed * 3.5);
+
+    // Ghost trail visual effect
+    this.scene.time.addEvent({
+      delay: 40,
+      callback: () => {
+        if(!this.active) return;
+        const ghost = this.scene.add.sprite(this.x, this.y, this.texture.key);
+        ghost.setScale(this.scaleX, this.scaleY);
+        ghost.setFlipX(this.flipX);
+        ghost.setTint(0x88ffff);
+        ghost.setAlpha(0.6);
+        this.scene.tweens.add({
+          targets: ghost, alpha: 0, duration: 300, onComplete: () => ghost.destroy()
+        });
+      },
+      repeat: 4 
+    });
+
+    // End Dash after 200ms
+    this.scene.time.delayedCall(200, () => {
+      this.isDashing = false;
+    });
+
+    // Reset Dash cooldown after 3 seconds
+    this.scene.time.delayedCall(3000, () => {
+      this.dashReady = true;
+      // Brief white flash to indicate the dash is ready again
+      this.setTintFill(0xffffff);
+      this.scene.time.delayedCall(100, () => this.clearTint());
+    });
   }
 
   update(time, enemiesGroup) {
     if (this.hp <= 0) return;
 
-    // Voodoo Doll Bleed Effect
     const delta = this.scene.game.loop.delta;
-
-    // Voodoo Doll Bleed Effect
+    
     if (this.hpDrainPerSec > 0 && this.hp > 1) {
       this.hp -= (this.hpDrainPerSec * (delta / 1000));
       if (this.hp < 1) this.hp = 1; 
-      
       if (time % 500 < 20 && this.scene.scene.isActive('UIScene')) {
         this.scene.scene.get('UIScene').updateHP(this.hp, this.maxHp);
       }
     }
 
-    this.setVelocity(0);
-
-    // Left movement (A on Qwerty, Q on Azerty, or Left Arrow)
-    if (this.cursors.left.isDown || this.wasd.left.isDown || this.wasd.q.isDown) {
-      this.setVelocityX(-this.currentSpeed);
-    } 
-    // Right movement
-    else if (this.cursors.right.isDown || this.wasd.right.isDown) {
-      this.setVelocityX(this.currentSpeed);
+    // --- DASH MOVEMENT OVERRIDE ---
+    if (this.isDashing) {
+      this.setVelocity(this.dashVelocity.x, this.dashVelocity.y);
+      // Skip normal movement/aiming while locked in a dash
+      return; 
     }
 
-    // Up movement (W on Qwerty, Z on Azerty, or Up Arrow)
-    if (this.cursors.up.isDown || this.wasd.up.isDown || this.wasd.z.isDown) {
-      this.setVelocityY(-this.currentSpeed);
-    } 
-    // Down movement
-    else if (this.cursors.down.isDown || this.wasd.down.isDown) {
-      this.setVelocityY(this.currentSpeed);
+    // --- NORMAL MOVEMENT ---
+    let moveX = 0;
+    let moveY = 0;
+
+    if (this.cursors.left.isDown || this.wasd.left.isDown || this.wasd.q.isDown) moveX = -1;
+    else if (this.cursors.right.isDown || this.wasd.right.isDown) moveX = 1;
+
+    if (this.cursors.up.isDown || this.wasd.up.isDown || this.wasd.z.isDown) moveY = -1;
+    else if (this.cursors.down.isDown || this.wasd.down.isDown) moveY = 1;
+
+    // Trigger Dash
+    if (Phaser.Input.Keyboard.JustDown(this.spacebar) && this.dashReady) {
+      this.startDash(moveX, moveY);
+      return;
     }
 
-    if (this.body.velocity.x !== 0 && this.body.velocity.y !== 0) {
+    this.setVelocity(moveX * this.currentSpeed, moveY * this.currentSpeed);
+
+    if (moveX !== 0 && moveY !== 0) {
       this.body.velocity.normalize().scale(this.currentSpeed);
     }
 
-    const isMoving = this.body.velocity.x !== 0 || this.body.velocity.y !== 0;
+    const isMoving = moveX !== 0 || moveY !== 0;
 
-    // --- NEW: Proper Animation Controller ---
     if (this.hasAnimations) {
       if (isMoving) {
-        // Un-flip the sprite since your spritesheet has dedicated East/West drawings
         this.setFlipX(false);
-        this.setScale(this.baseScale); // Ensure she doesn't squish from the old wobble
-
-        // Check which axis has the stronger velocity to determine the primary animation
+        this.setScale(this.baseScale); 
         if (Math.abs(this.body.velocity.x) > Math.abs(this.body.velocity.y)) {
-          if (this.body.velocity.x > 0) {
-            this.anims.play(`${this.animPrefix}_east`, true);
-          } else {
-            this.anims.play(`${this.animPrefix}_west`, true);
-          }
+          if (this.body.velocity.x > 0) this.anims.play(`${this.animPrefix}_east`, true);
+          else this.anims.play(`${this.animPrefix}_west`, true);
         } else {
-          if (this.body.velocity.y > 0) {
-            this.anims.play(`${this.animPrefix}_south`, true);
-          } else {
-            this.anims.play(`${this.animPrefix}_north`, true);
-          }
+          if (this.body.velocity.y > 0) this.anims.play(`${this.animPrefix}_south`, true);
+          else this.anims.play(`${this.animPrefix}_north`, true);
         }
       } else {
-        // Stop the animation exactly on the frame she is currently on
         this.anims.stop();
       }
-    } 
-    // --- OLD: Fallback Wobble for characters without animations (Viking) ---
-    else {
+    } else {
       if (isMoving) {
-        if (this.body.velocity.x > 0) {
-          this.setFlipX(true);  
-        } else if (this.body.velocity.x < 0) {
-          this.setFlipX(false); 
-        }
+        if (this.body.velocity.x > 0) this.setFlipX(true);  
+        else if (this.body.velocity.x < 0) this.setFlipX(false); 
         this.setAngle(Math.sin(time / 80) * 15);
         this.setScale(this.baseScale, this.baseScale + (Math.abs(Math.sin(time / 80)) * 0.0015));
       } else {
@@ -390,31 +300,20 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       }
     }
 
-    // Calculate aim BEFORE processing weapons
     this.updateAimTarget(enemiesGroup);
 
-    // --- VISUAL AIMING UPDATE ---
     const pointer = this.scene.input.activePointer;
-    
-    // Clear the previous frame's laser
     this.laserGraphic.clear(); 
-
+    
     if (this.isManualAim) {
-      // Snap the reticle to the mouse position
       this.reticle.setPosition(pointer.worldX, pointer.worldY);
-      
-      // Draw the faint red laser from the player to the cursor
-      this.laserGraphic.lineStyle(1, 0x8b0000, 0.25); // 25% opacity
+      this.laserGraphic.lineStyle(1, 0x8b0000, 0.25); 
       this.laserGraphic.beginPath();
       this.laserGraphic.moveTo(this.x, this.y);
       this.laserGraphic.lineTo(pointer.worldX, pointer.worldY);
       this.laserGraphic.strokePath();
     }
-    // -----------------------------
 
-    // Loop through every equipped weapon and fire it
-    this.weapons.forEach(weapon => {
-      weapon.instance.update(time, this, enemiesGroup, weapon.level);
-    });
+    this.weaponManager.update(time, enemiesGroup);
   }
 }

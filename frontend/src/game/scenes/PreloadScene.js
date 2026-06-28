@@ -54,10 +54,10 @@ export default class PreloadScene extends Phaser.Scene {
     // --- 3. THE MASTER ENGINE PRELOAD LIST ---
     // Characters
     this.load.image('witch_sprite', 'assets/characters/witch/witch.png');
-    this.load.spritesheet('witch_walk', 'assets/characters/witch/walk/witch_walk.png', { frameWidth: 256, frameHeight: 256 });
+    this.load.spritesheet('witch_walk', 'assets/characters/witch/witch_walk.png', { frameWidth: 256, frameHeight: 256 });
 
     this.load.image('viking_sprite', 'assets/characters/viking/viking.png');
-    this.load.spritesheet('viking_walk', 'assets/characters/viking/walk/viking_walk.png', { frameWidth: 256, frameHeight: 256 });
+    this.load.spritesheet('viking_walk', 'assets/characters/viking/viking_walk.png', { frameWidth: 256, frameHeight: 256 });
 
     // Monsters (Acting as placeholders for all other Bestiary entries)
     const slimeConfig = { frameWidth: 64, frameHeight: 64 };
@@ -78,24 +78,26 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image('border_top', 'assets/maps/TopBorder.png');
     this.load.image('border_bottom', 'assets/maps/BottomBorder.png');
     
-    // Phase 1 & 2 Background Music
-    this.load.audio('bgm_phase1', 'assets/sounds/bgm/PerfectBGM.ogg');
-    this.load.audio('bgm_phase2', 'assets/sounds/bgm/GoodBGM.ogg');
+    this.load.audio('bgm_viking', 'assets/sounds/bgm/Viking.ogg');
+    this.load.audio('bgm_witch', 'assets/sounds/bgm/Witch.ogg');
+    this.load.audio('bgm_paladin', 'assets/sounds/bgm/Paladin.ogg');
+    this.load.audio('bgm_pirate', 'assets/sounds/bgm/Pirate.ogg');
+    this.load.audio('bgm_drifter', 'assets/sounds/bgm/Drifter.ogg');
     
     // Mid-Boss Music
-    this.load.audio('bgm_zodd', 'assets/sounds/bgm/BossBGM.ogg');
+    this.load.audio('bgm_zodd', 'assets/sounds/bgm/BossMidGame.ogg');
     
     // Eclipse Lord Music
-    this.load.audio('bgm_femto', 'assets/sounds/bgm/femto.ogg');    // For Obsidian Falcon
-    this.load.audio('bgm_slan', 'assets/sounds/bgm/slan.ogg');      // For Bramble Queen
-    this.load.audio('bgm_conrad', 'assets/sounds/bgm/conrad.ogg');  // For Rot-Bringer
-    this.load.audio('bgm_ubic', 'assets/sounds/bgm/BossBGM2.ogg');  // For Mad Puppeteer
-    this.load.audio('bgm_void', 'assets/sounds/bgm/BossBGM3.ogg');  // For Grand Haruspex
+    this.load.audio('bgm_femto', 'assets/sounds/bgm/BossFemto.ogg');    // For Obsidian Falcon
+    this.load.audio('bgm_carmilla', 'assets/sounds/bgm/BossCarmilla.ogg');  // For Bramble Queen
+    this.load.audio('bgm_elara', 'assets/sounds/bgm/BossElara.ogg');  // For Rot-Bringer
+    this.load.audio('bgm_valeria', 'assets/sounds/bgm/BossValeria.ogg');  // For Mad Puppeteer
+    this.load.audio('bgm_void', 'assets/sounds/bgm/BossVoid.ogg');  // For Grand Haruspex
 
     // Weapons
-    this.load.image('cleave_axe', 'assets/weapons/axe.png');
+    this.load.image('bouncing_axe', 'assets/weapons/axe.png');
     this.load.image('magic_orb', 'assets/weapons/magic_orb.png');
-    this.load.image('lance', 'assets/weapons/spear.png');
+    this.load.image('piercing_lance', 'assets/weapons/spear.png');
     this.load.image('magic_book', 'assets/weapons/spellbook.png');
 
     // Items

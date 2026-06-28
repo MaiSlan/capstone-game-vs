@@ -1,8 +1,10 @@
+// src/game/scenes/MainScene.js
 import Phaser from 'phaser';
 import Witch from '../entities/characters/Witch';
 import Viking from '../entities/characters/Viking';
 import WaveManager from '../managers/WaveManager';
 import AnimationManager from '../managers/AnimationManager';
+import LootManager from '../managers/LootManager';
 
 export default class MainScene extends Phaser.Scene {
   constructor() {
@@ -20,7 +22,9 @@ export default class MainScene extends Phaser.Scene {
     AnimationManager.initializeAnimations(this);
 
     // --- AUDIO INIT ---
-    this.bgm = this.sound.add('bgm_phase1', { volume: 0.3, loop: true }); // THE FIX: Use Phase 1 BGM    
+    // Dynamically load the theme song based on the chosen vessel
+    const charBgmKey = `bgm_${this.selectedCharacter}`;
+    this.bgm = this.sound.add(charBgmKey, { volume: 0.3, loop: true });
     this.bgm.play();
 
     // --- TIMER INIT ---
@@ -85,10 +89,14 @@ export default class MainScene extends Phaser.Scene {
 
     const graphics = this.add.graphics();
     graphics.clear(); graphics.fillStyle(0xffff00, 1); graphics.fillCircle(8, 8, 8); graphics.generateTexture('magic_bullet', 16, 16);
-    graphics.clear(); graphics.fillStyle(0x06b6d4, 1); graphics.fillRect(0, 0, 12, 12); graphics.generateTexture('exp_gem', 12, 12);
     graphics.clear(); graphics.fillStyle(0x3b82f6, 1); graphics.fillRect(0, 0, 16, 16); graphics.generateTexture('magic_book', 16, 16);
     graphics.clear(); graphics.fillStyle(0x94a3b8, 1); graphics.fillRect(0, 0, 40, 8); graphics.generateTexture('lance', 40, 8);
     graphics.clear(); graphics.fillStyle(0xffffff, 1); graphics.fillRect(0, 0, 40, 40); graphics.generateTexture('placeholder_square', 40, 40);
+    
+    // Loot Textures
+    graphics.clear(); graphics.fillStyle(0xffd700, 1); graphics.fillCircle(6, 6, 6); graphics.generateTexture('coin_gold', 12, 12);
+    graphics.clear(); graphics.fillStyle(0x06b6d4, 1); graphics.fillCircle(6, 6, 6); graphics.generateTexture('exp_gem_small', 12, 12);
+    graphics.clear(); graphics.fillStyle(0xef4444, 1); graphics.fillCircle(8, 8, 8); graphics.generateTexture('exp_gem_large', 16, 16);
     graphics.destroy();
 
     // Groups
@@ -104,50 +112,22 @@ export default class MainScene extends Phaser.Scene {
     } else if (this.selectedCharacter === 'viking') {
       this.player = new Viking(this, 4000, 4000);
     } else {
-      this.player = new Template(this, 4000, 4000); // Note: Ensure Template class exists if this fallback is hit
+      this.player = new Template(this, 4000, 4000); 
     }
     
     // ==========================================
     // DEV MODE: UNSTOPPABLE POWER
-    // Comment these out when you are ready to balance the real game!
     // ==========================================
-    this.player.damageMult = 5.0; // Deal 500% Damage instantly
-    this.player.xpMult = 5.0;     // Level up 5x faster
-    this.player.baseSpeed = 250;  // Run incredibly fast to dodge anything
-    this.player.hp = 5000;        // Massive health pool
-    this.player.maxHp = 5000;
-
-    // DEV MODE: Grant character-specific weapons at Level 5 (Max)
-    let devWeapons = [];
+    //this.player.damageMult = 5.0; 
+    //this.player.xpMult = 5.0;     
+    //this.player.baseSpeed = 250;  
+    //this.player.hp = 5000;        
+    //this.player.maxHp = 5000;
     
-    if (this.selectedCharacter === 'witch') {
-      devWeapons = ['magic_orb', 'magic_book', 'magic_wand', 'arcane_nova'];
-    } else if (this.selectedCharacter === 'viking') {
-      // --- THE FIX: Updated to match exact Viking WeaponDB IDs ---
-      devWeapons = ['bouncing_axe', 'piercing_lance', 'seismic_stomp', 'dragon_shout'];
-    }
-
-    devWeapons.forEach(weaponId => {
-      for (let i = 0; i < 5; i++) {
-        try {
-          this.player.addOrUpgradeWeapon(weaponId);
-        } catch (error) {
-          console.warn(`Dev Mode: Skipped ${weaponId} - Not mapped for this character.`);
-        }
-      }
-    });
-    
-    // Optional Time Skip: Uncomment this to start the game directly at Minute 19!
-    this.surviveSeconds = 1190; 
-    // ==========================================
-    
-    // Optional Time Skip: Uncomment this to start the game directly at Minute 19!
-    this.surviveSeconds = 1190; 
+    //this.surviveSeconds = 240; 
     // ==========================================
 
-    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-    this.waveManager = new WaveManager(this, this.enemies, this.player);
-
+    this.lootManager = new LootManager(this, this.player);
 
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     this.waveManager = new WaveManager(this, this.enemies, this.player);
@@ -155,11 +135,35 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.collider(this.enemies, this.walls);
 
-    // --- PURE POLYMORPHIC WEAPON HIT LOGIC ---
+    // --- WEAPON HIT LOGIC ---
     this.physics.add.overlap(this.playerProjectiles, this.enemies, (projectile, enemy) => {
       if (enemy.isDying || !enemy.active || !projectile.active) return;
 
-      enemy.hp -= (projectile.damage || 10);
+      // 1. Calculate and apply damage
+      const damageDealt = Math.floor(projectile.damage || 10);
+      enemy.hp -= damageDealt;
+
+      // --- FLOATING DAMAGE TEXT ---
+      const dmgText = this.add.text(enemy.x + Phaser.Math.Between(-10, 10), enemy.y - 15, damageDealt.toString(), {
+        fontSize: '14px',
+        fontFamily: 'monospace',
+        fontStyle: 'bold',
+        fill: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 3
+      });
+      
+      dmgText.setDepth(50); // Ensure the text renders above characters
+
+      this.tweens.add({
+        targets: dmgText,
+        y: enemy.y - 40,
+        alpha: 0,
+        duration: 600,
+        ease: 'Power1',
+        onComplete: () => dmgText.destroy()
+      });
+      // ------------------------------
 
       if (enemy.isBoss) {
         window.dispatchEvent(new CustomEvent('VS_UPDATE_BOSS_HP', { 
@@ -173,11 +177,14 @@ export default class MainScene extends Phaser.Scene {
 
       if (enemy.hp <= 0) {        
         
-        // THE FIX: Spawn a single gem, but assign it the enemy's Database XP value!
-        const gem = this.expGems.create(enemy.x, enemy.y, 'exp_gem');
-        gem.xpValue = enemy.xpValue || 1; 
+        // DELEGATE TO LOOT MANAGER
+        this.lootManager.spawnXP(enemy.x, enemy.y, enemy.xpValue || 1);
         
-        // Lifesteal UI Fix
+        // 5% chance for a standard enemy to drop a coin
+        if (Math.random() < 0.05) {
+          this.lootManager.spawnCoin(enemy.x, enemy.y, 1, 'standard');
+        }
+        
         if (this.player.lifesteal > 0 && this.player.hp < this.player.maxHp) {
           this.player.hp = Math.min(this.player.maxHp, this.player.hp + this.player.lifesteal);
           window.dispatchEvent(new CustomEvent('VS_UPDATE_HP', { detail: { hp: this.player.hp, maxHp: this.player.maxHp } }));
@@ -203,11 +210,11 @@ export default class MainScene extends Phaser.Scene {
       }
     });
 
-    // --- Player hitting Enemy (Take Damage) ---
+    // --- PLAYER HIT BY ENEMY ---
     this.physics.add.overlap(this.player, this.enemies, (player, enemy) => {
       if (this.isDead || enemy.isDying) return; 
 
-      player.takeDamage(enemy.damage || 10, this); // Use DB damage if available
+      player.takeDamage(enemy.damage || 10, this); 
       window.dispatchEvent(new CustomEvent('VS_UPDATE_HP', { detail: { hp: player.hp, maxHp: player.maxHp } }));
       
       if (typeof enemy.attack === 'function') {
@@ -220,25 +227,9 @@ export default class MainScene extends Phaser.Scene {
         player.setTint(0xff0000); 
         
         window.dispatchEvent(new CustomEvent('VS_GAME_OVER', {
-          detail: { level: player.level }
+          detail: { level: player.level, coins: player.coins }
         }));
       }
-    });
-
-    // --- Player collecting Gem ---
-    this.physics.add.overlap(this.player, this.expGems, (player, gem) => {
-      // Pass the gem's specific DB value to the player
-      player.gainXP(gem.xpValue || 1);
-      gem.destroy();
-      
-      // THE FIX: Changed 'player.nextLevelXp' to the correct 'player.xpToNextLevel'
-      window.dispatchEvent(new CustomEvent('VS_UPDATE_XP', { 
-        detail: { xp: player.xp, maxXp: player.xpToNextLevel } 
-      }));
-      
-      window.dispatchEvent(new CustomEvent('VS_UPDATE_LEVEL', { 
-        detail: { level: player.level } 
-      }));
     });
 
     this.isDead = false;
@@ -257,14 +248,13 @@ export default class MainScene extends Phaser.Scene {
       } else if (reward.type === 'item') {
         this.player.addOrUpgradeItem(reward.id); 
       } 
-      // --- THE FIX: Handle the Infinite Stats ---
       else if (reward.type === 'stat') {
         if (reward.id === 'stat_might') {
           this.player.damageMult += 0.10; 
         } else if (reward.id === 'stat_haste') {
-          this.player.cooldownMult *= 0.95; // Reduces cooldowns by 5%
+          this.player.cooldownMult *= 0.95; 
         } else if (reward.id === 'stat_swift') {
-          this.player.baseSpeed *= 1.10; // Increases movement by 10%
+          this.player.baseSpeed *= 1.10; 
           this.player.currentSpeed = this.player.baseSpeed;
         } else if (reward.id === 'stat_vitality') {
           this.player.hp = Math.min(this.player.maxHp, this.player.hp + (this.player.maxHp * 0.5));
@@ -285,11 +275,9 @@ export default class MainScene extends Phaser.Scene {
     };
     window.addEventListener('VS_PAUSE_STATE', this.pauseListener);
 
-
     // ==========================================
     // AUDIO CROSSFADE MANAGER & MID-BOSS LOGIC
     // ==========================================
-    // A helper function to smoothly transition between tracks
     this.crossfadeMusic = (newTrackKey) => {
       if (!this.bgm) return;
       this.tweens.add({
@@ -311,16 +299,15 @@ export default class MainScene extends Phaser.Scene {
     };
     window.addEventListener('VS_MID_BOSS_STARTED', this.midBossStartListener);
 
-    // Listen for Zodd dying (Transition to Phase 2)
+    // Listen for Zodd dying (Transition back to Character Theme)
     this.midBossDeadListener = () => {
-      this.crossfadeMusic('bgm_phase2');
+      this.crossfadeMusic(`bgm_${this.selectedCharacter}`);
     };
     window.addEventListener('VS_MID_BOSS_DEAD', this.midBossDeadListener);
 
     // ==========================================
     // THE ECLIPSE SEQUENCE HANDLER
     // ==========================================
-    // THE FIX: Accept the event 'e' so we can read the bossId
     this.eclipseListener = (e) => {
       // 1. Camera Shake Impact
       this.cameras.main.shake(2000, 0.015);
@@ -328,17 +315,16 @@ export default class MainScene extends Phaser.Scene {
       // 2. Crossfade to the Specific God-Hand Music
       const bossMusicMap = {
         'obsidian_falcon': 'bgm_femto',
-        'bramble_queen': 'bgm_slan',
+        'carmilla': 'bgm_carmilla',
         'grand_haruspex': 'bgm_void',
-        'rot_bringer': 'bgm_conrad',
-        'mad_puppeteer': 'bgm_ubic'
+        'elara': 'bgm_elara',
+        'valeria': 'bgm_valeria'
       };
       
-      // Look up the track based on the boss ID passed from WaveManager, default to phase 2 if missing
-      const nextTrack = (e.detail && e.detail.bossId) ? bossMusicMap[e.detail.bossId] : 'bgm_phase2';
+      // Look up the track based on the boss ID passed from WaveManager, default to character theme if missing
+      const nextTrack = (e.detail && e.detail.bossId) ? bossMusicMap[e.detail.bossId] : `bgm_${this.selectedCharacter}`;
       this.crossfadeMusic(nextTrack);
 
-      // 3. Smoothly Tint the World Blood-Red
       this.tweens.addCounter({
         from: 255, 
         to: 100,   
@@ -350,33 +336,20 @@ export default class MainScene extends Phaser.Scene {
         }
       });
 
-      // 4. Trap the Player (The Circular Arena)
       this.eclipseActive = true;
       this.eclipseCenter = { x: this.player.x, y: this.player.y };
-      
-      // EXPANDED: Increased from 600 to 900 to give plenty of dodging room
       this.eclipseRadius = 900; 
 
-      // --- THE VISUAL BLOOD-BARRIER (DONUT TRICK) ---
       const arenaVisual = this.add.graphics({ x: this.eclipseCenter.x, y: this.eclipseCenter.y });
 
-      // The Fix: Instead of complex path-winding, we draw a circle with an impossibly thick border.
-      // This perfectly frames the arena and guarantees the center is 100% clear.
       const borderThickness = 4000;
-      arenaVisual.lineStyle(borderThickness, 0x020000, 0.9); // 90% opaque dark void
-      
-      // The stroke grows outward from the center of the line, so we offset the radius
+      arenaVisual.lineStyle(borderThickness, 0x020000, 0.9); 
       arenaVisual.strokeCircle(0, 0, this.eclipseRadius + (borderThickness / 2));
-
-      // Draw the glowing red boundary ring
       arenaVisual.lineStyle(8, 0xdc2626, 1); 
       arenaVisual.strokeCircle(0, 0, this.eclipseRadius);
-      
-      // Add a secondary inner glow
       arenaVisual.lineStyle(3, 0xffa3a3, 0.8);
       arenaVisual.strokeCircle(0, 0, this.eclipseRadius - 6);
 
-      // Flash the barrier into existence
       arenaVisual.setAlpha(0);
       this.tweens.add({
         targets: arenaVisual,
@@ -403,35 +376,20 @@ export default class MainScene extends Phaser.Scene {
 
     this.player.update(time, this.enemies);
     this.waveManager.update(time, this.surviveSeconds);
+    this.lootManager.update(); 
 
     this.enemies.getChildren().forEach((enemy) => {
       if (enemy && enemy.active) enemy.update(time); 
     });
 
-    const magnetRadius = 150 * this.player.pickupMult;
-    
-    this.expGems.getChildren().forEach((gem) => {
-      if (gem && gem.active) {
-        const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, gem.x, gem.y);        
-        if (distance < magnetRadius) {
-          this.physics.moveToObject(gem, this.player, 400); 
-        } else {
-          gem.body.setVelocity(0); 
-        }
-      }
-    });
-
     // --- CIRCULAR ARENA ENFORCEMENT ---
     if (this.eclipseActive) {
-      // Helper function to keep an entity inside the circle
       const constrainToCircle = (sprite, radiusOffset) => {
         if (!sprite || !sprite.active) return;
         
-        // Calculate how far the entity is from the center
         const dist = Phaser.Math.Distance.Between(this.eclipseCenter.x, this.eclipseCenter.y, sprite.x, sprite.y);
         const maxDist = this.eclipseRadius - radiusOffset;
 
-        // If they stepped outside the line, pull them exactly back to the edge!
         if (dist > maxDist) {
           const angle = Phaser.Math.Angle.Between(this.eclipseCenter.x, this.eclipseCenter.y, sprite.x, sprite.y);
           sprite.x = this.eclipseCenter.x + Math.cos(angle) * maxDist;
@@ -439,10 +397,8 @@ export default class MainScene extends Phaser.Scene {
         }
       };
 
-      // 1. Constrain the player (20px offset for their hitbox)
       constrainToCircle(this.player, 20);
 
-      // 2. Constrain the Boss and any minions (30px offset)
       this.enemies.getChildren().forEach(enemy => {
         constrainToCircle(enemy, 30);
       });

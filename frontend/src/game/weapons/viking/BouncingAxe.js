@@ -13,7 +13,7 @@ export default class BouncingAxe {
     // 1. Visually spin any active axes currently flying around the screen
     this.activeAxes = this.activeAxes.filter(axe => axe && axe.active);
     this.activeAxes.forEach(axe => {
-      axe.rotation += 0.3; // Fast, violent spin
+      axe.rotation += 0.1; // Fast, violent spin
     });
 
     // 2. Fire new axes if off cooldown

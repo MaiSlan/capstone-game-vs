@@ -11,7 +11,7 @@ import BatMonster from '../entities/monsters/BatMonster';
 import BehemothMonster from '../entities/monsters/BehemothMonster';
 import SentinelMonster from '../entities/monsters/SentinelMonster';
 import EchoMonster from '../entities/monsters/EchoMonster';
-import KarnokMonster from '../entities/monsters/KarnokMonster';
+import KarnokMonster from '../entities/monsters/boss/BossMidGame';
 import ObsidianFalconMonster from '../entities/monsters/boss/ObsidianFalconMonster';
 import BrambleQueenMonster from '../entities/monsters/boss/BrambleQueenMonster';
 import GrandHaruspexMonster from '../entities/monsters/boss/GrandHaruspexMonster';
@@ -193,7 +193,7 @@ export default class WaveManager {
         break;
 
       // MID-GAME BOSS
-      case 'karnok_blood_beast':
+      case 'zul_karn':
         this.enemies.add(new KarnokMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
         window.dispatchEvent(new CustomEvent('VS_MID_BOSS_STARTED'));
         break;

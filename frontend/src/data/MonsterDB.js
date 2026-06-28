@@ -10,7 +10,7 @@ export const MONSTER_DB = {
     baseHp: 20,
     baseDamage: 5,
     baseSpeed: 40,
-    xpValue: 15,      // BUFFED (was 1)
+    xpValue: 15,      
     spriteKey: 'slime'
   },
   night_terror: {
@@ -19,7 +19,7 @@ export const MONSTER_DB = {
     baseHp: 5,
     baseDamage: 8,
     baseSpeed: 160, 
-    xpValue: 8,       // BUFFED (was 1)
+    xpValue: 8,       
     spriteKey: 'bat'
   },
   blighted_gore_thrall: {
@@ -27,8 +27,8 @@ export const MONSTER_DB = {
     name: 'Blighted Gore-Thrall',
     baseHp: 15,
     baseDamage: 25, 
-    baseSpeed: 85,    // NERFED (was 110)
-    xpValue: 25,      // BUFFED
+    baseSpeed: 85,    
+    xpValue: 25,      
     spriteKey: 'gore_thrall'
   },
 
@@ -41,7 +41,7 @@ export const MONSTER_DB = {
     baseHp: 80,
     baseDamage: 18,
     baseSpeed: 30,  
-    xpValue: 35,      // BUFFED
+    xpValue: 35,      
     spriteKey: 'skeleton' 
   },
   crimson_strigoi: {
@@ -50,7 +50,7 @@ export const MONSTER_DB = {
     baseHp: 50,
     baseDamage: 12,
     baseSpeed: 90,  
-    xpValue: 40,      // BUFFED
+    xpValue: 40,      
     spriteKey: 'vampire' 
   },
   ocular_sentinel: {
@@ -59,7 +59,7 @@ export const MONSTER_DB = {
     baseHp: 30,
     baseDamage: 15,
     baseSpeed: 10,  
-    xpValue: 50,      // BUFFED
+    xpValue: 50,      
     spriteKey: 'eye_sentinel'
   },
 
@@ -72,7 +72,7 @@ export const MONSTER_DB = {
     baseHp: 600,
     baseDamage: 25,
     baseSpeed: 20,  
-    xpValue: 250,     // BUFFED
+    xpValue: 250,     
     spriteKey: 'troll'
   },
 
@@ -85,20 +85,20 @@ export const MONSTER_DB = {
     baseHp: 2500,
     baseDamage: 20,
     baseSpeed: 75,
-    xpValue: 1000,    // BUFFED
+    xpValue: 1000,    
     spriteKey: 'doppelganger' 
   },
 
   // ==========================================
   // MID-GAME BOSS (Minute 10)
   // ==========================================
-  karnok_blood_beast: {
-    id: 'karnok_blood_beast',
-    name: 'Karnok, The Blood-Beast',
+  zul_karn: {
+    id: 'zul_karn',
+    name: 'Zul\'Karn, the Crimson Behemoth',
     baseHp: 8000,
     baseDamage: 35,
     baseSpeed: 45,  
-    xpValue: 2500,    // BUFFED
+    xpValue: 2500,    
     spriteKey: 'karnok'
   },
   
@@ -111,12 +111,12 @@ export const MONSTER_DB = {
     baseHp: 20000,
     baseDamage: 40,
     baseSpeed: 60,
-    xpValue: 0, // Game ends on death
+    xpValue: 0, 
     spriteKey: 'obsidian_falcon'
   },
-  bramble_queen: {
-    id: 'bramble_queen',
-    name: 'The Bramble Queen',
+  carmilla: {
+    id: 'carmilla',
+    name: 'Carmilla, the Thistle-Saint',
     baseHp: 20000,
     baseDamage: 35,
     baseSpeed: 40,
@@ -127,24 +127,24 @@ export const MONSTER_DB = {
     id: 'grand_haruspex',
     name: 'The Grand Haruspex',
     baseHp: 18000,
-    baseDamage: 50, // Lethal bullet-hell damage
-    baseSpeed: 0,   // Stationary center screen
+    baseDamage: 50, 
+    baseSpeed: 0,   
     xpValue: 0,
     spriteKey: 'grand_haruspex'
   },
-  rot_bringer: {
-    id: 'rot_bringer',
-    name: 'The Rot-Bringer',
-    baseHp: 25000, // Highest HP pool
+  elara: {
+    id: 'elara',
+    name: 'Elara, the Weeping Miasma',
+    baseHp: 25000, 
     baseDamage: 30,
     baseSpeed: 20,
     xpValue: 0,
     spriteKey: 'rot_bringer'
   },
-  mad_puppeteer: {
-    id: 'mad_puppeteer',
-    name: 'The Mad Puppeteer',
-    baseHp: 15000, // Lower HP, but hard to hit due to clones
+  valeria: {
+    id: 'valeria',
+    name: 'Valeria, the Crimson Maestro',
+    baseHp: 15000, 
     baseDamage: 35,
     baseSpeed: 80,
     xpValue: 0,

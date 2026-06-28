@@ -20,7 +20,7 @@ export default function PlayArea({ selectedCharacter }) {
   
   const [isPaused, setIsPaused] = useState(false);
   const [pauseStats, setPauseStats] = useState(null);
-  const [pauseTab, setPauseTab] = useState('stats'); // --- NEW: Toggle for the Pause Menu ---
+  const [pauseTab, setPauseTab] = useState('stats');
   
   const [gameTime, setGameTime] = useState(0); 
 
@@ -29,6 +29,7 @@ export default function PlayArea({ selectedCharacter }) {
   const [playerMaxHp, setPlayerMaxHp] = useState(100);
   const [playerXp, setPlayerXp] = useState(0);
   const [playerMaxXp, setPlayerMaxXp] = useState(100);
+  const [playerCoins, setPlayerCoins] = useState(0); // NEW: Coin Tracker
   const [currentLevel, setCurrentLevel] = useState(1);
   const [inventoryWeapons, setInventoryWeapons] = useState([]);
   const [inventoryItems, setInventoryItems] = useState([]);
@@ -40,13 +41,23 @@ export default function PlayArea({ selectedCharacter }) {
 
   const getAssetIcon = (id) => {
     if (!id) return '';
-    const iconMap = {
-      'cleave_axe': 'assets/weapons/axe.png',
-      'magic_orb': 'assets/weapons/magic_orb.png',
-      'lance': 'assets/weapons/spear.png',
-      'magic_book': 'assets/weapons/spellbook.png'
-    };
-    return iconMap[id] || `assets/weapons/${id}_icon.png`;
+
+    // 1. Check Common Items
+    const commonItem = REWARD_DB.items.common.find(i => i.id === id);
+    if (commonItem && commonItem.icon) return commonItem.icon;
+
+    // 2. Check Consumables
+    const consumableItem = REWARD_DB.items.consumables.find(i => i.id === id);
+    if (consumableItem && consumableItem.icon) return consumableItem.icon;
+
+    // 3. Check Weapons (Search across all character arrays)
+    for (const charKey in REWARD_DB.weapons) {
+      const weapon = REWARD_DB.weapons[charKey].find(w => w.id === id);
+      if (weapon && weapon.icon) return weapon.icon;
+    }
+
+    // Return empty string instead of placeholder to trigger the onError hiding logic
+    return ''; 
   };
 
   useEffect(() => {
@@ -66,6 +77,7 @@ export default function PlayArea({ selectedCharacter }) {
     const handleUpdateHp = (e) => { setPlayerHp(e.detail.hp); setPlayerMaxHp(e.detail.maxHp); };
     const handleUpdateXp = (e) => { setPlayerXp(e.detail.xp); setPlayerMaxXp(e.detail.maxXp); };
     const handleUpdateLevel = (e) => setCurrentLevel(e.detail.level);
+    const handleUpdateCoins = (e) => setPlayerCoins(e.detail.coins); // NEW: Coin Listener
     
     const handleUpdateInventory = (e) => {
       if (e.detail.weapons) setInventoryWeapons(e.detail.weapons);
@@ -91,9 +103,6 @@ export default function PlayArea({ selectedCharacter }) {
       
       let pool = [];
 
-      // --- THE FIX: Unlocked Universal Pool ---
-      
-      // 1. Weapon Upgrades
       weapons.forEach(equippedWeapon => {
         if (equippedWeapon.level < 5) {
           let dbRef = REWARD_DB.weapons[selectedCharacter].find(w => w.id === equippedWeapon.id);
@@ -102,14 +111,12 @@ export default function PlayArea({ selectedCharacter }) {
         }
       });
 
-      // 2. New Weapons (if slots available)
       if (weapons.length < 5) {
         REWARD_DB.weapons[selectedCharacter].forEach(dbWeapon => {
           if (!weapons.find(w => w.id === dbWeapon.id)) pool.push(dbWeapon);
         });
       }
 
-      // 3. Item Upgrades
       items.forEach(equippedItem => {
         if (equippedItem.level < 5) {
           const dbRef = REWARD_DB.items.common.find(i => i.id === equippedItem.id);
@@ -117,14 +124,12 @@ export default function PlayArea({ selectedCharacter }) {
         }
       });
 
-      // 4. New Items (if slots available)
       if (items.length < 5) {
         REWARD_DB.items.common.forEach(dbItem => {
           if (!items.find(i => i.id === dbItem.id)) pool.push(dbItem);
         });
       }
 
-      // 5. The "Limit Break" Infinite Stat Pool (Fallback)
       if (pool.length < 3) {
         const infiniteStats = [
           { id: 'stat_might', type: 'stat', title: 'LIMIT BREAK: MIGHT', desc: '+10% Base Damage.', icon: 'assets/items/equipable/dagger.png' },
@@ -138,7 +143,6 @@ export default function PlayArea({ selectedCharacter }) {
         }
       }
 
-      // 6. Shuffle and present exactly 3 choices
       const shuffledPool = pool.sort(() => 0.5 - Math.random());
       setCurrentChoices(shuffledPool.slice(0, 3));
       setIsLevelUp(true);
@@ -147,7 +151,7 @@ export default function PlayArea({ selectedCharacter }) {
     const handlePauseState = (e) => {
       setIsPaused(e.detail.isPaused);
       setPauseStats(e.detail.stats || null);
-      if (e.detail.isPaused) setPauseTab('stats'); // Reset tab on pause
+      if (e.detail.isPaused) setPauseTab('stats'); 
     };    
 
     window.addEventListener('VS_GAME_OVER', handleGameOver);
@@ -157,6 +161,7 @@ export default function PlayArea({ selectedCharacter }) {
     window.addEventListener('VS_UPDATE_TIMER', handleUpdateTimer);
     window.addEventListener('VS_UPDATE_HP', handleUpdateHp);
     window.addEventListener('VS_UPDATE_XP', handleUpdateXp);
+    window.addEventListener('VS_UPDATE_COINS', handleUpdateCoins);
     window.addEventListener('VS_UPDATE_LEVEL', handleUpdateLevel);
     window.addEventListener('VS_UPDATE_INVENTORY', handleUpdateInventory);
     window.addEventListener('VS_SHOW_BOSS_BAR', handleShowBoss);
@@ -171,6 +176,7 @@ export default function PlayArea({ selectedCharacter }) {
       window.removeEventListener('VS_UPDATE_TIMER', handleUpdateTimer);
       window.removeEventListener('VS_UPDATE_HP', handleUpdateHp);
       window.removeEventListener('VS_UPDATE_XP', handleUpdateXp);
+      window.removeEventListener('VS_UPDATE_COINS', handleUpdateCoins);
       window.removeEventListener('VS_UPDATE_LEVEL', handleUpdateLevel);
       window.removeEventListener('VS_UPDATE_INVENTORY', handleUpdateInventory);
       window.removeEventListener('VS_SHOW_BOSS_BAR', handleShowBoss);
@@ -189,6 +195,7 @@ export default function PlayArea({ selectedCharacter }) {
     setGameTime(0); 
     setPlayerHp(100);
     setPlayerXp(0);
+    setPlayerCoins(0);
     setGameInstanceKey(prev => prev + 1); 
   };
 
@@ -206,15 +213,17 @@ export default function PlayArea({ selectedCharacter }) {
   const hpPercent = Math.max(0, Math.min(100, (playerHp / playerMaxHp) * 100));
   const xpPercent = Math.max(0, Math.min(100, (playerXp / playerMaxXp) * 100));
 
-  // --- THE FIX: Simplified HUD Inventory Row ---
   const renderInventoryRow = (items, max = 5) => (
-    <div className="flex gap-2">
+    <div className="flex gap-1">
       {Array.from({ length: max }).map((_, i) => {
         const item = items[i];
         return (
-          <div key={i} className="w-10 h-10 bg-black/60 border border-zinc-800 rounded-sm relative backdrop-blur-md flex items-center justify-center shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
+          <div key={i} className="w-8 h-8 bg-zinc-950/80 border border-zinc-700/80 rounded-sm relative flex items-center justify-center shadow-inner">
             {item ? (
-              <img src={getAssetIcon(item.id)} alt="icon" className="w-6 h-6 object-contain filter drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]" />
+              <>
+                <img src={getAssetIcon(item.id)} onError={(e) => e.target.style.display = 'none'} alt="icon" className="w-5 h-5 object-contain filter drop-shadow-[0_0_2px_rgba(255,255,255,0.3)]" />
+                <span className="absolute -bottom-1 -right-1 text-[8px] font-bold text-amber-500 drop-shadow-[0_0_2px_rgba(0,0,0,1)] bg-black/80 rounded px-1">{item.level}</span>
+              </>
             ) : null}
           </div>
         );
@@ -231,23 +240,39 @@ export default function PlayArea({ selectedCharacter }) {
       ========================================= */}
       <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden">
         
-        {/* --- THE FIX: Unified Top Left Status Block (Level + HP) --- */}
-        <div className="absolute top-[88px] left-8 w-64 flex flex-col pointer-events-auto">
-          <div className="flex justify-between items-end w-full px-1 mb-1">
-            <span className="text-[10px] text-zinc-500 uppercase tracking-[0.3em] font-bold">Vitality</span>
-            <span className="text-[10px] text-zinc-400 uppercase tracking-[0.3em] font-bold">
-              Layer <span className="text-red-600 text-sm">{currentLevel}</span>
-            </span>
-          </div>
-          
-          <div className="w-full h-5 bg-black/80 border border-zinc-800 rounded overflow-hidden shadow-[0_0_10px_rgba(0,0,0,0.8)] relative">
-            {/* The Red Fill */}
-            <div className="h-full bg-red-800 transition-all duration-200 ease-out" style={{ width: `${hpPercent}%` }}></div>
-            {/* The Centered White Text */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[10px] text-white font-bold tracking-[0.2em] drop-shadow-[0_0_2px_rgba(0,0,0,1)]">
+       {/* --- UNIFIED CHARACTER STATUS BLOCK (SIMPLIFIED) --- */}
+        <div className="absolute top-24 left-6 flex flex-col gap-2 pointer-events-auto">
+          <div className="flex flex-col bg-black/85 border border-red-900/40 rounded-sm shadow-[0_4px_20px_rgba(0,0,0,0.8)] p-3 backdrop-blur-md w-72">
+            
+            {/* Header: Level & Gold */}
+            <div className="flex justify-between items-center mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Level</span>
+                <span className="text-sm font-royal text-red-600 font-bold">{currentLevel}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-400 border border-amber-600 shadow-[0_0_5px_rgba(251,191,36,0.5)]"></div>
+                <span className="text-[10px] font-bold text-amber-500 tracking-widest">{playerCoins}</span>
+              </div>
+            </div>
+
+            {/* HP Bar */}
+            <div className="w-full relative h-3 bg-zinc-950 border border-zinc-800 rounded-sm overflow-hidden mb-1.5 shadow-inner">
+              <div className="h-full bg-red-800 shadow-[0_0_5px_rgba(185,28,28,0.8)] transition-all duration-200 ease-out" style={{ width: `${hpPercent}%` }} />
+              <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold tracking-widest text-zinc-100 drop-shadow-[0_0_2px_rgba(0,0,0,1)]">
                 {Math.floor(playerHp)} / {playerMaxHp}
               </span>
+            </div>
+            
+            {/* XP Bar */}
+            <div className="w-full relative h-2 bg-zinc-950 border border-zinc-800 rounded-sm overflow-hidden mb-3 shadow-inner">
+              <div className="h-full bg-blue-700 shadow-[0_0_5px_rgba(29,78,216,0.8)] transition-all duration-300 ease-out" style={{ width: `${xpPercent}%` }} />
+            </div>
+
+            {/* Inventory integrated directly into the status block */}
+            <div className="flex flex-col gap-1 pt-2 border-t border-zinc-800/50">
+              {renderInventoryRow(inventoryWeapons)}
+              {renderInventoryRow(inventoryItems)}
             </div>
           </div>
         </div>
@@ -280,22 +305,6 @@ export default function PlayArea({ selectedCharacter }) {
             {formatTime(gameTime)}
           </span>
         </div>
-
-        {/* BOTTOM LEFT: Inventory Grid */}
-        <div className="absolute bottom-6 left-8 flex flex-col gap-2 pointer-events-auto">
-          {renderInventoryRow(inventoryWeapons)}
-          {renderInventoryRow(inventoryItems)}
-        </div>
-
-        {/* BOTTOM EDGE: Sleek Full-Width XP Bar */}
-        <div className="absolute bottom-0 left-0 w-full flex flex-col pointer-events-auto">
-          <div className="w-full h-[6px] bg-black/90 border-t border-red-900/40">
-            <div 
-              className="h-full bg-red-700 shadow-[0_0_10px_rgba(220,38,38,0.8)] transition-all duration-300 ease-out" 
-              style={{ width: `${xpPercent}%` }}
-            ></div>
-          </div>
-        </div>
       </div>
 
       {/* =========================================
@@ -315,7 +324,6 @@ export default function PlayArea({ selectedCharacter }) {
               Suspended
             </h2>
             
-            {/* --- NEW: Submenu Tabs --- */}
             <div className="flex gap-12 mb-8 border-b border-red-900/30 pb-3">
               <button 
                 onClick={() => setPauseTab('stats')} 
@@ -331,7 +339,6 @@ export default function PlayArea({ selectedCharacter }) {
               </button>
             </div>
 
-            {/* TAB: Stats */}
             {pauseTab === 'stats' && pauseStats && (
               <div className="w-full max-w-lg mb-10 p-8 border border-red-900/30 bg-zinc-950/50 shadow-[inset_0_0_20px_rgba(139,0,0,0.1)] rounded-sm">
                 <div className="grid grid-cols-2 gap-x-12 gap-y-6">
@@ -363,17 +370,15 @@ export default function PlayArea({ selectedCharacter }) {
               </div>
             )}
 
-            {/* TAB: Inventory */}
             {pauseTab === 'inventory' && pauseStats && (
               <div className="w-full mb-10 p-6 border border-red-900/30 bg-zinc-950/50 shadow-[inset_0_0_20px_rgba(139,0,0,0.1)] rounded-sm max-h-[350px] overflow-y-auto custom-scrollbar">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Weapons */}
                   {pauseStats.weapons.map(w => {
                     const dbInfo = REWARD_DB.weapons[selectedCharacter]?.find(x => x.id === w.id) || { title: w.id.replace('_', ' ').toUpperCase(), desc: 'A relic of the abyss.' };
                     return (
                       <div key={`w-${w.id}`} className="flex items-start gap-4 p-3 border border-zinc-800/80 bg-black/40 rounded-sm">
                         <div className="w-12 h-12 shrink-0 bg-black/60 border border-zinc-700 flex items-center justify-center rounded">
-                          <img src={getAssetIcon(w.id)} className="w-8 h-8 object-contain" alt="" />
+                          <img src={getAssetIcon(w.id)} onError={(e) => e.target.style.display = 'none'} className="w-8 h-8 object-contain" alt="" />
                         </div>
                         <div className="flex flex-col">
                           <div className="flex justify-between items-center w-full">
@@ -386,13 +391,12 @@ export default function PlayArea({ selectedCharacter }) {
                     )
                   })}
                   
-                  {/* Items */}
                   {pauseStats.items.map(i => {
                     const dbInfo = REWARD_DB.items.common.find(x => x.id === i.id) || { title: i.id.toUpperCase(), desc: 'Passive augmentation.' };
                     return (
                       <div key={`i-${i.id}`} className="flex items-start gap-4 p-3 border border-zinc-800/80 bg-black/40 rounded-sm">
                         <div className="w-12 h-12 shrink-0 bg-black/60 border border-zinc-700 flex items-center justify-center rounded">
-                          <img src={getAssetIcon(i.id)} className="w-8 h-8 object-contain" alt="" />
+                          <img src={getAssetIcon(i.id)} onError={(e) => e.target.style.display = 'none'} className="w-8 h-8 object-contain" alt="" />
                         </div>
                         <div className="flex flex-col">
                           <div className="flex justify-between items-center w-full">
@@ -480,7 +484,6 @@ export default function PlayArea({ selectedCharacter }) {
                   </div>
                   <h3 className="font-royal text-sm font-bold uppercase tracking-widest text-zinc-300 mb-2">{reward.title}</h3>
                   
-                  {/* --- THE FIX: Enhanced Level Readout --- */}
                   {reward.isUpgrade ? (
                     <div className="text-[10px] text-amber-600 font-bold tracking-[0.2em] uppercase mb-2 animate-pulse">
                       Level {reward.currentLevel} ➔ {reward.currentLevel + 1}
