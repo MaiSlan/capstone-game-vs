@@ -2,6 +2,7 @@
 import Phaser from 'phaser';
 import Witch from '../entities/characters/Witch';
 import Viking from '../entities/characters/Viking';
+import Berserker from '../entities/characters/Berserker';
 import WaveManager from '../managers/WaveManager';
 import AnimationManager from '../managers/AnimationManager';
 import LootManager from '../managers/LootManager';
@@ -112,8 +113,8 @@ export default class MainScene extends Phaser.Scene {
       this.player = new Witch(this, 4000, 4000, this.userUpgrades);
     } else if (this.selectedCharacter === 'viking') {
       this.player = new Viking(this, 4000, 4000, this.userUpgrades);
-    } else {
-      this.player = new Template(this, 4000, 4000, this.userUpgrades); 
+    } else if (this.selectedCharacter === 'berserker') {
+      this.player = new Berserker(this, 4000, 4000, this.userUpgrades); 
     }
     
     // ==========================================

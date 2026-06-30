@@ -59,6 +59,9 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image('viking_sprite', 'assets/characters/viking/viking.png');
     this.load.spritesheet('viking_walk', 'assets/characters/viking/viking_walk.png', { frameWidth: 256, frameHeight: 256 });
 
+    this.load.image('berserker_sprite', 'assets/characters/berserker/south.png');
+    this.load.spritesheet('berserker_walk', 'assets/characters/berserker/berserker_walk.png', { frameWidth: 256, frameHeight: 256 });
+
     // Monsters (Acting as placeholders for all other Bestiary entries)
     const slimeConfig = { frameWidth: 64, frameHeight: 64 };
     this.load.spritesheet('slime_walk', 'assets/monsters/slime/Slime2_Walk_with_shadow.png', slimeConfig);
@@ -82,6 +85,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.audio('bgm_witch', 'assets/sounds/bgm/Witch.ogg');
     this.load.audio('bgm_paladin', 'assets/sounds/bgm/Paladin.ogg');
     this.load.audio('bgm_pirate', 'assets/sounds/bgm/Pirate.ogg');
+        this.load.audio('bgm_berserker', 'assets/sounds/bgm/Berserker.ogg');
     this.load.audio('bgm_drifter', 'assets/sounds/bgm/Drifter.ogg');
     
     // Mid-Boss Music

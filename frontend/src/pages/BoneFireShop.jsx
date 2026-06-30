@@ -21,7 +21,7 @@ export default function BoneFireShop() {
   useEffect(() => {
     const fetchShopData = async () => {
       try {
-        const token = localStorage.getItem('game_token'); 
+        const token = sessionStorage.getItem('game_token'); 
         const response = await fetch(`${API_URL}/api/v1/shop/data`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -58,7 +58,7 @@ export default function BoneFireShop() {
     }
 
     try {
-      const token = localStorage.getItem('game_token');
+      const token = sessionStorage.getItem('game_token');
       const response = await fetch(`${API_URL}/api/v1/shop/purchase`, {
         method: 'POST',
         headers: { 

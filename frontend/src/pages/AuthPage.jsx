@@ -31,7 +31,7 @@ export default function AuthPage() {
       if (!response.ok) throw new Error(data.detail || 'Ritual failed');
 
       if (isLogin) {
-        localStorage.setItem('game_token', data.token);
+        sessionStorage.setItem('game_token', data.token);
         navigate('/home'); 
       } else {
         alert('Pact forged. You may now awaken.');

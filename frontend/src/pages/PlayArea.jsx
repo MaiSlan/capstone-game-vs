@@ -67,7 +67,7 @@ export default function PlayArea({ selectedCharacter }) {
   useEffect(() => {
     const fetchMetaStats = async () => {
       try {
-        const token = localStorage.getItem('game_token');
+        const token = sessionStorage.getItem('game_token');
         if (!token) {
           setIsEngineReady(true);
           return; // No token, just start the game with base stats
@@ -102,7 +102,7 @@ export default function PlayArea({ selectedCharacter }) {
       const runData = e.detail; 
       
       // 3. Grab the auth token
-      const token = localStorage.getItem('game_token');
+      const token = sessionStorage.getItem('game_token');
 
       if (!token) {
         console.error("No soul bound (token missing). Cannot save run data.");

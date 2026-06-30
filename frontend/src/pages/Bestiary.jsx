@@ -8,7 +8,7 @@ export default function Bestiary() {
   useEffect(() => {
     const fetchBestiary = async () => {
       try {
-        const token = localStorage.getItem('game_token');
+        const token = sessionStorage.getItem('game_token');
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/bestiary/data`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });

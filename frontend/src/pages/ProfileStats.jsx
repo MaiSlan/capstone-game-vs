@@ -7,7 +7,7 @@ export default function ProfileStats() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = localStorage.getItem('game_token');
+      const token = sessionStorage.getItem('game_token');
       // Fetch Global Stats
       const statsRes = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/stats/data`, {
         headers: { 'Authorization': `Bearer ${token}` }

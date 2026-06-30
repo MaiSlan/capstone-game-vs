@@ -4,10 +4,10 @@ export default function PublicNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isAuthenticated = !!localStorage.getItem('game_token');
+  const isAuthenticated = !!sessionStorage.getItem('game_token');
 
   const handleSignOut = () => {
-    localStorage.removeItem('game_token');
+    sessionStorage.removeItem('game_token');
     navigate('/');
   };
 
