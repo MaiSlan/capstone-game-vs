@@ -24,10 +24,11 @@ export default class WaveManager {
     this.enemies = enemyGroup;
     this.player = player;
     
-    // Tracks the next allowed spawn time for each specific timeline event
     this.eventTimers = new Map(); 
     
     this.eclipseTriggered = false;
+    this.totalKills = 0;
+    this.bestiaryMap = new Map();
   }
 
   update(timeMs, runTimeSeconds) {
@@ -46,19 +47,13 @@ export default class WaveManager {
 
     // --- THE DIRECTOR SCRIPT ---
     TIMELINE_DB.forEach((event, index) => {
-      // Is this event currently active according to the clock?
       if (runTimeSeconds >= event.startTime && runTimeSeconds < event.endTime) {
-        
-        // Initialize the timer for this event if it just started
         if (!this.eventTimers.has(index)) {
-          this.eventTimers.set(index, timeMs); // Trigger immediately
+          this.eventTimers.set(index, timeMs); 
         }
 
-        // Is it time to spawn the next wave for this event?
         if (timeMs >= this.eventTimers.get(index)) {
           this.executePattern(event, globalMultiplier);
-          
-          // Set the timer for the next wave of this specific event
           this.eventTimers.set(index, timeMs + event.spawnRateMs);
         }
       }
@@ -71,7 +66,7 @@ export default class WaveManager {
 
   executePattern(event, multiplier) {
     const { pattern, countPerSpawn, monsterId } = event;
-    const spawnData = []; // Store coordinates AND config
+    const spawnData = []; 
 
     const cam = this.scene.cameras.main;
     const safeRadius = Math.max(cam.width, cam.height) / 2 + 100;
@@ -105,8 +100,8 @@ export default class WaveManager {
             coord: { x: startX + (spacingX * i), y: startY },
             config: { 
               aiOverride: 'sweep', 
-              sweepVelocity: { x: 0, y: isTop ? 30 : -30 }, // Very slow crawl
-              lifeTime: 9000 // Fades out and disappears after 9 seconds
+              sweepVelocity: { x: 0, y: isTop ? 30 : -30 }, 
+              lifeTime: 9000 
             }
           });
         }
@@ -123,7 +118,7 @@ export default class WaveManager {
             coord: { x: wallStartX, y: wallStartY + (spacingY * i) },
             config: { 
               aiOverride: 'sweep', 
-              sweepVelocity: { x: isLeft ? 30 : -30, y: 0 }, // Very slow crawl
+              sweepVelocity: { x: isLeft ? 30 : -30, y: 0 }, 
               lifeTime: 9000 
             }
           });
@@ -142,7 +137,6 @@ export default class WaveManager {
     });
   }
 
-  // Helper for random edge spawns
   getRandomEdgePoint(cam, safeRadius) {
     const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
     return {
@@ -158,65 +152,78 @@ export default class WaveManager {
     const dbStats = MONSTER_DB[monsterId];
     if (!dbStats) return;
 
+    // --- LOG THE ENCOUNTER ---
+    if (!this.bestiaryMap.has(monsterId)) {
+      this.bestiaryMap.set(monsterId, { monster_id: monsterId, encounters: 0, kills: 0, wins: 0 });
+    }
+    this.bestiaryMap.get(monsterId).encounters += 1;
+
+    const currentLang = localStorage.getItem('vs_lang') || 'en';
+
+    // Helper to spawn a boss, attach it to the scene, and send the UI event
+    const spawnBoss = (BossClass, isMidBoss = false) => {
+      const boss = new BossClass(this.scene, x, y, dbStats, multiplier, waveConfig);
+      
+      // EXPLICITLY TAG THE BOSS ID
+      boss.monsterId = monsterId; 
+      
+      this.enemies.add(boss);
+      
+      if (isMidBoss) {
+        window.dispatchEvent(new CustomEvent('VS_MID_BOSS_STARTED'));
+      }
+      
+      window.dispatchEvent(new CustomEvent('VS_SHOW_BOSS_BAR', {
+        detail: {
+          name: dbStats.name[currentLang],
+          hp: boss.maxHp || (dbStats.baseHp * multiplier),
+          maxHp: boss.maxHp || (dbStats.baseHp * multiplier)
+        }
+      }));
+    };
+
+    // Hold the standard enemy instance temporarily
+    let enemyInstance = null;
+
     switch (monsterId) {
       // REAL ASSETS
       case 'abyssal_sludge':
-        this.enemies.add(new SlimeMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        enemyInstance = new SlimeMonster(this.scene, x, y, dbStats, multiplier, waveConfig);
         break;
-        
       case 'crimson_strigoi':
-        this.enemies.add(new VampireMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        enemyInstance = new VampireMonster(this.scene, x, y, dbStats, multiplier, waveConfig);
         break;
-
       case 'blighted_gore_thrall': 
-        this.enemies.add(new GoreThrallMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        enemyInstance = new GoreThrallMonster(this.scene, x, y, dbStats, multiplier, waveConfig);
         break;
-
       case 'hollowed_legionnaire': 
-        this.enemies.add(new LegionnaireMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        enemyInstance = new LegionnaireMonster(this.scene, x, y, dbStats, multiplier, waveConfig);
         break;
-
       case 'night_terror':         
-        this.enemies.add(new BatMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        enemyInstance = new BatMonster(this.scene, x, y, dbStats, multiplier, waveConfig);
         break;
-
       case 'abyssal_behemoth':
-        this.enemies.add(new BehemothMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        enemyInstance = new BehemothMonster(this.scene, x, y, dbStats, multiplier, waveConfig);
         break;
-   
       case 'ocular_sentinel':      
-        this.enemies.add(new SentinelMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
+        enemyInstance = new SentinelMonster(this.scene, x, y, dbStats, multiplier, waveConfig);
         break;
 
-      case 'echo_of_the_vessel':
-        this.enemies.add(new EchoMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
-        break;
+      // BOSSES
+      case 'echo_of_the_vessel': spawnBoss(EchoMonster); break;
+      case 'zul_karn': spawnBoss(KarnokMonster, true); break;
+      case 'obsidian_falcon': spawnBoss(ObsidianFalconMonster); break;
+      case 'carmilla': spawnBoss(BrambleQueenMonster); break;
+      case 'grand_haruspex': spawnBoss(GrandHaruspexMonster); break;
+      case 'elara': spawnBoss(RotBringerMonster); break;
+      case 'valeria': spawnBoss(MadPuppeteerMonster); break;
+      default: break;
+    }
 
-      // MID-GAME BOSS
-      case 'zul_karn':
-        this.enemies.add(new KarnokMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
-        window.dispatchEvent(new CustomEvent('VS_MID_BOSS_STARTED'));
-        break;
-
-      // ECLIPSE LORDS
-      case 'obsidian_falcon':
-        this.enemies.add(new ObsidianFalconMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
-        break;
-      case 'bramble_queen':
-        this.enemies.add(new BrambleQueenMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
-        break;
-      case 'grand_haruspex':
-        this.enemies.add(new GrandHaruspexMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
-        break;
-      case 'rot_bringer':
-        this.enemies.add(new RotBringerMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
-        break;
-      case 'mad_puppeteer':
-        this.enemies.add(new MadPuppeteerMonster(this.scene, x, y, dbStats, multiplier, waveConfig));
-        break;
-
-      default:
-        break;
+    // --- EXPLICITLY TAG STANDARD ENEMIES ---
+    if (enemyInstance) {
+      enemyInstance.monsterId = monsterId; 
+      this.enemies.add(enemyInstance);
     }
   }
 
@@ -234,8 +241,8 @@ export default class WaveManager {
       }
     });
 
-    // 2. Select a random Final Boss from the 5 God Hand inspired Lords
-    const eclipseLords = ['obsidian_falcon', 'bramble_queen', 'grand_haruspex', 'rot_bringer', 'mad_puppeteer'];
+    // 2. Select a random Final Boss using the correct MonsterDB IDs
+    const eclipseLords = ['obsidian_falcon', 'carmilla', 'grand_haruspex', 'elara', 'valeria'];
     const chosenLordId = eclipseLords[Math.floor(Math.random() * eclipseLords.length)];
     
     // We pass a massive multiplier because the player survived 20 minutes
@@ -248,5 +255,30 @@ export default class WaveManager {
     window.dispatchEvent(new CustomEvent('VS_ECLIPSE_STARTED', { 
       detail: { bossId: chosenLordId } 
     }));
+  }
+
+  // ==========================================
+  // METRICS TRACKING
+  // ==========================================
+  
+  // Called by MainScene when an enemy HP hits 0
+  logKill(monsterId, isBoss = false) {
+    this.totalKills += 1;
+    
+    if (this.bestiaryMap.has(monsterId)) {
+      const entry = this.bestiaryMap.get(monsterId);
+      entry.kills += 1;
+      
+      // If it's a boss, a kill counts as a 'win' against that specific boss
+      if (isBoss) {
+        entry.wins += 1;
+      }
+    }
+  }
+
+  // Called by MainScene during Game Over / Victory to format data for Python
+  get bestiaryLog() {
+    // Converts the Map into the flat array expected by the FastAPI backend
+    return Array.from(this.bestiaryMap.values());
   }
 }

@@ -35,17 +35,25 @@ export default class UIScene extends Phaser.Scene {
     this.eclipseListener = () => {
       const { width, height } = this.scale;
       
-      const warningText = this.add.text(width / 2, height / 2 - 100, 'THE ECLIPSE HAS BEGUN', {
+      // Grab the current language from localStorage directly
+      const lang = localStorage.getItem('vs_lang') || 'en';
+      
+      const eclipseTranslations = {
+        en: 'THE ECLIPSE HAS BEGUN',
+        fr: 'L\'ÉCLIPSE A COMMENCÉ',
+        zh: '日食已经开始'
+      };
+
+      const warningText = this.add.text(width / 2, height / 2 - 100, eclipseTranslations[lang], {
         fontFamily: 'serif',
         fontSize: '48px',
-        color: '#dc2626', // Blood red
+        color: '#dc2626', 
         stroke: '#050202', 
         strokeThickness: 8,
         letterSpacing: '8px',
         align: 'center'
       }).setOrigin(0.5);
 
-      // Flash the text and slowly fade it out over 4 seconds
       this.tweens.add({
         targets: warningText,
         alpha: { from: 1, to: 0 },

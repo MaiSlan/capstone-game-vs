@@ -164,7 +164,7 @@
     "meta": {
         "app": "https://www.codeandweb.com/texturepacker",
         "version": "1.0",
-        "image": "spritesheet.png",
+        "image": "standing.png",
         "format": "RGBA8888",
         "size": {
             "w": 774,

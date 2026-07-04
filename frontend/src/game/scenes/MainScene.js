@@ -22,6 +22,9 @@ export default class MainScene extends Phaser.Scene {
   
   create() {
     AnimationManager.initializeAnimations(this);
+    // --- AUDIO INIT ---
+    // 1. Kill the menu music (and any other lingering sound effects)
+    this.sound.stopAll();
 
     // --- AUDIO INIT ---
     // Dynamically load the theme song based on the chosen vessel
@@ -187,7 +190,6 @@ export default class MainScene extends Phaser.Scene {
         ease: 'Power1',
         onComplete: () => dmgText.destroy()
       });
-      // ------------------------------
 
       if (enemy.isBoss) {
         window.dispatchEvent(new CustomEvent('VS_UPDATE_BOSS_HP', { 
@@ -201,6 +203,12 @@ export default class MainScene extends Phaser.Scene {
 
       if (enemy.hp <= 0) {        
         
+        // --- FIXED: USE THE EXPLICIT TAG TO LOG THE KILL ---
+        const targetId = enemy.monsterId || (enemy.dbStats ? enemy.dbStats.id : null);
+        if (this.waveManager && targetId) {
+          this.waveManager.logKill(targetId, enemy.isBoss || false);
+        }
+
         // DELEGATE TO LOOT MANAGER
         this.lootManager.spawnXP(enemy.x, enemy.y, enemy.xpValue || 1);
         
@@ -250,12 +258,20 @@ export default class MainScene extends Phaser.Scene {
         this.physics.pause(); 
         player.setTint(0xff0000); 
         
+        // Grab metrics from managers, or default to 0 to appease strict Python backend
+        const totalEnemiesDefeated = this.waveManager ? (this.waveManager.totalKills || 0) : 0;
+        const bestiaryMetrics = this.waveManager ? (this.waveManager.bestiaryLog || []) : [];
+
         window.dispatchEvent(new CustomEvent('VS_GAME_OVER', {
           detail: { 
             character_used: this.selectedCharacter,
             level_reached: player.level, 
             survival_time_seconds: this.surviveSeconds,
-            gold_earned: player.coins 
+            gold_earned: player.coins,
+            // ADDED: The 3 missing parameters required by FastAPI Pydantic Model
+            enemies_defeated: totalEnemiesDefeated,
+            is_cleared: false, 
+            bestiary_data: bestiaryMetrics
           }
         }));
       }
@@ -296,10 +312,30 @@ export default class MainScene extends Phaser.Scene {
 
     window.addEventListener('VS_APPLY_REWARD', this.rewardListener);
 
+    this.userMusicVolume = 0.3;
+    this.userSfxVolume = 0.5;
+
+    // --- NEW: Settings Listener ---
+    this.settingsListener = (e) => {
+      this.userMusicVolume = e.detail.musicVolume;
+      this.userSfxVolume = e.detail.sfxVolume;
+      
+      // Update BGM immediately if we aren't currently paused
+      if (this.bgm && this.bgm.isPlaying && !this.scene.isPaused()) {
+        this.bgm.setVolume(this.userMusicVolume);
+      }
+      
+      // Note: You can now apply this.userSfxVolume to any sound effects you play!
+      // this.sound.volume = this.userSfxVolume; (Global SFX volume tweak)
+    };
+    window.addEventListener('VS_UPDATE_SETTINGS', this.settingsListener);
+
     this.pauseListener = (e) => {
       const isPaused = e.detail.isPaused;
       if (this.bgm && this.bgm.isPlaying) {
-        this.bgm.setVolume(isPaused ? 0.05 : 0.3);
+        // Drop to 15% of the user's chosen volume when paused, 
+        // and restore their actual chosen volume when resumed.
+        this.bgm.setVolume(isPaused ? (this.userMusicVolume * 0.15) : this.userMusicVolume);
       }
     };
     window.addEventListener('VS_PAUSE_STATE', this.pauseListener);
@@ -396,6 +432,7 @@ export default class MainScene extends Phaser.Scene {
       window.removeEventListener('VS_ECLIPSE_STARTED', this.eclipseListener);
       window.removeEventListener('VS_MID_BOSS_STARTED', this.midBossStartListener);
       window.removeEventListener('VS_MID_BOSS_DEAD', this.midBossDeadListener);
+      window.removeEventListener('VS_UPDATE_SETTINGS', this.settingsListener);
       if (this.bgm) this.bgm.stop(); 
     });
   }

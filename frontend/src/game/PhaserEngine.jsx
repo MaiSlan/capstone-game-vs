@@ -3,6 +3,8 @@ import Phaser from 'phaser';
 import PreloadScene from './scenes/PreloadScene';
 import MainScene from './scenes/MainScene';
 import UIScene from './scenes/UIScene';
+import CharacterSelectScene from './scenes/CharacterSelectScene';
+import MainTitleScene from './scenes/MainTitleScene';
 
 export default function PhaserEngine({ selectedCharacter, userUpgrades }) {
   const gameRef = useRef(null);
@@ -19,14 +21,14 @@ export default function PhaserEngine({ selectedCharacter, userUpgrades }) {
       physics: {
         default: 'arcade',
         arcade: { debug: false }
-      }
+      },
+      scene: [PreloadScene, MainTitleScene, CharacterSelectScene, MainScene, UIScene]
     };
 
     const game = new Phaser.Game(config);
+
+    // After the game is ready, tell the PreloadScene to start
     game.events.once('ready', () => {
-      game.scene.add('PreloadScene', PreloadScene);
-      game.scene.add('MainScene', MainScene);
-      game.scene.add('UIScene', UIScene);
       game.scene.start('PreloadScene', { 
         character: selectedCharacter, 
         userUpgrades: userUpgrades || [] 
@@ -36,7 +38,7 @@ export default function PhaserEngine({ selectedCharacter, userUpgrades }) {
     return () => {
       game.destroy(true);
     };
-  }, [selectedCharacter, userUpgrades]);
+  }, []); // Empty dependencies because we handle re-starts via key={gameInstanceKey} in PlayArea
 
   return <div ref={gameRef} className="w-full h-full" />;
 }

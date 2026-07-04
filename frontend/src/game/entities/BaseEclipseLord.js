@@ -33,7 +33,7 @@ export default class EclipseLordBase extends BaseMonster {
     this.setVelocity(0);
     if (this.body) this.body.enable = false;
 
-    this.scene.cameras.main.flash(1000, 255, 255, 255); // Massive white flash
+    this.scene.cameras.main.flash(1000, 255, 255, 255);
 
     this.scene.tweens.add({
       targets: this,
@@ -43,11 +43,24 @@ export default class EclipseLordBase extends BaseMonster {
       duration: 3000,
       ease: 'Sine.in',
       onComplete: () => {
-        // --- CENTRALIZED UI HIDING & VICTORY ---
         window.dispatchEvent(new CustomEvent('VS_HIDE_BOSS_BAR'));
         
+        // --- 1. GATHER THE FULL PAYLOAD FOR THE BACKEND ---
+        const player = this.scene.player;
+        const totalEnemiesDefeated = this.scene.waveManager ? (this.scene.waveManager.totalKills || 0) : 0;
+        const bestiaryMetrics = this.scene.waveManager ? (this.scene.waveManager.bestiaryLog || []) : [];
+
+        // --- 2. DISPATCH COMPLETE VICTORY DATA ---
         window.dispatchEvent(new CustomEvent('VS_GAME_WON', { 
-          detail: { timeSurvived: this.scene.surviveSeconds } 
+          detail: { 
+            character_used: this.scene.selectedCharacter,
+            level_reached: player ? player.level : 1, 
+            survival_time_seconds: this.scene.surviveSeconds,
+            gold_earned: player ? player.coins : 0,
+            enemies_defeated: totalEnemiesDefeated,
+            is_cleared: true, // This triggers a WIN in the database!
+            bestiary_data: bestiaryMetrics
+          } 
         }));
         
         this.destroy();

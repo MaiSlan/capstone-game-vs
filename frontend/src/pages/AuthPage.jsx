@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import PublicNavbar from '../components/PublicNavbar';
 
 export default function AuthPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState(''); 
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -18,12 +22,15 @@ export default function AuthPage() {
     setError(null);
 
     const endpoint = isLogin ? '/api/v1/auth/login' : '/api/v1/auth/register';
+    
+    // Include the username only if registering
+    const payload = isLogin ? { email, password } : { email, password, username };
 
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -32,9 +39,10 @@ export default function AuthPage() {
 
       if (isLogin) {
         sessionStorage.setItem('game_token', data.token);
-        navigate('/home'); 
+        // PERFECT ROUTING: Send them straight into the Ouroboros Rift Engine
+        navigate('/play'); 
       } else {
-        alert('Pact forged. You may now awaken.');
+        alert(t('auth.success'));
         setIsLogin(true);
       }
     } catch (err) {
@@ -55,7 +63,7 @@ export default function AuthPage() {
           <header className="flex flex-col items-center mb-8">
             <span className="text-red-900/60 text-xl mb-2">✦</span>
             <h2 className="font-royal text-3xl font-black uppercase tracking-[0.3em] text-zinc-200 text-center">
-              {isLogin ? 'Awaken' : 'Forge Pact'}
+              {isLogin ? t('auth.awaken') : t('auth.forgePact')}
             </h2>
           </header>
 
@@ -67,7 +75,7 @@ export default function AuthPage() {
 
           <form onSubmit={handleAuth} className="flex flex-col gap-6">
             <div className="flex flex-col">
-              <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-2">Soul Signature (Email)</label>
+              <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-2">{t('auth.soulSig')}</label>
               <input 
                 type="email" 
                 value={email}
@@ -76,9 +84,23 @@ export default function AuthPage() {
                 required 
               />
             </div>
+
+            {/* Conditionally Render Username Input for Registration */}
+            {!isLogin && (
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-2">{t('auth.trueName')}</label>
+                <input 
+                  type="text" 
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full bg-transparent border-b border-zinc-800 text-zinc-200 py-2 focus:outline-none focus:border-red-800 transition-colors duration-300 font-royal tracking-widest"
+                  required 
+                />
+              </div>
+            )}
             
             <div className="flex flex-col mb-4">
-              <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-2">Incantation (Password)</label>
+              <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-2">{t('auth.incantation')}</label>
               <input 
                 type="password" 
                 value={password}
@@ -93,7 +115,7 @@ export default function AuthPage() {
               disabled={loading}
               className="btn-pure w-full py-4 font-royal text-sm uppercase tracking-[0.3em] disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              {loading ? 'Channeling...' : isLogin ? 'Enter Tartarus' : 'Bind Soul'}
+              {loading ? t('auth.channeling') : isLogin ? t('auth.enter') : t('auth.bind')}
             </button>
           </form>
 
@@ -102,7 +124,7 @@ export default function AuthPage() {
               onClick={() => setIsLogin(!isLogin)}
               className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 hover:text-red-700 transition-colors duration-300"
             >
-              {isLogin ? 'No pact exists? Forge one.' : 'Already bound? Awaken here.'}
+              {isLogin ? t('auth.noPact') : t('auth.alreadyBound')}
             </button>
           </div>
         </div>
