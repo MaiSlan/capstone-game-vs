@@ -166,7 +166,7 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.overlap(this.playerProjectiles, this.enemies, (projectile, enemy) => {
       if (enemy.isDying || !enemy.active || !projectile.active) return;
 
-      // 1. Calculate and apply damage
+      // Calculate and apply damage
       const damageDealt = Math.floor(projectile.damage || 10);
       enemy.hp -= damageDealt;
 
@@ -203,7 +203,6 @@ export default class MainScene extends Phaser.Scene {
 
       if (enemy.hp <= 0) {        
         
-        // --- FIXED: USE THE EXPLICIT TAG TO LOG THE KILL ---
         const targetId = enemy.monsterId || (enemy.dbStats ? enemy.dbStats.id : null);
         if (this.waveManager && targetId) {
           this.waveManager.logKill(targetId, enemy.isBoss || false);
@@ -268,7 +267,6 @@ export default class MainScene extends Phaser.Scene {
             level_reached: player.level, 
             survival_time_seconds: this.surviveSeconds,
             gold_earned: player.coins,
-            // ADDED: The 3 missing parameters required by FastAPI Pydantic Model
             enemies_defeated: totalEnemiesDefeated,
             is_cleared: false, 
             bestiary_data: bestiaryMetrics
@@ -315,7 +313,7 @@ export default class MainScene extends Phaser.Scene {
     this.userMusicVolume = 0.3;
     this.userSfxVolume = 0.5;
 
-    // --- NEW: Settings Listener ---
+    // --- Settings Listener ---
     this.settingsListener = (e) => {
       this.userMusicVolume = e.detail.musicVolume;
       this.userSfxVolume = e.detail.sfxVolume;
@@ -325,7 +323,7 @@ export default class MainScene extends Phaser.Scene {
         this.bgm.setVolume(this.userMusicVolume);
       }
       
-      // Note: You can now apply this.userSfxVolume to any sound effects you play!
+      // Note: Can now apply this.userSfxVolume to any sound effects played.
       // this.sound.volume = this.userSfxVolume; (Global SFX volume tweak)
     };
     window.addEventListener('VS_UPDATE_SETTINGS', this.settingsListener);
@@ -364,7 +362,7 @@ export default class MainScene extends Phaser.Scene {
     };
     window.addEventListener('VS_MID_BOSS_STARTED', this.midBossStartListener);
 
-    // Listen for Zodd dying (Transition back to Character Theme)
+    // Listen for Zodd (Karnok) dying (Transition back to Character Theme)
     this.midBossDeadListener = () => {
       this.crossfadeMusic(`bgm_${this.selectedCharacter}`);
     };

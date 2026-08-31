@@ -23,7 +23,7 @@ const UI_DICT = {
   }
 };
 
-// Mapping the exact spawn times from TIMELINE_DB for chronological sorting[cite: 13]
+// Mapping the exact spawn times from TIMELINE_DB for chronological sorting
 const APPEARANCE_ORDER = {
   abyssal_sludge: 0,
   blighted_gore_thrall: 75,
@@ -41,7 +41,7 @@ const APPEARANCE_ORDER = {
   valeria: 1200
 };
 
-// Explicitly defining the separation of threats[cite: 13]
+// Explicitly defining the separation of threats
 const SUB_BOSS_IDS = ['echo_of_the_vessel', 'zul_karn'];
 const ENDGAME_BOSS_IDS = ['obsidian_falcon', 'carmilla', 'grand_haruspex', 'elara', 'valeria'];
 
@@ -103,7 +103,7 @@ export default function Bestiary() {
     return textObj[language] || textObj.en || '';
   };
 
-  // Sort and categorize the database into three distinct tiers[cite: 13]
+  // Sort and categorize the database into three distinct tiers
   const sortedMonsters = Object.values(MONSTER_DB).sort((a, b) => APPEARANCE_ORDER[a.id] - APPEARANCE_ORDER[b.id]);
   
   const regularMonsters = sortedMonsters.filter(m => !SUB_BOSS_IDS.includes(m.id) && !ENDGAME_BOSS_IDS.includes(m.id));
@@ -164,7 +164,7 @@ export default function Bestiary() {
         </h2>
         <div className="w-12 h-px bg-red-900/50 mb-12"></div>
         
-        {/* TIER 3: THE ECLIPSE LORDS (5 cards in one row)[cite: 13] */}
+        {/* TIER 3: THE ECLIPSE LORDS (5 cards in one row) */}
         <div className="w-full flex items-center gap-4 mb-8 opacity-70">
           <h3 className="text-xs uppercase tracking-[0.4em] text-red-700 font-bold drop-shadow-[0_0_8px_rgba(185,28,28,0.4)]">
             {t(UI_DICT.eclipseLords)}
@@ -175,7 +175,7 @@ export default function Bestiary() {
           {endgameBossMonsters.map(renderCard)}
         </div>
 
-        {/* TIER 2: SUB-BOSSES (2 cards centered)[cite: 13] */}
+        {/* TIER 2: SUB-BOSSES (2 cards centered) */}
         <div className="w-full flex items-center gap-4 mb-8 opacity-70">
           <h3 className="text-xs uppercase tracking-[0.4em] text-amber-700 font-bold drop-shadow-[0_0_8px_rgba(180,83,9,0.4)]">
             {t(UI_DICT.subBosses)}
@@ -186,7 +186,7 @@ export default function Bestiary() {
           {subBossMonsters.map(renderCard)}
         </div>
 
-        {/* TIER 1: STANDARD ENTITIES (Line of 5, then 2 centered under)[cite: 13] */}
+        {/* TIER 1: STANDARD ENTITIES (Line of 5, then 2 centered under) */}
         <div className="w-full flex items-center gap-4 mb-8 opacity-70">
           <h3 className="text-xs uppercase tracking-[0.4em] text-zinc-400 font-bold">
             {t(UI_DICT.standardEntities)}
@@ -194,11 +194,11 @@ export default function Bestiary() {
           <div className="flex-1 h-px bg-zinc-900"></div>
         </div>
         
-        {/* Line of 5[cite: 13] */}
+        {/* Line of 5 */}
         <div className="grid grid-cols-5 gap-4 w-full mb-4">
           {regularMonsters.slice(0, 5).map(renderCard)}
         </div>
-        {/* 2 Centered under[cite: 13] */}
+        {/* 2 Centered under */}
         <div className="flex justify-center gap-4 w-full">
           {regularMonsters.slice(5, 7).map(renderCard)}
         </div>
@@ -207,10 +207,10 @@ export default function Bestiary() {
       {/* --- THE LORE MODAL --- */}
       {selectedMonster && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fade-in" onClick={() => setSelectedMonster(null)}>
-          {/* Prevent closing when clicking inside the modal content[cite: 13] */}
+          {/* Prevent closing when clicking inside the modal content */}
           <div className="relative w-full max-w-3xl border border-red-900/40 bg-[#070303] p-8 shadow-[inset_0_0_40px_rgba(139,0,0,0.2)] flex flex-col md:flex-row gap-8 items-center" onClick={(e) => e.stopPropagation()}>
             
-            {/* Close Button[cite: 13] */}
+            {/* Close Button */}
             <button 
               onClick={() => setSelectedMonster(null)}
               className="absolute top-4 right-4 text-zinc-600 hover:text-red-500 transition-colors text-2xl"
@@ -218,7 +218,7 @@ export default function Bestiary() {
               ×
             </button>
 
-            {/* Left: Sprite Showcase[cite: 13] */}
+            {/* Left: Sprite Showcase */}
             <div className="w-48 h-48 md:w-64 md:h-64 flex-shrink-0 border border-zinc-800/80 bg-black/60 rounded-sm flex items-center justify-center relative overflow-hidden shadow-inner">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(220,38,38,0.1)_0%,transparent_70%)]"></div>
               <img 
@@ -228,7 +228,7 @@ export default function Bestiary() {
               />
             </div>
 
-            {/* Right: Lore & Stats[cite: 13] */}
+            {/* Right: Lore & Stats */}
             <div className="flex flex-col flex-1">
               <h3 className="font-royal text-3xl text-zinc-100 uppercase tracking-[0.2em] mb-2 drop-shadow-[0_0_8px_rgba(255,0,0,0.3)]">
                 {t(selectedMonster.name)}

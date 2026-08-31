@@ -119,7 +119,6 @@ export default class EchoMonster extends BaseMonster {
     const angle = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y);
     const dashSpeed = 550; 
     
-    // Explicitly set velocity
     this.scene.physics.velocityFromRotation(angle, dashSpeed, this.body.velocity);
 
     this.scene.time.delayedCall(400, () => {

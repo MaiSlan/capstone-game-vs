@@ -11,7 +11,7 @@ export default class ItemManager {
     const existingItem = this.items.find(i => i.id === itemId);
     
     if (existingItem) {
-      const maxLvl = ITEM_DB[itemId].maxLevel; //[cite: 10]
+      const maxLvl = ITEM_DB[itemId].maxLevel;
       if (existingItem.level < maxLvl) {
         existingItem.level++;
       }
@@ -36,8 +36,8 @@ export default class ItemManager {
       lifesteal: 0,
       hpDrainPerSec: 0,
       armor: 0,
-      coinMult: 1.0,  // From Coin Purse[cite: 10]
-      curseMult: 1.0  // From Cursed Skull[cite: 10]
+      coinMult: 1.0,  // From Coin Purse
+      curseMult: 1.0  // From Cursed Skull
     };
 
     this.items.forEach(item => {
@@ -46,7 +46,7 @@ export default class ItemManager {
       
       const lvl = item.level - 1;
 
-      // Add up all the multipliers dynamically[cite: 10]
+      // Add up all the multipliers dynamically
       if (data.speed_multiplier) stats.speedMult += data.speed_multiplier[lvl];
       if (data.max_hp_multiplier) stats.hpMult += data.max_hp_multiplier[lvl];
       if (data.damage_multiplier) stats.damageMult += data.damage_multiplier[lvl];

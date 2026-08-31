@@ -27,13 +27,11 @@ class StatsUpdate(BaseModel):
 async def get_stats(user = Depends(verify_token)):
     """Fetch global user stats."""
     try:
-        # Using .execute() and index access to avoid .maybe_single() bugs
         res = supabase.table("user_stats").select("*").eq("user_id", user.id).execute()
         
         if res.data and len(res.data) > 0:
             return res.data[0]
         
-        # Return default structure if empty
         return {
             "total_runs": 0,
             "total_wins": 0,

@@ -9,8 +9,6 @@ export default class BatMonster extends BaseMonster {
       ...waveConfig
     });
 
-    // --- THE FIX: Highly forgiving hitbox ---
-    // Even though the placeholder is 40x40 visually, the actual physics box is tiny
     this.body.setSize(15, 15);
     
     this.setTint(0x7c3aed); // Purple block

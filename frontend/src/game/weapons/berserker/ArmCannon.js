@@ -34,7 +34,7 @@ export default class ArmCannon {
         // Fire at extreme velocity
         this.scene.physics.velocityFromRotation(spreadAngle, 1000, pellet.body.velocity);
 
-        // Extremely short range constraint: Destroy pellets after just 150ms[cite: 3]
+        // Extremely short range constraint: Destroy pellets after just 150ms
         this.scene.time.delayedCall(150, () => {
           if (pellet && pellet.active) {
             this.scene.tweens.add({ 
@@ -60,7 +60,7 @@ export default class ArmCannon {
         onComplete: () => flash.destroy()
       });
 
-      // --- MAX LEVEL: TACTICAL RECOIL DODGE ---[cite: 3]
+      // --- MAX LEVEL: TACTICAL RECOIL DODGE ---
       if (isMaxLevel) {
         // Calculate the exact opposite direction of the blast
         const recoilAngle = player.currentAimAngle + Math.PI; 
@@ -69,7 +69,7 @@ export default class ArmCannon {
         const originalSpeed = player.speed || player.baseSpeed;
         player.speed = 0;
 
-        // Push the player backward based on the WeaponDB knockback stat[cite: 8]
+        // Push the player backward based on the WeaponDB knockback stat
         this.scene.tweens.add({
           targets: player,
           x: player.x + Math.cos(recoilAngle) * pushbackForce,

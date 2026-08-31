@@ -39,7 +39,6 @@ export default function AuthPage() {
 
       if (isLogin) {
         sessionStorage.setItem('game_token', data.token);
-        // PERFECT ROUTING: Send them straight into the Ouroboros Rift Engine
         navigate('/play'); 
       } else {
         alert(t('auth.success'));

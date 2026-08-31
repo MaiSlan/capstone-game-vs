@@ -22,7 +22,7 @@ export default class ConjunctionSphere {
 
       if (visibleEnemies.length > 0) {
         for (let i = 0; i < meteorCount; i++) {
-          // Select a random enemy as the target[cite: 3]
+          // Select a random enemy as the target
           const target = Phaser.Utils.Array.GetRandom(visibleEnemies);
           this.callMeteor(target.x, target.y, currentDamage, impactRadius, isMaxLevel);
         }
@@ -75,7 +75,7 @@ export default class ConjunctionSphere {
       targets: blast, scale: 1.3, alpha: 0, duration: 200, onComplete: () => blast.destroy()
     });
 
-    // --- MAX LEVEL: GRAVITY WELL ---[cite: 3]
+    // --- MAX LEVEL: GRAVITY WELL ---
     if (isMaxLevel) {
       this.createGravityWell(x, y, radius * 1.5);
     }
@@ -89,7 +89,7 @@ export default class ConjunctionSphere {
     // Spin/pulse visual
     this.scene.tweens.add({ targets: well, scale: 0.9, yoyo: true, repeat: -1, duration: 300 });
 
-    // Pull enemies inward for 3 seconds[cite: 3]
+    // Pull enemies inward for 3 seconds
     const pullTimer = this.scene.time.addEvent({
       delay: 50, // 20 ticks per second for smooth pulling
       callback: () => {
@@ -106,7 +106,7 @@ export default class ConjunctionSphere {
       loop: true
     });
 
-    // Cleanup after 3 seconds[cite: 3]
+    // Cleanup after 3 seconds
     this.scene.time.delayedCall(3000, () => {
       pullTimer.remove();
       this.scene.tweens.add({

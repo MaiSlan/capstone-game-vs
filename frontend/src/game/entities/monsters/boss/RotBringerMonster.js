@@ -5,7 +5,7 @@ export default class RotBringerMonster extends EclipseLordBase {
   constructor(scene, x, y, dbStats, multiplier, waveConfig) {
     super(scene, x, y, dbStats, multiplier, { attackDistance: 80, attackSpeedCooldown: 2000, ...waveConfig });
     this.body.setSize(90, 90);
-    this.setTint(0x854d0e); // Mud/Rot
+    this.setTint(0x854d0e); // Mud
     this.setScale(2.5);
     this.puddleTimer = 0;
     this.initializeBossUI('ROT BRINGER, THE ECLIPSE LORD');

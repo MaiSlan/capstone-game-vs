@@ -6,28 +6,26 @@ from app.db.supabase import supabase
 
 router = APIRouter()
 
-# Define the structure for incoming Bestiary data
 class BestiaryEntry(BaseModel):
     monster_id: str
     kills: int = 0
     encounters: int = 0
     wins: int = 0
 
-# Expanded payload to catch all missing data
 class EndRunRequest(BaseModel):
     character_used: str
     level_reached: int
     survival_time_seconds: int
     gold_earned: int
-    enemies_defeated: int           # <-- Now properly requested
-    is_cleared: bool = False        # <-- Used to calculate Win Rate
-    bestiary_data: List[BestiaryEntry] = [] # <-- Array of monsters faced
+    enemies_defeated: int
+    is_cleared: bool = False
+    bestiary_data: List[BestiaryEntry] = []
 
 @router.post("/end_run")
 async def process_end_run(req: EndRunRequest, user = Depends(verify_token)):
     """Validates the run, saves to match history, updates stats/bestiary, and deposits gold."""
     try:
-        # 1. Log the match history (Now includes enemies_defeated and is_cleared)
+        # 1. Log the match history
         supabase.table("match_history").insert({
             "user_id": user.id,
             "character_used": req.character_used,

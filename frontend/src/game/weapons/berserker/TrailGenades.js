@@ -9,7 +9,7 @@ export default class TrailGrenades {
   }
 
   update(time, player, enemiesGroup, weaponLevel = 1) {
-    // Drops an explosive charge on a cooldown[cite: 8]
+    // Drops an explosive charge on a cooldown
     if (time > this.lastFired) {
       const lvlIdx = weaponLevel - 1;
       const currentDamage = this.stats.damage[lvlIdx] * player.damageMult;

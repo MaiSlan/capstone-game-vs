@@ -23,7 +23,7 @@ export const WEAPON_DB = {
   seismic_stomp: { // Surtur's Wake
     id: 'seismic_stomp',
     maxLevel: 5,
-    damage: [5, 8, 12, 18, 25], // Tick damage
+    damage: [5, 8, 12, 18, 25],
     cooldown: [4000, 3800, 3500, 3000, 2500],
     radius: [80, 110, 140, 180, 240], 
     duration: [2000, 2500, 3000, 3500, 4000] 
@@ -43,15 +43,15 @@ export const WEAPON_DB = {
   musket: { // The Merchant's Folly
     id: 'musket',
     maxLevel: 5,
-    damageBase: [10, 15, 20, 30, 40], // Multiplied by a random factor in the class
-    damageMaxMult: [2, 3, 4, 6, 10], // e.g. Level 5 can hit for up to 400 damage
+    damageBase: [10, 15, 20, 30, 40],
+    damageMaxMult: [2, 3, 4, 6, 10],
     cooldown: [1000, 850, 700, 550, 400],
     speed: [800, 900, 1000, 1100, 1200]
   },
   molotov: { // Nemesis Brew
     id: 'molotov',
     maxLevel: 5,
-    damage: [4, 6, 9, 14, 20], // Tick damage in the fire
+    damage: [4, 6, 9, 14, 20],
     cooldown: [2500, 2200, 1900, 1500, 1200],
     radius: [50, 65, 85, 110, 140],
     duration: [3000, 3500, 4000, 5000, 6000]
@@ -60,7 +60,7 @@ export const WEAPON_DB = {
     id: 'treasure_shovel',
     maxLevel: 5,
     damage: [15, 22, 30, 45, 65],
-    cooldown: [600, 550, 500, 400, 300], // Extremely fast stab
+    cooldown: [600, 550, 500, 400, 300],
     range: [40, 45, 50, 60, 75]
   },
   loaded_dice: { // Devil's Bones
@@ -79,7 +79,7 @@ export const WEAPON_DB = {
     id: 'iron_slab',
     maxLevel: 5,
     damage: [40, 60, 85, 120, 180],
-    cooldown: [1800, 1600, 1400, 1200, 900], // Slow, heavy sweep
+    cooldown: [1800, 1600, 1400, 1200, 900],
     radius: [70, 85, 105, 130, 160]
   },
   fan_of_knives: { // Swallow's Flight
@@ -94,15 +94,15 @@ export const WEAPON_DB = {
     id: 'trail_grenades',
     maxLevel: 5,
     damage: [30, 45, 65, 90, 130],
-    cooldown: [1500, 1300, 1100, 900, 600], // Drops as he walks
+    cooldown: [1500, 1300, 1100, 900, 600],
     radius: [60, 75, 95, 120, 150]
   },
   arm_cannon: { // The Iron Hand
     id: 'arm_cannon',
     maxLevel: 5,
-    damage: [60, 90, 130, 180, 250], // Immense close-range damage
+    damage: [60, 90, 130, 180, 250],
     cooldown: [3000, 2700, 2400, 2000, 1500],
-    knockbackSelf: [100, 120, 150, 180, 250] // Pushes the player backward
+    knockbackSelf: [100, 120, 150, 180, 250]
   },
 
   // ==========================================
@@ -111,10 +111,10 @@ export const WEAPON_DB = {
   shield_bash: { // The Aegis Wall
     id: 'shield_bash',
     maxLevel: 5,
-    damage: [5, 10, 15, 20, 30], // Very low damage
+    damage: [5, 10, 15, 20, 30],
     cooldown: [2000, 1800, 1600, 1400, 1000],
     width: [60, 80, 100, 130, 180],
-    stunDuration: [1000, 1200, 1500, 1800, 2500] // Powerful CC
+    stunDuration: [1000, 1200, 1500, 1800, 2500]
   },
   holy_broadsword: { // Righteous Penance
     id: 'holy_broadsword',
@@ -126,8 +126,8 @@ export const WEAPON_DB = {
   consecrated_ground: { // Grace of the White Tree
     id: 'consecrated_ground',
     maxLevel: 5,
-    damage: [8, 12, 18, 25, 35], // Tick damage to enemies
-    healBase: [0, 0, 0, 0, 2], // Only heals at max level
+    damage: [8, 12, 18, 25, 35],
+    healBase: [0, 0, 0, 0, 2],
     cooldown: [5000, 4500, 4000, 3500, 3000],
     radius: [100, 120, 150, 180, 220]
   },
@@ -183,30 +183,30 @@ export const WEAPON_DB = {
     damage: [25, 35, 50, 75, 110],
     cooldown: [1500, 1300, 1100, 900, 600],
     lungeDistance: [100, 120, 150, 180, 220],
-    speed: [600, 700, 800, 900, 1000] // Extremely fast dash
+    speed: [600, 700, 800, 900, 1000]
   },
   phantom_strike: { // Tear in the Veil
     id: 'phantom_strike',
     maxLevel: 5,
     damage: [15, 25, 35, 50, 75],
     cooldown: [2500, 2200, 1900, 1500, 1200],
-    chainCount: [2, 3, 4, 6, 8], // Number of enemies the phantom chains to
+    chainCount: [2, 3, 4, 6, 8],
     speed: [800, 850, 900, 950, 1000]
   },
   chilling_aura: { // Echo of the Frost
     id: 'chilling_aura',
     maxLevel: 5,
-    damage: [10, 15, 25, 40, 60], // Initial blast damage
+    damage: [10, 15, 25, 40, 60],
     cooldown: [3000, 2800, 2500, 2200, 1800],
     radius: [80, 100, 120, 150, 200],
-    freezeDuration: [500, 750, 1000, 1500, 2000] // CC duration in milliseconds
+    freezeDuration: [500, 750, 1000, 1500, 2000]
   },
   conjunction_sphere: { // Conjunction Sphere
     id: 'conjunction_sphere',
     maxLevel: 5,
-    damage: [40, 60, 85, 120, 170], // High burst, slow cooldown
+    damage: [40, 60, 85, 120, 170],
     cooldown: [4000, 3600, 3200, 2800, 2200],
     meteorCount: [1, 2, 3, 4, 6],
-    radius: [60, 75, 90, 110, 140] // Impact explosion radius
+    radius: [60, 75, 90, 110, 140]
   }
 };

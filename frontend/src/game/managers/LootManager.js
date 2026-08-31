@@ -28,7 +28,6 @@ export default class LootManager {
   }
 
   spawnXP(x, y, amount) {
-    // Simplify into two types: Small and Large Orbs
     const isLarge = amount >= 10;
     const texture = isLarge ? 'exp_gem_large' : 'exp_gem_small';
     
@@ -47,7 +46,6 @@ export default class LootManager {
   }
 
   collectGem(player, gem) {
-    // The player's gainXP method handles the VS_UPDATE_XP dispatch internally
     player.gainXP(gem.xpValue || 1);
     gem.destroy();
   }
@@ -62,7 +60,6 @@ export default class LootManager {
   update() {
     // Calculate magnet radius based on player stats
     const magnetRadius = 150 * this.player.pickupMult;
-
     // Helper to magnetize a group
     const pullLoot = (group) => {
       group.getChildren().forEach((item) => {

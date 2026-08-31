@@ -3,9 +3,7 @@ import { useState, useEffect } from 'react';
 
 // --- LOCALIZATION DICTIONARY ---
 const UI_DICT = {
-  // If "Branded Descent" is a proper noun you want to keep in English everywhere, 
-  // you can just make all three values 'BRANDED DESCENT'.
-  title: { en: 'BRANDED DESCENT', fr: 'DESCENTE MARQUÉE', zh: '烙印降临' },
+  title: { en: 'BRANDED DESCENT', fr: 'BRANDED DESCENT', zh: 'BRANDED DESCENT' },
   subtitle: { en: 'Ouroboros Rift', fr: 'Faille d\'Ouroboros', zh: '衔尾蛇裂隙' },
   prompt: { en: 'PRESS ANY KEY TO AWAKEN', fr: 'APPUYEZ SUR UNE TOUCHE POUR VOUS ÉVEILLER', zh: '按任意键唤醒' }
 };

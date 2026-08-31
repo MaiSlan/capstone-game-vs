@@ -27,7 +27,6 @@ export default class MetaStatsManager {
           this.modifiers.damageMult += (0.05 * level);
           break;
         case 'haste':
-          // Reduces cooldown (fires faster)
           this.modifiers.cooldownMult -= (0.02 * level); 
           break;
         case 'greed':

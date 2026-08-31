@@ -14,7 +14,6 @@ export default class Pirate extends Player {
     this.hasAnimations = true; 
     this.animPrefix = 'pirate_walk';
     
-    // Scale matching the high-res spritesheets
     this.baseScale = 0.45; 
     this.setScale(this.baseScale);
   }

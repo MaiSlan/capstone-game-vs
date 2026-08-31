@@ -12,7 +12,6 @@ from app.core.config import settings
 
 router = APIRouter()
 
-# 1. Split the models to prevent FastAPI 422 Validation Errors
 class LoginRequest(BaseModel):
     email: str
     password: str
@@ -34,7 +33,7 @@ async def register_user(req: RegisterRequest):
         # Create the user in Supabase Auth
         res = auth_client.auth.sign_up({"email": req.email, "password": req.password})
         
-        # 2. If auth creation is successful, extract ID and create the profile
+        # If auth creation is successful, extract ID and create the profile
         if res.user:
             profile_data = {
                 "id": res.user.id,
@@ -74,9 +73,7 @@ async def update_username(req: UpdateUsernameRequest, user = Depends(verify_toke
             last_change_str = profile_res.data[0].get("last_name_change")
             
             if last_change_str:
-                # Parse the Supabase timestamp string
                 last_change = datetime.fromisoformat(last_change_str.replace("Z", "+00:00"))
-                
                 # Enforce the 30-day lock
                 if datetime.now(timezone.utc) < last_change + timedelta(days=30):
                     raise Exception("Moniker is sealed. You must wait 30 days between changes.")

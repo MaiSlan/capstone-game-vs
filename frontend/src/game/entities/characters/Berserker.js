@@ -14,7 +14,6 @@ export default class Berserker extends Player {
     this.hasAnimations = true; 
     this.animPrefix = 'berserker_walk';
     
-    // Scale matching the high-res spritesheets
     this.baseScale = 0.45; 
     this.setScale(this.baseScale);
   }

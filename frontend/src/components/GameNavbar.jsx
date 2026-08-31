@@ -12,7 +12,6 @@ export default function GameNavbar({ onToggleFullscreen }) {
   const [language, setLanguage] = useState(localStorage.getItem('vs_lang') || 'en');
 
   useEffect(() => {
-    // Sync on mount
     setLanguage(localStorage.getItem('vs_lang') || 'en');
 
     const handleSettingsUpdate = (e) => {

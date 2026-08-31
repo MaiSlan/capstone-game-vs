@@ -3,7 +3,6 @@ import BaseMonster from '../BaseMonster';
 
 export default class LegionnaireMonster extends BaseMonster {
   constructor(scene, x, y, dbStats, multiplier, waveConfig = {}) {
-    // We pass 'placeholder_square' and hasAnimations: false
     super(scene, x, y, 'placeholder_square', 'none', dbStats, multiplier, {
       attackDistance: 60, // Slightly longer reach than a Slime
       attackSpeedCooldown: 1500, // Slow to recover after a swing
@@ -52,8 +51,7 @@ export default class LegionnaireMonster extends BaseMonster {
         // Give a generous hitbox for the heavy swing (attackDistance + 20)
         if (distance <= this.attackDistance + 20) {
           targetPlayer.takeDamage(this.damage, this.scene);
-          
-          // Update the React UI
+
           window.dispatchEvent(new CustomEvent('VS_UPDATE_HP', { 
             detail: { hp: targetPlayer.hp, maxHp: targetPlayer.maxHp } 
           }));

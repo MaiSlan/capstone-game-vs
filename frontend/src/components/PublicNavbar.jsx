@@ -10,20 +10,19 @@ export default function PublicNavbar() {
   const isAuthenticated = !!sessionStorage.getItem('game_token');
 
   useEffect(() => {
-    // 1. SYNC ON MOUNT: Catch up on any changes made while this navbar was destroyed
     const currentStoredLang = localStorage.getItem('vs_lang');
     if (currentStoredLang && currentStoredLang !== i18n.language) {
       i18n.changeLanguage(currentStoredLang);
     }
 
-    // 2. Listen for the custom event dispatched by PlayArea.jsx (Pause Menu)
+    // Listen for the custom event dispatched by PlayArea.jsx (Pause Menu)
     const handleSettingsUpdate = (e) => {
       if (e.detail && e.detail.language && e.detail.language !== i18n.language) {
         i18n.changeLanguage(e.detail.language);
       }
     };
     
-    // 3. Listen for standard cross-tab storage updates
+    // Listen for standard cross-tab storage updates
     const handleStorageUpdate = () => {
       const storedLang = localStorage.getItem('vs_lang');
       if (storedLang && storedLang !== i18n.language) {

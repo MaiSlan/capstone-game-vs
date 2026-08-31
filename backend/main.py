@@ -8,9 +8,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://capstone-game-vs.vercel.app", 
-        "https://capstone-game-7asw2nbg5-maislans-projects.vercel.app", # Your specific preview branch
+        "https://capstone-game-7asw2nbg5-maislans-projects.vercel.app",
         "http://localhost:5173", 
-        "http://127.0.0.1:5173", # Add 127.0.0.1 explicitly
+        "http://127.0.0.1:5173",
         "http://localhost:5000", 
         "https://capstone-game-vs.onrender.com"
     ],

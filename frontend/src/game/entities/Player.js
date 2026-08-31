@@ -24,7 +24,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.xp = 0;
     this.xpToNextLevel = 50;
     this.level = 1;
-    this.coins = 0; // Ready for the LootManager
+    this.coins = 0;
 
     // --- INVINCIBILITY & DASH STATE ---
     this.damageInvincible = false;
@@ -100,9 +100,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     // Combine Meta Progression + In-Run Items
     this.damageMult = itemStats.damageMult * metaStats.damageMult;
     this.cooldownMult = itemStats.cooldownMult * metaStats.cooldownMult;
-    this.coinMult = itemStats.coinMult * metaStats.greedMult; // Apply Greed
-    
-    // Unchanged stats (assuming no meta-upgrades for these yet)
+    this.coinMult = itemStats.coinMult * metaStats.greedMult;
     this.pickupMult = itemStats.pickupMult;
     this.xpMult = itemStats.xpMult;
     this.lifesteal = itemStats.lifesteal;

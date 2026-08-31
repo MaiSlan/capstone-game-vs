@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import PublicNavbar from '../components/PublicNavbar';
 import { MONSTER_DB } from '../data/MonsterDB';
-import { CHARACTER_DB } from '../data/CharacterDB'; // Ensure this path matches your project structure
+import { CHARACTER_DB } from '../data/CharacterDB';
 
 // --- LOCALIZATION DICTIONARY ---
 const UI_DICT = {

@@ -29,7 +29,7 @@ body {
   position: relative;
 }
 
-/* The Vignette Ring Focus (Kept exactly as you liked) */
+/* The Vignette Ring Focus */
 .bg-pure-abyss::after {
   content: '';
   position: fixed;
@@ -46,7 +46,6 @@ body {
   background: rgba(5, 2, 2, 0.6);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--blood-dark);
-  /* Removed the dashed lines and heavy borders for Hollow Knight purity */
   box-shadow: 0 10px 30px rgba(0,0,0,0.8);
 }
 

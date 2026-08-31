@@ -2,7 +2,7 @@ import uvicorn
 import os
 from dotenv import load_dotenv
 
-# 1. Force load the .env file BEFORE anything else starts
+# Force load the .env file BEFORE anything else starts
 load_dotenv(dotenv_path=".env", override=True)
 
 if __name__ == "__main__":

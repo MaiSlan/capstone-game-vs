@@ -14,7 +14,6 @@ export default class Paladin extends Player {
     this.hasAnimations = true; 
     this.animPrefix = 'paladin_walk';
     
-    // Scale matching the high-res spritesheets
     this.baseScale = 0.45; 
     this.setScale(this.baseScale);
   }

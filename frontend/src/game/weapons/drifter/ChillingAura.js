@@ -49,7 +49,7 @@ export default class ChillingAura {
           // --- MAX LEVEL: FREEZE SOLID ---
           this.freezeEnemy(enemy, freezeDuration);
         } else {
-          // --- NORMAL: STACKING SLOW ---[cite: 3]
+          // --- NORMAL: STACKING SLOW ---
           this.applyStackingSlow(enemy);
         }
       });
@@ -88,7 +88,7 @@ export default class ChillingAura {
       enemy.originalSpeed = enemy.speed;
     }
     
-    // Halt movement entirely[cite: 3]
+    // Halt movement entirely
     enemy.speed = 0;
     if (enemy.body) enemy.body.setVelocity(0, 0);
 

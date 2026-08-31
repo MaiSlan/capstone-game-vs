@@ -58,7 +58,7 @@ export default class EclipseLordBase extends BaseMonster {
             survival_time_seconds: this.scene.surviveSeconds,
             gold_earned: player ? player.coins : 0,
             enemies_defeated: totalEnemiesDefeated,
-            is_cleared: true, // This triggers a WIN in the database!
+            is_cleared: true,
             bestiary_data: bestiaryMetrics
           } 
         }));

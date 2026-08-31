@@ -3,16 +3,15 @@ import BaseMonster from '../../BaseMonster';
 
 export default class KarnokMonster extends BaseMonster {
   constructor(scene, x, y, dbStats, multiplier, waveConfig = {}) {
-    // If you have the actual 'karnok' sprite loaded, use it here. 
     // We pass hasAnimations: false so the AI doesn't freeze waiting for non-existent frames.
     super(scene, x, y, 'karnok', 'none', dbStats, multiplier, {
-      attackDistance: 150, // Phase 1 shockwave radius
-      attackSpeedCooldown: 3000, // Phase 1 slam every 3 seconds
+      attackDistance: 150,
+      attackSpeedCooldown: 3000,
       hasAnimations: false,
       ...waveConfig
     });
 
-    this.body.setSize(80, 80); // Massive hitbox
+    this.body.setSize(80, 80); // Hitbox
     this.setScale(2); // Boss size
     
     // --- KARNOK STATE MACHINE ---
@@ -22,7 +21,7 @@ export default class KarnokMonster extends BaseMonster {
 
     // --- TAG AS BOSS & TRIGGER UI ---
     this.isBoss = true;
-    this.maxHp = this.hp; // Ensure maxHp is strictly set
+    this.maxHp = this.hp;
     window.dispatchEvent(new CustomEvent('VS_SHOW_BOSS_BAR', { 
       detail: { name: 'KARNOK, THE BLOOD BEAST', hp: this.hp, maxHp: this.maxHp } 
     }));
@@ -67,7 +66,6 @@ export default class KarnokMonster extends BaseMonster {
     if (time >= this.attackCooldown) {
       this.triggerGroundSlam();
     } else {
-      // Very slow, menacing walk
       this.scene.physics.moveToObject(this, targetPlayer, this.baseSpeed * 0.8);
       this.updateWalkAnimation();
     }
@@ -81,13 +79,12 @@ export default class KarnokMonster extends BaseMonster {
     
     // 1. Telegraph the Slam
     const telegraph = this.scene.add.graphics({ x: this.x, y: this.y });
-    telegraph.lineStyle(2, 0xdc2626, 0.5); // Faint red line
+    telegraph.lineStyle(2, 0xdc2626, 0.5);
     telegraph.strokeCircle(0, 0, slamRadius);
     
     const fill = this.scene.add.graphics({ x: this.x, y: this.y });
     fill.fillStyle(0xdc2626, 0.2);
 
-    // Expand the fill to show timing
     this.scene.tweens.add({
       targets: fill,
       scaleX: slamRadius / 10,
@@ -259,7 +256,6 @@ export default class KarnokMonster extends BaseMonster {
           gem.setScale(2);
         }
         
-        // --- NEW: Tell the engine the mid-boss is dead! ---
         window.dispatchEvent(new CustomEvent('VS_MID_BOSS_DEAD'));
         window.dispatchEvent(new CustomEvent('VS_HIDE_BOSS_BAR'));
         this.destroy();

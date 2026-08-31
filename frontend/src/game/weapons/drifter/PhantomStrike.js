@@ -90,7 +90,7 @@ export default class PhantomStrike {
     const pullTimer = this.scene.time.addEvent({
       delay: 50, // Tick 20 times a second
       callback: () => {
-        const pullZone = new Phaser.Geom.Circle(x, y, 200); // 200px pull radius
+        const pullZone = new Phaser.Geom.Circle(x, y, 200);
         this.scene.enemies.getChildren().forEach(enemy => {
           if (enemy.active && Phaser.Geom.Circle.ContainsPoint(pullZone, enemy)) {
             // Forcefully move them towards the center

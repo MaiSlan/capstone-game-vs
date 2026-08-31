@@ -59,7 +59,7 @@ export default class FanOfKnives {
   applyPoison(enemy) {
     if (!enemy || !enemy.active) return;
 
-    // Turn them a sickly green to visually confirm the poison[cite: 3]
+    // Turn them a sickly green to visually confirm the poison
     enemy.setTint(0x00ff00);
 
     // If they aren't poisoned yet, initialize the DoT (Damage over Time)

@@ -28,7 +28,7 @@ const UI_DICT = {
   upg_reroll_desc: { en: 'Grants one reroll per level-up.', fr: 'Accorde une relance par montée de niveau.', zh: '每次升级获得一次重置机会。' },
 };
 
-// 1. ADD THE REROLL UPGRADE
+// ADD THE REROLL UPGRADE
 const UPGRADE_CATALOG = [
   { id: 'vitality', titleKey: 'upg_vitality_title', descKey: 'upg_vitality_desc', baseCost: 100, maxLevel: 5, icon: 'assets/items/equipable/ring.png' },
   { id: 'might', titleKey: 'upg_might_title', descKey: 'upg_might_desc', baseCost: 150, maxLevel: 5, icon: 'assets/items/equipable/dagger.png' },

@@ -3,14 +3,12 @@ import BaseMonster from '../BaseMonster';
 
 export default class GoreThrallMonster extends BaseMonster {
   constructor(scene, x, y, dbStats, multiplier, waveConfig = {}) {
-    // We pass 'placeholder_square' and hasAnimations: false 
     super(scene, x, y, 'placeholder_square', 'none', dbStats, multiplier, {
       attackDistance: 45, // Explodes when it gets within 45 pixels of the player
       hasAnimations: false,
       ...waveConfig
     });
 
-    // Match the placeholder visual settings
     this.body.setSize(40, 40);
     this.setTint(0xdc2626); // Red block
     this.setScale(0.8);
@@ -87,7 +85,6 @@ export default class GoreThrallMonster extends BaseMonster {
       if (distance <= explosionRadius) {
         player.takeDamage(this.damage, this.scene);
         
-        // Update the React UI
         window.dispatchEvent(new CustomEvent('VS_UPDATE_HP', { 
           detail: { hp: player.hp, maxHp: player.maxHp } 
         }));

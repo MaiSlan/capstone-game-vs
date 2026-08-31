@@ -8,7 +8,7 @@ export default class BaseMonster extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
 
     this.animPrefix = animPrefix;
-    this.hasAnimations = config.hasAnimations !== false; // Default to true unless explicitly disabled
+    this.hasAnimations = config.hasAnimations !== false;
 
     // =========================
     // Base Stats (scaled)
@@ -43,7 +43,7 @@ export default class BaseMonster extends Phaser.Physics.Arcade.Sprite {
           scene.tweens.add({
             targets: this,
             alpha: 0,
-            duration: 1500, // Slowly fade into the shadows
+            duration: 1500,
             onComplete: () => {
               this.isDying = true;
               this.destroy();
@@ -129,7 +129,7 @@ export default class BaseMonster extends Phaser.Physics.Arcade.Sprite {
     if (this.aiOverride === 'sweep') {
       this.setVelocity(this.sweepVelocity.x, this.sweepVelocity.y);
       this.updateWalkAnimation();
-      return; // Stop here! Do not track the player.
+      return;
     }
 
     const targetPlayer = this.scene.player;

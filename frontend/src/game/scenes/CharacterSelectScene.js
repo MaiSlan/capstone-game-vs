@@ -33,7 +33,6 @@ export default class CharacterSelectScene extends Phaser.Scene {
       blendMode: 'ADD'
     });
 
-    // Default character setup
     this.charSprite = this.add.sprite(width / 2, height / 2, 'witch_menu', '0');
     this.charSprite.setScale(1.5); 
 

@@ -33,7 +33,7 @@ export const TIMELINE_DB = [
   {
     startTime: 600,
     endTime: 601,
-    monsterId: 'zul_karn', // THE FIX: Using the new Mid-Boss ID
+    monsterId: 'zul_karn',
     spawnRateMs: 1000,
     countPerSpawn: 1,
     pattern: 'boss'

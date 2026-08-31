@@ -23,8 +23,6 @@ async def get_shop_data(user = Depends(verify_token)):
     try:
         query = supabase.table("profiles").select("*").eq("id", user.id)
         profile_res = execute_with_retry(query)
-        
-        # RESTORED: Raw Payload Logs
         print(f"\n[RAW PROFILES PAYLOAD]: {profile_res.data}\n")
 
         gold_balance = 0
@@ -35,8 +33,6 @@ async def get_shop_data(user = Depends(verify_token)):
 
         upgrades_query = supabase.table("user_upgrades").select("*").eq("user_id", user.id)
         upgrades_res = execute_with_retry(upgrades_query)
-        
-        # RESTORED: Raw Payload Logs
         print(f"\n[RAW UPGRADES PAYLOAD]: {upgrades_res.data}\n")
         
         upgrades = upgrades_res.data if upgrades_res.data else []

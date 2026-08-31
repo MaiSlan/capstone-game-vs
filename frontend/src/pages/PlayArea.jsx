@@ -174,7 +174,7 @@ export default function PlayArea() {
       }
       if (document.fullscreenElement) document.exitFullscreen();
 
-      // --- NEW: FIRE THE BACKEND API CALL ---
+      // --- FIRE THE BACKEND API CALL ---
       const runData = e.detail; 
       const token = sessionStorage.getItem('game_token');
       if (!token) return;
@@ -338,7 +338,7 @@ export default function PlayArea() {
     setGameInstanceKey(prev => prev + 1); 
   };
 
-  // --- NEW: Return to Menu Logic ---
+  // --- Return to Menu Logic ---
   // Replaces the old navigate('/select')
   const handleReturnToMenu = () => {
     setIsGameOver(false);
@@ -654,7 +654,6 @@ export default function PlayArea() {
 
             <div className="flex gap-6 mt-4">
               <button onClick={handleRestart} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em]">{UI_DICT.resurrect[language]}</button>
-              {/* FIXED: Return to Menu */}
               <button onClick={handleReturnToMenu} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em]">{UI_DICT.newVessel[language]}</button>
             </div>
           </div>
@@ -676,7 +675,6 @@ export default function PlayArea() {
             </div>
 
             <div className="flex gap-6 mt-4">
-              {/* FIXED: Return to Menu */}
               <button onClick={handleReturnToMenu} className="btn-pure px-10 py-4 text-xs uppercase tracking-[0.3em] text-amber-500 hover:text-amber-400">
                 {UI_DICT.ascend[language]}
               </button>
@@ -712,7 +710,6 @@ export default function PlayArea() {
                 </div>
               ))}
             </div>
-            {/* THE NEW REROLL BUTTON */}
             {hasRerollUpgrade && (
               <div className="mt-12 flex flex-col items-center">
                 <button 

@@ -56,7 +56,7 @@ export default class SpinningCross {
           if (!cross || !cross.active) return;
           cross.hitEnemies = []; // Reset hits
           
-          // Max Level Mechanic: Shoot tiny light projectiles while spinning in place[cite: 7]
+          // Max Level Mechanic: Shoot tiny light projectiles while spinning in place
           if (isMaxLevel && cross.state === 'spinning') {
             this.shootLightProjectile(cross.x, cross.y, currentDamage * 0.5);
           }

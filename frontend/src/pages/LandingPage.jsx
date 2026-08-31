@@ -40,7 +40,7 @@ export default function LandingPage() {
           </button>
           
           <a 
-            href="https://github.com/your-username" 
+            href="https://github.com/MaiSlan" 
             target="_blank" 
             rel="noreferrer"
             className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-600 hover:text-red-700 transition-colors duration-300"

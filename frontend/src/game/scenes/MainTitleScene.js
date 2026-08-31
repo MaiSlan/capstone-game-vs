@@ -45,8 +45,6 @@ export default class MainTitleScene extends Phaser.Scene {
       this.input.off('pointerdown', startNextScene);
       this.input.keyboard.off('keydown', startNextScene);
       window.removeEventListener('VS_ENTER_MENU', startNextScene);
-      
-      // Tell React to update UI (if triggered via Phaser directly)
       window.dispatchEvent(new CustomEvent('VS_ENTER_MENU')); 
       
       this.scene.start('CharacterSelectScene');

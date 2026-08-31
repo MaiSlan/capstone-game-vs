@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import { TIMELINE_DB } from '../../data/TimeLineDB';
 import { MONSTER_DB } from '../../data/MonsterDB';
 
-// --- WE WILL IMPORT THE SPECIFIC CLASSES HERE AS WE BUILD THEM IN PHASE 4 ---
 import SlimeMonster from '../entities/monsters/SlimeMonster';
 import GoreThrallMonster from '../entities/monsters/GoreThrallMonster';
 import VampireMonster from '../entities/monsters/VampireMonster';
@@ -164,9 +163,7 @@ export default class WaveManager {
     const spawnBoss = (BossClass, isMidBoss = false) => {
       const boss = new BossClass(this.scene, x, y, dbStats, multiplier, waveConfig);
       
-      // EXPLICITLY TAG THE BOSS ID
       boss.monsterId = monsterId; 
-      
       this.enemies.add(boss);
       
       if (isMidBoss) {
@@ -186,7 +183,6 @@ export default class WaveManager {
     let enemyInstance = null;
 
     switch (monsterId) {
-      // REAL ASSETS
       case 'abyssal_sludge':
         enemyInstance = new SlimeMonster(this.scene, x, y, dbStats, multiplier, waveConfig);
         break;
@@ -220,7 +216,6 @@ export default class WaveManager {
       default: break;
     }
 
-    // --- EXPLICITLY TAG STANDARD ENEMIES ---
     if (enemyInstance) {
       enemyInstance.monsterId = monsterId; 
       this.enemies.add(enemyInstance);
@@ -241,7 +236,7 @@ export default class WaveManager {
       }
     });
 
-    // 2. Select a random Final Boss using the correct MonsterDB IDs
+    // 2. Select a random Final Boss using the MonsterDB IDs
     const eclipseLords = ['obsidian_falcon', 'carmilla', 'grand_haruspex', 'elara', 'valeria'];
     const chosenLordId = eclipseLords[Math.floor(Math.random() * eclipseLords.length)];
     

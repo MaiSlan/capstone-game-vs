@@ -37,7 +37,7 @@ export default class ConsecratedGround {
           if (!aura || !aura.active) return;
           aura.hitEnemies = []; // Reset hits to tick damage again
           
-          // Max Level Mechanic: Heal the player if they stand inside the aura[cite: 7, 8]
+          // Max Level Mechanic: Heal the player if they stand inside the aura
           if (isMaxLevel) {
             const dist = Phaser.Math.Distance.Between(player.x, player.y, aura.x, aura.y);
             if (dist <= currentRadius / 2 && player.hp < player.maxHp) {
