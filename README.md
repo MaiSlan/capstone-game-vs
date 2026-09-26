@@ -19,8 +19,9 @@ resurrection.
 
 ## Features
 
-- **6 playable heroes**, each with their own starting weapon and a set of 4 signature weapons
-  (24 weapons in total) that level up during a run
+- **6 heroes**, each with their own starting weapon and a set of 4 signature weapons (24 weapons
+  in total) that level up during a run. Three are playable so far (the Witch, the Viking and the
+  Berserker); the other three are in progress.
 - **20-minute runs** driven by a timeline-based spawn director, with wave patterns like edge
   swarms, encircling rings and sweeping walls of enemies
 - **Boss encounters**: a recurring mimic sub-boss that copies your own weapon, a mid-run
