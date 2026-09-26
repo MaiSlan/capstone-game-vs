@@ -217,11 +217,13 @@ playtest Phase 1 (especially the boss HP fights) along with it.
 
 **Known issues (from the first Dev Mode playtest, Sept 26 2026)** — logged,
 not yet fixed:
-- Zul'Karn (`BossMidGame.js`) dive bomb only "hops" in place instead of
-  landing on the player. Likely cause (unverified): `triggerDiveBomb()` sets
-  `body.enable = false`, moves the sprite with `setPosition()`, then re-enables
-  the body without `body.reset(x, y)`, so Arcade physics snaps the sprite
-  back to the stale body position.
+- Zul'Karn (`BossMidGame.js`) "only jumps a little instead of leaping at the
+  player" (owner's report). The suspected `body.reset()` bug was **ruled
+  out** in headless testing: the phase-2 dive bomb does land on the player's
+  position at jump time. As coded, it's a 0.6s grow-in-place, then an instant
+  teleport + crash (no visible travel), and it only starts at ≤50% HP. Phase 1
+  is a slow walk + stationary ground slam, and lasts longer with the 1.7× HP
+  tier. Intended behavior still to confirm with the owner before changing.
 - Overall balance "feels unfair" per the owner — direction/specifics still to
   be gathered; ties into the pacing task below and the Phase 1 boss HP tiers.
 - Seen only in headless testing, not yet by the owner: errors during
@@ -232,10 +234,12 @@ not yet fixed:
 
 **Phase 3 (content pipeline)**:
 - [ ] Missing monster/weapon/item/shop assets & attacks
-- [ ] Wire up Pirate/Paladin/Drifter: their entity classes exist, but
-      `MainScene`'s spawn selection only creates Witch/Viking/Berserker, so
-      starting a run with the other 3 crashes (`this.player` is undefined).
-      They're unlockable in the character select today.
+- [ ] Pirate/Paladin/Drifter art: they're playable (Sept 2026, via
+      `HERO_CLASSES` in `MainScene`) but use frame 0 of their `<hero>_menu`
+      character-select sheet as a static placeholder (`hasAnimations = false`).
+      They need `<hero>_walk` spritesheets + `AnimationManager` entries. Some
+      of their weapon projectiles show Phaser's missing-texture box, and their
+      weapons have no inventory icons.
 - [ ] Boss/player animation frames
 - [ ] Regenerate Berserker BGM (Suno)
 - [ ] Map generation + better borders/out-of-bounds + background objects
