@@ -146,6 +146,11 @@ mirror all three steps. Long-term, consider consolidating onto one system.
   Supabase directly. If frontend code ever uses `supabase-js` against the DB,
   it needs explicit RLS policies.
 - `profiles.is_admin` (migration `0006`) gates Dev Mode.
+- New accounts get their `profiles` row and witch/viking starters from the
+  `on_auth_user_created` trigger on `auth.users`, which takes `display_name`
+  from sign-up metadata (`options.data.username`, migration `0007`).
+  `/auth/register` must **not** insert the profile itself: that collides on
+  the primary key (a real bug, fixed Sept 2026).
 
 ## Dev Mode — currently a manual comment-toggle, not a real feature
 

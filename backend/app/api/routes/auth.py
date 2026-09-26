@@ -25,20 +25,15 @@ class UpdateUsernameRequest(BaseModel):
 @router.post("/register")
 async def register_user(req: RegisterRequest):
     try:
-        # Create the user in Supabase Auth
-        res = auth_client.auth.sign_up({"email": req.email, "password": req.password})
-        
-        # If auth creation is successful, extract ID and create the profile
-        if res.user:
-            profile_data = {
-                "id": res.user.id,
-                "email": req.email,
-                "display_name": req.username,
-                "evr_balance": 0,
-                "gold_balance": 0
-            }
-            # Use the global admin client to insert the profile
-            supabase.table("profiles").insert(profile_data).execute()
+        # Create the user in Supabase Auth. The profile row (and starter characters)
+        # are created by the on_auth_user_created DB trigger, which reads the
+        # username from this metadata (supabase/migrations/0007). Don't insert the
+        # profile here too: it would collide with the trigger's row.
+        auth_client.auth.sign_up({
+            "email": req.email,
+            "password": req.password,
+            "options": {"data": {"username": req.username}}
+        })
 
         return {"status": "success", "message": "Account created. Please verify your email."}
     except Exception as e:
