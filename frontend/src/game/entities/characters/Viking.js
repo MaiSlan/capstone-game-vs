@@ -3,10 +3,10 @@ import Player from '../Player';
 import { CHARACTER_DB } from '../../../data/CharacterDB';
 
 export default class Viking extends Player {
-  constructor(scene, x, y) {
+  constructor(scene, x, y, metaUpgrades = []) {
     const stats = CHARACTER_DB.viking;
     
-    super(scene, x, y, 'viking_walk', stats.speed, stats.hp);
+    super(scene, x, y, 'viking_walk', stats.speed, stats.hp, metaUpgrades);
     
     this.heroName = stats.name;
     this.addOrUpgradeWeapon(stats.weaponId);
