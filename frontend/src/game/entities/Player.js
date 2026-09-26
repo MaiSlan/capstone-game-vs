@@ -108,6 +108,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.armor = itemStats.armor;
     this.curseMult = itemStats.curseMult;
 
+    // Dev Mode hook (set by DevToolsManager): lets god-mode multipliers survive recalculation
+    if (this.devStatOverride) this.devStatOverride(this);
+
     this.currentSpeed = this.baseSpeed * itemStats.speedMult;
     
     // Combine HP Multipliers

@@ -152,18 +152,30 @@ mirror all three steps. Long-term, consider consolidating onto one system.
   `/auth/register` must **not** insert the profile itself: that collides on
   the primary key (a real bug, fixed Sept 2026).
 
-## Dev Mode — currently a manual comment-toggle, not a real feature
+## Dev Mode — admin-only, runtime Dev Panel
 
-`frontend/src/game/scenes/MainScene.js` has a hardcoded `DEV MODE:
-UNSTOPPABLE POWER` block (search for that comment, not a line number — it
-drifts) that's manually uncommented for local testing and re-commented before
-committing: god-mode stats (`damageMult`/`xpMult`/`baseSpeed`/`hp`/`maxHp`),
-max-level starting weapons (currently only wired for `witch` and `viking` —
-the other 4 characters silently get nothing), and a time-skip
-(`surviveSeconds = 240`, though the comment beside it says "Minute 19," which
-is `1140` seconds, not `240` — an unresolved inconsistency, ask before
-"fixing" it either way). Phase 2 replaces this with a real, admin-gated
-toggle instead of a source-edit — see `PHASE_2_TASKS.md` for the full plan.
+Replaced the old commented-out `DEV MODE: UNSTOPPABLE POWER` block in
+`MainScene.js` (Sept 2026). How it's wired:
+
+- `GET /api/v1/auth/me` returns `profiles.is_admin`. `PlayArea.jsx` fetches it,
+  passes `devMode` in the `VS_START_RUN` event (→ `CharacterSelectScene` →
+  `MainScene.init`), and mounts `components/DevPanel.jsx` only for admins in
+  combat. Ctrl+Shift+D toggles the panel.
+- `MainScene` only constructs `managers/DevToolsManager.js` when `devMode` is
+  true, so non-admins have no listeners at all. The panel talks to it via
+  `VS_DEV_COMMAND` (React → Phaser) and `VS_DEV_STATE` (Phaser → React).
+- Actions: god mode toggle (constants at the top of `DevToolsManager.js`;
+  multipliers go through `Player.devStatOverride`, a hook in
+  `recalculateStats()`, so they survive item pickups), max weapons (built from
+  `REWARD_DB.weapons[hero]` + `WEAPON_DB[id].maxLevel`, works for any hero),
+  and skip-to-minute (presets derived from the boss entries in `TimeLineDB.js`,
+  plus a free minute input, 0–20).
+- Any action sets `scene.devModeUsed`; the game-over/victory payloads carry
+  `dev_mode_used`, and `PlayArea` then **doesn't** POST `/game/end_run`, so
+  dev-assisted runs never touch gold/stats/bestiary.
+- This is client-side gating: it keeps the tool out of normal players' way,
+  but isn't a security boundary. The real gap is that `/game/end_run` and the
+  shop trust client-sent values (gold earned, prices) — a known issue.
 
 ## Current roadmap / status
 
@@ -196,12 +208,18 @@ playtest Phase 1 (especially the boss HP fights) along with it.
 
 **Phase 2 (code health, up next)**:
 - [ ] Refine `TimeLineDB.js` / `WaveManager.js` pacing
-- [ ] Extract Dev Mode into its own module, gated to admin accounts
-      (needs a new `is_admin` column — see Backend notes above)
-- [ ] Rewrite the README
+- [x] Extract Dev Mode into its own module, gated to admin accounts
+      (see "Dev Mode" above). **Not yet playtested.**
+- [x] Rewrite the README
+- [x] Bonus: Supabase schema versioned in `supabase/migrations/`, plus a
+      sign-up fix (duplicate profile insert vs. the new-user trigger).
 
 **Phase 3 (content pipeline)**:
 - [ ] Missing monster/weapon/item/shop assets & attacks
+- [ ] Wire up Pirate/Paladin/Drifter: their entity classes exist, but
+      `MainScene`'s spawn selection only creates Witch/Viking/Berserker, so
+      starting a run with the other 3 crashes (`this.player` is undefined).
+      They're unlockable in the character select today.
 - [ ] Boss/player animation frames
 - [ ] Regenerate Berserker BGM (Suno)
 - [ ] Map generation + better borders/out-of-bounds + background objects

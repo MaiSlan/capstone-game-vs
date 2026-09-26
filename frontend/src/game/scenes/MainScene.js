@@ -6,6 +6,7 @@ import Berserker from '../entities/characters/Berserker';
 import WaveManager from '../managers/WaveManager';
 import AnimationManager from '../managers/AnimationManager';
 import LootManager from '../managers/LootManager';
+import DevToolsManager from '../managers/DevToolsManager';
 
 export default class MainScene extends Phaser.Scene {
   constructor() {
@@ -15,6 +16,8 @@ export default class MainScene extends Phaser.Scene {
   init(data) {
     this.selectedCharacter = data.character || 'witch';
     this.userUpgrades = data.userUpgrades || [];
+    this.devMode = data.devMode === true; // Set by PlayArea for is_admin accounts only
+    this.devModeUsed = false;
   }
 
   preload() {
@@ -33,8 +36,8 @@ export default class MainScene extends Phaser.Scene {
     this.bgm.play();
 
     // --- TIMER INIT ---
-    this.surviveSeconds = 0;    
-    this.time.addEvent({
+    this.surviveSeconds = 0;
+    this.surviveTimer = this.time.addEvent({
       delay: 1000,
       callback: () => {
         this.surviveSeconds++;
@@ -120,39 +123,11 @@ export default class MainScene extends Phaser.Scene {
       this.player = new Berserker(this, 4000, 4000, this.userUpgrades); 
     }
     
-    // ==========================================
-    // DEV MODE: UNSTOPPABLE POWER
-    // Comment these out when you are ready to balance the real game!
-    // ==========================================
-    //this.player.damageMult = 5.0; // Deal 500% Damage instantly
-    //this.player.xpMult = 5.0;     // Level up 5x faster
-    //this.player.baseSpeed = 250;  // Run incredibly fast to dodge anything
-    //this.player.hp = 5000;        // Massive health pool
-    //this.player.maxHp = 5000;
-
-    // DEV MODE: Grant character-specific weapons at Level 5 (Max)
-    //let devWeapons = [];
-    
-    //if (this.selectedCharacter === 'witch') {
-    //  devWeapons = ['magic_orb', 'magic_book', 'magic_wand', 'arcane_nova'];
-    //} else if (this.selectedCharacter === 'viking') {
-    //  // --- THE FIX: Updated to match exact Viking WeaponDB IDs ---
-    //  devWeapons = ['bouncing_axe', 'piercing_lance', 'seismic_stomp', 'dragon_shout'];
-    //}
-
-    //devWeapons.forEach(weaponId => {
-    //  for (let i = 0; i < 5; i++) {
-    //    try {
-    //      this.player.addOrUpgradeWeapon(weaponId);
-    //    } catch (error) {
-    //      console.warn(`Dev Mode: Skipped ${weaponId} - Not mapped for this character.`);
-     //   }
-     // }
-    //});
-    
-    // Optional Time Skip: Uncomment this to start the game directly at Minute 19!
-    //this.surviveSeconds = 240; 
-    // ==========================================
+    // Dev Mode (admin accounts only): god mode, max weapons and time skip are
+    // triggered at runtime from the Dev Panel (Ctrl+Shift+D). See DevToolsManager.
+    if (this.devMode) {
+      this.devTools = new DevToolsManager(this);
+    }
 
     this.lootManager = new LootManager(this, this.player);
 
@@ -268,8 +243,9 @@ export default class MainScene extends Phaser.Scene {
             survival_time_seconds: this.surviveSeconds,
             gold_earned: player.coins,
             enemies_defeated: totalEnemiesDefeated,
-            is_cleared: false, 
-            bestiary_data: bestiaryMetrics
+            is_cleared: false,
+            bestiary_data: bestiaryMetrics,
+            dev_mode_used: this.devModeUsed // PlayArea doesn't save dev-assisted runs
           }
         }));
       }

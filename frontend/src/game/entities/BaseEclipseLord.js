@@ -59,8 +59,9 @@ export default class EclipseLordBase extends BaseMonster {
             gold_earned: player ? player.coins : 0,
             enemies_defeated: totalEnemiesDefeated,
             is_cleared: true,
-            bestiary_data: bestiaryMetrics
-          } 
+            bestiary_data: bestiaryMetrics,
+            dev_mode_used: this.scene.devModeUsed === true // PlayArea doesn't save dev-assisted runs
+          }
         }));
         
         this.destroy();

@@ -103,7 +103,8 @@ export default class CharacterSelectScene extends Phaser.Scene {
       if (this.menuBgm) this.menuBgm.stop();
       this.scene.start('MainScene', {
         character: e.detail.characterId,
-        userUpgrades: e.detail.upgrades
+        userUpgrades: e.detail.upgrades,
+        devMode: e.detail.devMode === true
       });
     };
     window.addEventListener('VS_START_RUN', this.startListener);

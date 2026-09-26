@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../components/PublicNavbar';
 import GameNavbar from '../components/GameNavbar';
+import DevPanel from '../components/DevPanel';
 import PhaserEngine from '../game/PhaserEngine';
 import { REWARD_DB } from '../data/RewardDB';
 import CharacterSelectUI from './CharacterSelectUI';
@@ -71,6 +72,7 @@ export default function PlayArea() {
 
   const [metaUpgrades, setMetaUpgrades] = useState([]);
   const [isEngineReady, setIsEngineReady] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false); // Gates Dev Mode (profiles.is_admin)
 
   // --- REACT HUD STATE ---
   const [playerHp, setPlayerHp] = useState(100);
@@ -158,14 +160,34 @@ export default function PlayArea() {
   }, []);
 
   useEffect(() => {
+    const fetchAdminFlag = async () => {
+      const token = sessionStorage.getItem('game_token');
+      if (!token) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setIsAdmin(data.is_admin === true);
+        }
+      } catch (error) {
+        console.error("Failed to load account info:", error);
+      }
+    };
+    fetchAdminFlag();
+  }, []);
+
+  useEffect(() => {
     const handleGameOver = async (e) => {
       setIsGameOver(true);
       if (e.detail && e.detail.level) setFinalLevel(e.detail.level);
       if (document.fullscreenElement) document.exitFullscreen();
 
-      const runData = e.detail; 
+      const runData = e.detail;
       const token = sessionStorage.getItem('game_token');
       if (!token) return;
+      if (runData && runData.dev_mode_used) return; // Dev-assisted runs aren't saved
 
       try {
         await fetch(`${API_BASE_URL}/api/v1/game/end_run`, {
@@ -190,9 +212,10 @@ export default function PlayArea() {
       if (document.fullscreenElement) document.exitFullscreen();
 
       // --- FIRE THE BACKEND API CALL ---
-      const runData = e.detail; 
+      const runData = e.detail;
       const token = sessionStorage.getItem('game_token');
       if (!token) return;
+      if (runData && runData.dev_mode_used) return; // Dev-assisted runs aren't saved
 
       try {
         await fetch(`${API_BASE_URL}/api/v1/game/end_run`, {
@@ -444,11 +467,14 @@ export default function PlayArea() {
             setSelectedCharacter(charId);
             setEngineState('combat'); 
             window.dispatchEvent(new CustomEvent('VS_START_RUN', {
-              detail: { characterId: charId, upgrades: metaUpgrades }
+              detail: { characterId: charId, upgrades: metaUpgrades, devMode: isAdmin }
             }));
           }}
         />
       )}
+
+      {/* DEV PANEL (admin accounts only, toggled with Ctrl+Shift+D) */}
+      {isAdmin && engineState === 'combat' && <DevPanel />}
 
       {/* 4. THE COMBAT STATE: Show the Game HUD over Phaser */}
       {engineState === 'combat' && (

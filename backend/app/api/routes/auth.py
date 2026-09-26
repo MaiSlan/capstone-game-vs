@@ -51,6 +51,20 @@ async def login_user(req: LoginRequest):
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid credentials or email not verified.")
     
+@router.get("/me")
+async def get_current_user(user = Depends(verify_token)):
+    """Who the token belongs to, including the is_admin flag that gates Dev Mode."""
+    try:
+        res = supabase.table("profiles").select("display_name, is_admin").eq("id", user.id).execute()
+        profile = res.data[0] if res.data else {}
+        return {
+            "user_id": user.id,
+            "display_name": profile.get("display_name"),
+            "is_admin": profile.get("is_admin") is True
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.put("/update_username")
 async def update_username(req: UpdateUsernameRequest, user = Depends(verify_token)):
     try:
