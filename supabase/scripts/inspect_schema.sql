@@ -29,6 +29,7 @@ SELECT kind, detail FROM (
     -- Functions / RPCs
     SELECT 'function', p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')'
              || CASE WHEN p.prosecdef THEN ' SECURITY DEFINER' ELSE '' END
+             || COALESCE(' [' || array_to_string(p.proconfig, ', ') || ']', '')
     FROM pg_proc p
     WHERE p.pronamespace = 'public'::regnamespace
 

@@ -18,9 +18,12 @@ supabase/
     inspect_schema.sql     Read-only report of what's actually in a database
 ```
 
-**Every migration is idempotent.** Each one uses `IF NOT EXISTS` / `CREATE OR REPLACE`, so running
-a file that's already been applied does nothing harmful. When in doubt, re-running all of them in
-order is safe.
+**Every migration is idempotent.** Each one uses `IF NOT EXISTS` / `CREATE OR REPLACE`, so it
+won't fail or duplicate anything if it's already been applied. But **don't re-run an old file on
+its own.** Later migrations redefine some of the functions it creates (for example, `0007` replaces
+`handle_new_user()` from `0001`, and `0005` hardens functions from `0002`/`0003`). Re-running an
+old file alone silently reverts those changes. Re-running the **whole sequence in order** is
+always safe.
 
 ## Setting up a new Supabase project
 
