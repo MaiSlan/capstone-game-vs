@@ -124,7 +124,7 @@ export default class MainScene extends Phaser.Scene {
     }
     
     // Dev Mode (admin accounts only): god mode, max weapons and time skip are
-    // triggered at runtime from the Dev Panel (Ctrl+Shift+D). See DevToolsManager.
+    // triggered at runtime from the Dev Panel (² key or DEV badge). See DevToolsManager.
     if (this.devMode) {
       this.devTools = new DevToolsManager(this);
     }

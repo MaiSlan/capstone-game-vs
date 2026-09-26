@@ -160,7 +160,8 @@ Replaced the old commented-out `DEV MODE: UNSTOPPABLE POWER` block in
 - `GET /api/v1/auth/me` returns `profiles.is_admin`. `PlayArea.jsx` fetches it,
   passes `devMode` in the `VS_START_RUN` event (→ `CharacterSelectScene` →
   `MainScene.init`), and mounts `components/DevPanel.jsx` only for admins in
-  combat. Ctrl+Shift+D toggles the panel.
+  combat. The key below Esc (² on AZERTY, ` on QWERTY; `e.code` Backquote)
+  or the small DEV badge toggles the panel. Not Ctrl+Shift+D: Chrome keeps it.
 - `MainScene` only constructs `managers/DevToolsManager.js` when `devMode` is
   true, so non-admins have no listeners at all. The panel talks to it via
   `VS_DEV_COMMAND` (React → Phaser) and `VS_DEV_STATE` (Phaser → React).

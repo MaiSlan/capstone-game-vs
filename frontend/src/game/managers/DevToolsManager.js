@@ -9,7 +9,7 @@ import { WEAPON_DB } from '../../data/WeaponDB';
 // which PlayArea sets from the backend's is_admin flag. For everyone else this
 // class is never instantiated, so no listener exists and nothing can trigger it.
 //
-// Driven by the React Dev Panel (components/DevPanel.jsx, Ctrl+Shift+D) through
+// Driven by the React Dev Panel (components/DevPanel.jsx, ² key or DEV badge) through
 // the usual window event bridge:
 //   VS_DEV_COMMAND  (React -> Phaser)  { action: 'god_mode', enabled }
 //                                      { action: 'max_weapons' }

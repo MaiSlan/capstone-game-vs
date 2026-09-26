@@ -473,7 +473,7 @@ export default function PlayArea() {
         />
       )}
 
-      {/* DEV PANEL (admin accounts only, toggled with Ctrl+Shift+D) */}
+      {/* DEV PANEL (admin accounts only, toggled with the ² key or the DEV badge) */}
       {isAdmin && engineState === 'combat' && <DevPanel />}
 
       {/* 4. THE COMBAT STATE: Show the Game HUD over Phaser */}

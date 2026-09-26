@@ -6,11 +6,15 @@ import { MONSTER_DB } from '../data/MonsterDB';
 // DEV PANEL (admin accounts only)
 // ==========================================
 // PlayArea only mounts this for is_admin accounts during combat, so the
-// Ctrl+Shift+D listener below never exists for anyone else. Actions are sent
+// toggle-key listener below never exists for anyone else. Actions are sent
 // to Phaser's DevToolsManager over the window event bridge (VS_DEV_COMMAND),
 // which reports back with VS_DEV_STATE. Dev-only tool: English labels only.
 
-const TOGGLE_HINT = 'Ctrl+Shift+D';
+// Toggle key: the one left of "1", below Esc (² on AZERTY, ` on QWERTY). Matched
+// by physical position (e.code) so it's the same key on any layout. Browser-bound
+// combos like Ctrl+Shift+D (Chrome's "bookmark all tabs") can't be relied on.
+const TOGGLE_KEY_CODE = 'Backquote';
+const TOGGLE_HINT = '² / `';
 const MAX_SKIP_MINUTE = 20;
 
 // Time-skip presets come straight from the spawn timeline, so they follow any
@@ -38,8 +42,8 @@ export default function DevPanel() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.shiftKey && e.code === 'KeyD') {
-        e.preventDefault(); // Chrome/Firefox otherwise bookmark all tabs
+      if (e.code === TOGGLE_KEY_CODE && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        e.preventDefault();
         setIsOpen(open => !open);
       }
     };
@@ -56,7 +60,18 @@ export default function DevPanel() {
     };
   }, []);
 
-  if (!isOpen) return null;
+  // Closed: a small badge, so admins can see Dev Mode is available (and click it
+  // instead of using the key)
+  if (!isOpen) {
+    return (
+      <button
+        onClick={(e) => { e.currentTarget.blur(); setIsOpen(true); }}
+        className="absolute top-24 right-6 z-40 pointer-events-auto px-2 py-1 bg-black/80 border border-amber-700/50 rounded-sm font-mono text-[10px] uppercase tracking-widest text-amber-500/80 hover:text-amber-400"
+      >
+        Dev <span className="text-zinc-500">{TOGGLE_HINT}</span>
+      </button>
+    );
+  }
 
   // Blur after clicking so Space (dash) doesn't re-press the focused button
   const act = (detail) => (e) => {
