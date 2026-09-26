@@ -159,22 +159,45 @@ export default class WaveManager {
 
     const currentLang = localStorage.getItem('vs_lang') || 'en';
 
+    // --- BOSS HP TUNING ---
+    // Bosses/sub-bosses used to inherit the exact same +40%/min multiplier as
+    // trash mobs, so their HP pools (and therefore fight duration) were tied to
+    // the trash-mob balance curve instead of being deliberately tuned. This
+    // stretches boss HP specifically (damage/speed are untouched, since a boss
+    // one-shotting the player is a positioning/dodge problem, not a duration
+    // one) so encounters last longer without changing how lethal they feel.
+    // Tune BOSS_HP_TIERS to taste after playtesting.
+    const BOSS_HP_TIERS = {
+      echo_of_the_vessel: 1.4, // sub-boss: recurring 3-5 min duel, kept snappy-ish
+      zul_karn: 1.7,           // mid-game "great filter" boss: a proper test
+      obsidian_falcon: 2.0,    // Eclipse Lords: the climactic final fight
+      carmilla: 2.0,
+      grand_haruspex: 2.0,
+      elara: 2.0,
+      valeria: 2.0
+    };
+
     // Helper to spawn a boss, attach it to the scene, and send the UI event
     const spawnBoss = (BossClass, isMidBoss = false) => {
-      const boss = new BossClass(this.scene, x, y, dbStats, multiplier, waveConfig);
-      
-      boss.monsterId = monsterId; 
+      const hpTier = BOSS_HP_TIERS[monsterId] || 1.0;
+      const bossDbStats = hpTier !== 1.0
+        ? { ...dbStats, baseHp: dbStats.baseHp * hpTier }
+        : dbStats;
+
+      const boss = new BossClass(this.scene, x, y, bossDbStats, multiplier, waveConfig);
+
+      boss.monsterId = monsterId;
       this.enemies.add(boss);
-      
+
       if (isMidBoss) {
         window.dispatchEvent(new CustomEvent('VS_MID_BOSS_STARTED'));
       }
-      
+
       window.dispatchEvent(new CustomEvent('VS_SHOW_BOSS_BAR', {
         detail: {
           name: dbStats.name[currentLang],
-          hp: boss.maxHp || (dbStats.baseHp * multiplier),
-          maxHp: boss.maxHp || (dbStats.baseHp * multiplier)
+          hp: boss.maxHp || (bossDbStats.baseHp * multiplier),
+          maxHp: boss.maxHp || (bossDbStats.baseHp * multiplier)
         }
       }));
     };

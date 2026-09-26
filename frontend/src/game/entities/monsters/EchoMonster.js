@@ -42,8 +42,15 @@ export default class EchoMonster extends BaseMonster {
       this.weaponManager.addOrUpgradeWeapon('magic_orb');
     }
     
-    this.damageMult = 2.0;   
-    this.cooldownMult = 0.8; 
+    // Balance fix: the Echo copies the player's weapon at its full stolen level,
+    // so its power must be diminished here rather than at full/buffed strength.
+    // STOLEN_WEAPON_DAMAGE_MULT: was 2.0 (double damage vs. the player's own copy).
+    // STOLEN_WEAPON_COOLDOWN_MULT: was 0.8 (20% faster firing vs. the player's own copy).
+    // Tune these two constants to adjust how strong the mimicked weapon feels.
+    const STOLEN_WEAPON_DAMAGE_MULT = 0.6;   // -40% damage output
+    const STOLEN_WEAPON_COOLDOWN_MULT = 1.0; // no more firing-speed advantage
+    this.damageMult = STOLEN_WEAPON_DAMAGE_MULT;
+    this.cooldownMult = STOLEN_WEAPON_COOLDOWN_MULT;
   }
 
   clearTint() { super.clearTint(); super.setTint(this.baseTint); return this; }

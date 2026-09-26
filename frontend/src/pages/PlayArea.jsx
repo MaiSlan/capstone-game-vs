@@ -6,6 +6,7 @@ import PhaserEngine from '../game/PhaserEngine';
 import { REWARD_DB } from '../data/RewardDB';
 import CharacterSelectUI from './CharacterSelectUI';
 import MainTitleUI from './MainTitleUI';
+import i18n from '../i18n';
 
 // --- IN-GAME UI DICTIONARY ---
 const UI_DICT = {
@@ -107,6 +108,20 @@ export default function PlayArea() {
 
   useEffect(() => {
     localStorage.setItem('vs_lang', language);
+    // Bug fix: this in-game switcher used to update only localStorage + the
+    // VS_UPDATE_SETTINGS event, which every ad-hoc UI_DICT-based component
+    // (Bestiary, BoneFireShop, ProfileStats, GameNavbar, this page, etc.)
+    // listens to directly. But react-i18next-driven components (LandingPage,
+    // AuthPage, CharacterSelectUI, PublicNavbar) read from the shared i18n
+    // instance's language instead, which was never told to change here. That
+    // meant switching language from the in-game pause menu left those pages
+    // showing the old language (or, if you'd never touched PublicNavbar's own
+    // switcher, whatever language the page loaded with) until a full reload.
+    // Keep both translation systems in sync from every switcher, not just
+    // PublicNavbar's.
+    if (i18n.language !== language) {
+      i18n.changeLanguage(language);
+    }
     window.dispatchEvent(new CustomEvent('VS_UPDATE_SETTINGS', {
       detail: { musicVolume: musicVolume / 100, sfxVolume: sfxVolume / 100, language: language }
     }));

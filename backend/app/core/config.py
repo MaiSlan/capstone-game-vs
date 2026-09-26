@@ -13,7 +13,3 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
-
-# --- DIAGNOSTIC PRINT ---
-print(f"\n[DEBUG] SUPABASE_URL loaded: {settings.SUPABASE_URL}")
-print(f"[DEBUG] SUPABASE_KEY length: {len(settings.SUPABASE_SERVICE_ROLE_KEY) if settings.SUPABASE_SERVICE_ROLE_KEY else 0}\n")

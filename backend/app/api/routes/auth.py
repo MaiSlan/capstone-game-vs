@@ -6,9 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel
 from app.core.security import verify_token
-from app.db.supabase import supabase
-from supabase import create_client
-from app.core.config import settings
+from app.db.supabase import supabase, auth_client
 
 router = APIRouter()
 
@@ -27,9 +25,6 @@ class UpdateUsernameRequest(BaseModel):
 @router.post("/register")
 async def register_user(req: RegisterRequest):
     try:
-        # Spin up a temporary client so we don't mutate the global admin client
-        auth_client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
-        
         # Create the user in Supabase Auth
         res = auth_client.auth.sign_up({"email": req.email, "password": req.password})
         
@@ -52,8 +47,6 @@ async def register_user(req: RegisterRequest):
 @router.post("/login")
 async def login_user(req: LoginRequest):
     try:
-        # Spin up a temporary client so we don't mutate the global admin client
-        auth_client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
         res = auth_client.auth.sign_in_with_password({"email": req.email, "password": req.password})
         return {
             "status": "success", 
