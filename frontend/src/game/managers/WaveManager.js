@@ -93,40 +93,31 @@ export default class WaveManager {
         break;
 
       case 'wall_horizontal':
-        const isTop = Math.random() > 0.5;
-        const startY = isTop ? cam.midPoint.y - cam.height / 2 - 100 : cam.midPoint.y + cam.height / 2 + 100;
-        const startX = cam.midPoint.x - cam.width / 2;
-        const spacingX = cam.width / countPerSpawn;
-
-        for (let i = 0; i < countPerSpawn; i++) {
-          spawnData.push({
-            coord: { x: startX + (spacingX * i), y: startY },
-            config: { 
-              aiOverride: 'sweep', 
-              sweepVelocity: { x: 0, y: isTop ? 30 : -30 }, 
-              lifeTime: 9000 
-            }
-          });
-        }
+        spawnData.push(...this.getWallSpawns(cam, countPerSpawn, Math.random() > 0.5 ? 'top' : 'bottom'));
         break;
 
       case 'wall_vertical':
-        const isLeft = Math.random() > 0.5;
-        const wallStartX = isLeft ? cam.midPoint.x - cam.width / 2 - 100 : cam.midPoint.x + cam.width / 2 + 100;
-        const wallStartY = cam.midPoint.y - cam.height / 2;
-        const spacingY = cam.height / countPerSpawn;
+        spawnData.push(...this.getWallSpawns(cam, countPerSpawn, Math.random() > 0.5 ? 'left' : 'right'));
+        break;
 
+      // Two walls closing in from opposite sides at once (countPerSpawn monsters per wall)
+      case 'pincer': {
+        const sides = Math.random() > 0.5 ? ['top', 'bottom'] : ['left', 'right'];
+        sides.forEach(side => spawnData.push(...this.getWallSpawns(cam, countPerSpawn, side)));
+        break;
+      }
+
+      // A tight pack rushing in together from a single edge point
+      case 'cluster': {
+        const packCenter = this.getRandomEdgePoint(cam, safeRadius);
         for (let i = 0; i < countPerSpawn; i++) {
           spawnData.push({
-            coord: { x: wallStartX, y: wallStartY + (spacingY * i) },
-            config: { 
-              aiOverride: 'sweep', 
-              sweepVelocity: { x: isLeft ? 30 : -30, y: 0 }, 
-              lifeTime: 9000 
-            }
+            coord: { x: packCenter.x + Phaser.Math.Between(-60, 60), y: packCenter.y + Phaser.Math.Between(-60, 60) },
+            config: {}
           });
         }
         break;
+      }
 
       case 'boss':
         spawnData.push({ coord: this.getRandomEdgePoint(cam, safeRadius), config: event.hpTier ? { hpTier: event.hpTier } : {} });
@@ -144,6 +135,27 @@ export default class WaveManager {
       const clampedY = Phaser.Math.Clamp(data.coord.y, 100, 7900);
       this.spawnMonsterFactory(monsterId, clampedX, clampedY, multiplier, data.config);
     });
+  }
+
+  // One wall of monsters just off-screen on `side` ('top' | 'bottom' | 'left' | 'right'),
+  // sweeping across the screen toward the opposite side
+  getWallSpawns(cam, count, side) {
+    const left = cam.midPoint.x - cam.width / 2;
+    const top = cam.midPoint.y - cam.height / 2;
+    const spawns = [];
+
+    for (let i = 0; i < count; i++) {
+      let coord, sweepVelocity;
+      if (side === 'top' || side === 'bottom') {
+        coord = { x: left + (cam.width / count) * i, y: side === 'top' ? top - 100 : top + cam.height + 100 };
+        sweepVelocity = { x: 0, y: side === 'top' ? 30 : -30 };
+      } else {
+        coord = { x: side === 'left' ? left - 100 : left + cam.width + 100, y: top + (cam.height / count) * i };
+        sweepVelocity = { x: side === 'left' ? 30 : -30, y: 0 };
+      }
+      spawns.push({ coord, config: { aiOverride: 'sweep', sweepVelocity, lifeTime: 9000 } });
+    }
+    return spawns;
   }
 
   getRandomEdgePoint(cam, safeRadius) {
