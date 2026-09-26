@@ -125,7 +125,7 @@ export default class WaveManager {
         break;
 
       case 'boss':
-        spawnData.push({ coord: this.getRandomEdgePoint(cam, safeRadius), config: {} });
+        spawnData.push({ coord: this.getRandomEdgePoint(cam, safeRadius), config: event.hpTier ? { hpTier: event.hpTier } : {} });
         break;
     }
 
@@ -166,9 +166,10 @@ export default class WaveManager {
     // stretches boss HP specifically (damage/speed are untouched, since a boss
     // one-shotting the player is a positioning/dodge problem, not a duration
     // one) so encounters last longer without changing how lethal they feel.
-    // Tune BOSS_HP_TIERS to taste after playtesting.
+    // Tune BOSS_HP_TIERS to taste after playtesting. These are per-boss defaults:
+    // a TimeLineDB boss entry can override one appearance with its own hpTier.
     const BOSS_HP_TIERS = {
-      echo_of_the_vessel: 1.4, // sub-boss: recurring 3-5 min duel, kept snappy-ish
+      echo_of_the_vessel: 1.4, // sub-boss default; its TimeLineDB entries ramp 1.0 / 1.2 / 1.4
       zul_karn: 1.7,           // mid-game "great filter" boss: a proper test
       obsidian_falcon: 2.0,    // Eclipse Lords: the climactic final fight
       carmilla: 2.0,
@@ -179,7 +180,7 @@ export default class WaveManager {
 
     // Helper to spawn a boss, attach it to the scene, and send the UI event
     const spawnBoss = (BossClass, isMidBoss = false) => {
-      const hpTier = BOSS_HP_TIERS[monsterId] || 1.0;
+      const hpTier = (waveConfig && waveConfig.hpTier) || BOSS_HP_TIERS[monsterId] || 1.0;
       const bossDbStats = hpTier !== 1.0
         ? { ...dbStats, baseHp: dbStats.baseHp * hpTier }
         : dbStats;
