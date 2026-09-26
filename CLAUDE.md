@@ -215,6 +215,21 @@ playtest Phase 1 (especially the boss HP fights) along with it.
 - [x] Bonus: Supabase schema versioned in `supabase/migrations/`, plus a
       sign-up fix (duplicate profile insert vs. the new-user trigger).
 
+**Known issues (from the first Dev Mode playtest, Sept 26 2026)** — logged,
+not yet fixed:
+- Zul'Karn (`BossMidGame.js`) dive bomb only "hops" in place instead of
+  landing on the player. Likely cause (unverified): `triggerDiveBomb()` sets
+  `body.enable = false`, moves the sprite with `setPosition()`, then re-enables
+  the body without `body.reset(x, y)`, so Arcade physics snaps the sprite
+  back to the stale body position.
+- Overall balance "feels unfair" per the owner — direction/specifics still to
+  be gathered; ties into the pacing task below and the Phase 1 boss HP tiers.
+- Seen only in headless testing, not yet by the owner: errors during
+  Carmilla (`BrambleQueenMonster`) Eclipse fights (`reading 'time'` of
+  undefined), and `UIScene`'s Eclipse warning text failing to create.
+- `arcane_nova` / `magic_wand` show no icon in the in-run inventory (icon
+  files likely missing — Phase 3 assets).
+
 **Phase 3 (content pipeline)**:
 - [ ] Missing monster/weapon/item/shop assets & attacks
 - [ ] Wire up Pirate/Paladin/Drifter: their entity classes exist, but
