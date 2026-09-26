@@ -89,7 +89,16 @@ and sub-bosses get an additional, separate `BOSS_HP_TIERS` multiplier**
 trash-mob multiplier, specifically to make boss fights last longer without
 changing the trash-mob difficulty curve or boss lethality. If you touch boss
 balance, tune `BOSS_HP_TIERS`, don't just change `MonsterDB.js` HP values
-(those still get read by the trash-mob-style formula too).
+(those still get read by the trash-mob-style formula too). `BOSS_HP_TIERS`
+is a per-boss default: a boss entry in `TimeLineDB.js` can set `hpTier` to
+override it for that one appearance (Echo of the Vessel ramps 1.0 / 1.2 /
+1.4 across 4:00 / 8:00 / 15:00).
+
+Other pacing knobs in `WaveManager.js`: `MAX_ACTIVE_ENEMIES` (250) trims
+trash spawns while that many enemies are alive (bosses exempt), and the spawn
+patterns are `random_edge`, `circle`, `wall_horizontal`, `wall_vertical`,
+`pincer` (two opposite walls, `countPerSpawn` per wall) and `cluster` (a
+tight pack from one edge point), plus `boss`.
 
 ## i18n — known architectural gotcha, read before touching any UI text
 
@@ -208,7 +217,13 @@ Phase 2 work branches from this committed state. Once Dev Mode lands,
 playtest Phase 1 (especially the boss HP fights) along with it.
 
 **Phase 2 (code health, up next)**:
-- [ ] Refine `TimeLineDB.js` / `WaveManager.js` pacing
+- [x] Refine `TimeLineDB.js` / `WaveManager.js` pacing (Sept 26 2026, from
+      owner feedback: early-mid game around the 4:00 Echo felt worst). Applied:
+      Echo per-appearance HP ramp, density cuts at the overlap spikes + the
+      250-enemy cap, and the `cluster`/`pincer` patterns. **Not yet
+      playtested.** Considered but not applied (owner's call): clearing trash
+      around the 4:00 Echo (ending Strigoi/Sentinel at 230s, moving the
+      250-260s Legionnaire double ring to one ring at 285s).
 - [x] Extract Dev Mode into its own module, gated to admin accounts
       (see "Dev Mode" above). **Not yet playtested.**
 - [x] Rewrite the README
@@ -224,8 +239,10 @@ not yet fixed:
   teleport + crash (no visible travel), and it only starts at ≤50% HP. Phase 1
   is a slow walk + stationary ground slam, and lasts longer with the 1.7× HP
   tier. Intended behavior still to confirm with the owner before changing.
-- Overall balance "feels unfair" per the owner — direction/specifics still to
-  be gathered; ties into the pacing task below and the Phase 1 boss HP tiers.
+- Overall balance "feels unfair" per the owner. Pacing changes above address
+  the early-mid game; re-check after the next playtest. Note that BoneFire
+  meta upgrades only applied to the Witch until Sept 26 2026 (fixed), so
+  earlier Viking/Berserker impressions were without shop upgrades.
 - Seen only in headless testing, not yet by the owner: errors during
   Carmilla (`BrambleQueenMonster`) Eclipse fights (`reading 'time'` of
   undefined), and `UIScene`'s Eclipse warning text failing to create.
