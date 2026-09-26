@@ -51,6 +51,10 @@ frontend/
     weapons/              one file per weapon, grouped by character folder
   src/data/               *DB.js files — see "data-driven design" below
   src/i18n.js             react-i18next setup (partial — see i18n gotcha below)
+
+supabase/
+  migrations/             DB schema history (NNNN_name.sql, idempotent, run in order)
+  scripts/                inspect_schema.sql — read-only live-schema report
 ```
 
 ## Architecture: hybrid React + Phaser
@@ -133,8 +137,15 @@ mirror all three steps. Long-term, consider consolidating onto one system.
   them separate — don't collapse back into a `create_client()` call per
   request, that regresses login/register latency (each call used to pay for a
   fresh client + no connection reuse).
-- No `is_admin`/role concept exists yet in the `profiles` table. If/when a Dev
-  Mode admin gate gets built, that needs a new Supabase column first.
+- The Supabase schema lives in `supabase/migrations/` (see `supabase/README.md`).
+  Schema changes go in a **new** numbered, idempotent migration file — never edit
+  an applied one, and never change the DB only via the dashboard. The project
+  owner applies migrations manually in the Supabase SQL editor.
+- `0005_security_hardening.sql` enables RLS with no policies and restricts RPCs
+  to `service_role`: this is correct only because the browser never talks to
+  Supabase directly. If frontend code ever uses `supabase-js` against the DB,
+  it needs explicit RLS policies.
+- `profiles.is_admin` (migration `0006`) gates Dev Mode.
 
 ## Dev Mode — currently a manual comment-toggle, not a real feature
 
