@@ -7,7 +7,7 @@ export const TIMELINE_DB = [
   // PHASE 1: THE AWAKENING (Minutes 0 - 5)
   // ==========================================
   { startTime: 0, endTime: 60, monsterId: 'abyssal_sludge', spawnRateMs: 1000, countPerSpawn: 3, pattern: 'random_edge' },
-  { startTime: 60, endTime: 120, monsterId: 'abyssal_sludge', spawnRateMs: 800, countPerSpawn: 4, pattern: 'random_edge' },
+  { startTime: 60, endTime: 120, monsterId: 'abyssal_sludge', spawnRateMs: 1200, countPerSpawn: 4, pattern: 'random_edge' },
   { startTime: 75, endTime: 120, monsterId: 'blighted_gore_thrall', spawnRateMs: 3000, countPerSpawn: 1, pattern: 'random_edge' },
   { startTime: 120, endTime: 125, monsterId: 'night_terror', spawnRateMs: 500, countPerSpawn: 15, pattern: 'wall_horizontal' },
   { startTime: 125, endTime: 180, monsterId: 'hollowed_legionnaire', spawnRateMs: 2000, countPerSpawn: 2, pattern: 'random_edge' },
@@ -19,10 +19,10 @@ export const TIMELINE_DB = [
   // ==========================================
   // PHASE 2: THE DESCENT (Minutes 5 - 10)
   // ==========================================
-  { startTime: 300, endTime: 360, monsterId: 'abyssal_sludge', spawnRateMs: 500, countPerSpawn: 5, pattern: 'random_edge' },
+  { startTime: 300, endTime: 360, monsterId: 'abyssal_sludge', spawnRateMs: 1000, countPerSpawn: 5, pattern: 'random_edge' },
   { startTime: 310, endTime: 360, monsterId: 'abyssal_behemoth', spawnRateMs: 15000, countPerSpawn: 1, pattern: 'random_edge' },
   { startTime: 360, endTime: 420, monsterId: 'ocular_sentinel', spawnRateMs: 2500, countPerSpawn: 2, pattern: 'random_edge' },
-  { startTime: 375, endTime: 385, monsterId: 'night_terror', spawnRateMs: 400, countPerSpawn: 15, pattern: 'wall_vertical' },
+  { startTime: 375, endTime: 380, monsterId: 'night_terror', spawnRateMs: 400, countPerSpawn: 15, pattern: 'wall_vertical' },
   { startTime: 420, endTime: 480, monsterId: 'crimson_strigoi', spawnRateMs: 1000, countPerSpawn: 4, pattern: 'random_edge' },
   { startTime: 440, endTime: 450, monsterId: 'hollowed_legionnaire', spawnRateMs: 3000, countPerSpawn: 20, pattern: 'circle' },
   { startTime: 480, endTime: 481, monsterId: 'echo_of_the_vessel', spawnRateMs: 1000, countPerSpawn: 1, pattern: 'boss', hpTier: 1.2 },

@@ -17,6 +17,10 @@ import GrandHaruspexMonster from '../entities/monsters/boss/GrandHaruspexMonster
 import RotBringerMonster from '../entities/monsters/boss/RotBringerMonster';
 import MadPuppeteerMonster from '../entities/monsters/boss/MadPuppeteerMonster';
 
+// Safety cap on simultaneous enemies. Normal waves sit around 20-230 alive; this
+// only trims the spikes where TimeLineDB entries overlap. Bosses are exempt.
+const MAX_ACTIVE_ENEMIES = 250;
+
 export default class WaveManager {
   constructor(scene, enemyGroup, player) {
     this.scene = scene;
@@ -127,6 +131,12 @@ export default class WaveManager {
       case 'boss':
         spawnData.push({ coord: this.getRandomEdgePoint(cam, safeRadius), config: event.hpTier ? { hpTier: event.hpTier } : {} });
         break;
+    }
+
+    if (pattern !== 'boss') {
+      const room = MAX_ACTIVE_ENEMIES - this.enemies.countActive(true);
+      if (room <= 0) return;
+      spawnData.length = Math.min(spawnData.length, room);
     }
 
     spawnData.forEach(data => {
