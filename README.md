@@ -1,29 +1,148 @@
-1. Sound Design & BGM in Phaser (Conceptual)
-Phaser has a robust, built-in Web Audio API manager. Implementing it is a highly standardized three-step process:
+# Branded Descent
 
-Preloading: Just like images, you load audio files (usually .ogg or .mp3) during the preload() phase of your scene, assigning them a key (e.g., this.load.audio('bg_music', 'assets/sounds/tartarus_theme.mp3')).
+A dark-fantasy survival roguelike in the style of *Vampire Survivors*, playable in the browser.
+Pick a hero, survive 20 minutes of escalating monster waves with auto-firing weapons you level up
+along the way, then face one of five Eclipse Lords in a final boss fight. The game is set in the
+Astral Interstice, a realm where trapped souls are forced through an endless cycle of death and
+resurrection.
 
-Initialization: In your create() phase, you assign that loaded audio to a variable using this.sound.add('bg_music', { loop: true, volume: 0.5 }).
+**Play it live:** https://capstone-game-vs.vercel.app
 
-Playback: For background music, you simply call play() on that variable. For sound effects (like a heavy axe cleave or a gooey monster dying), you call this.sound.play('axe_swing', { volume: 0.8 }) directly inside your weapon logic or enemy death functions. Phaser automatically handles overlapping the same sound effect so it doesn't clip when 10 enemies die at once.
+> The backend runs on Render's free tier, which sleeps when idle. The first login or sign-up after a
+> quiet period can take **30–60 seconds** while the server wakes up. After that, it responds normally.
 
-2. Gameplay Roadmap Analysis
-Your list hits every major mechanic required to elevate a survival roguelike from a prototype to a polished game. Here is how we execute those concepts:
+## Screenshots
 
-Mouse Aiming & Auto-Aim Lock: * The Math: Phaser constantly tracks the mouse via this.input.activePointer. We can easily track the angle between the player and the cursor.
+<!-- TODO: add gameplay screenshots / a short GIF (e.g. docs/screenshots/*.png) -->
 
-The Logic: We would add a state variable to the player (e.g., isAimLocked = false). Left-clicking toggles it. If it's true, weapons fire toward the cursor's world coordinates. If it's false, weapons use this.scene.physics.closest() to auto-aim at the nearest enemy in the group.
+*Coming soon.*
 
-Accurate Hitboxes: * The Reality: By default, Phaser creates a physics box that perfectly matches the image dimensions. This feels terrible in games because hitting a character's cape shouldn't kill them. We will use body.setSize(width, height) and body.setOffset(x, y) on the entities to make the hitboxes strictly cover their "core," allowing close-call dodges that feel rewarding.
+## Features
 
-Off-Screen Spawning: * The Method: We calculate the camera's current scrollX and scrollY boundaries, add a buffer of about 100 pixels, and use standard trigonometry to randomly pick coordinates along that invisible perimeter ring. This ensures monsters never pop into existence right in front of the player.
+- **6 playable heroes**, each with their own starting weapon and a set of 4 signature weapons
+  (24 weapons in total) that level up during a run
+- **20-minute runs** driven by a timeline-based spawn director, with wave patterns like edge
+  swarms, encircling rings and sweeping walls of enemies
+- **Boss encounters**: a recurring mimic sub-boss that copies your own weapon, a mid-run
+  "great filter" boss at minute 10, and a randomly chosen Eclipse Lord at minute 20
+- **Meta-progression**: gold earned in runs is spent at the BoneFire shop on permanent upgrades
+  and character unlocks
+- **Persistent accounts**: sign-up/login, lifetime stats on a profile page (every run is also
+  logged server-side), and a bestiary that fills in as you encounter monsters
+- **Three languages**: English, French and Simplified Chinese, switchable from the menus or
+  mid-run
 
-Map Boundaries: * The Method: Phaser has this.physics.world.setBounds(). To make it visually distinct and fit the Tartarus theme, we wouldn't just use a hard wall; we would draw a dark, static vignette or a ring of esoteric runes on the floor that the player cannot cross.
+## Tech stack
 
-Weapon & Skill Refinement: * The Architecture: This requires building out the specific projectile behaviors in Player.js (or breaking them into their own classes) so that the Viking's Lance actually behaves like a heavy, piercing spear rather than a simple bullet.
+| Layer    | Technology                                            | Hosting               |
+|----------|-------------------------------------------------------|-----------------------|
+| Frontend | React 19, Vite, Phaser 4, Tailwind CSS, react-i18next | Vercel                |
+| Backend  | FastAPI (Python)                                      | Render                |
+| Data     | Supabase (Postgres + Auth)                            | Supabase              |
 
-Advanced Spawn Patterns (The Director): * The Logic: We upgrade the WaveManager.js. Instead of just randomly dropping enemies, it becomes a state machine reading the global timer. At exactly 3:00, it triggers the SpawnCircleTrap() method. At 5:00, it triggers the SpawnFastSwarm() method.
+All three services run on free tiers.
 
-The Bestiary / Master Bible: * The Foundation: You already started this perfectly with CharacterDB.js and RewardDB.js. We simply expand this data architecture to include MonsterDB.js, ensuring every HP, speed, and damage value is stored in one clean place outside the engine code.
+### How it fits together
 
-The Damage Numbers: Popping up tiny numbers (e.g., "-15") when enemies take damage makes combat feel impactful.
+- **React** handles everything outside of combat: routing, auth, the shop, the bestiary,
+  profile stats and settings.
+- **Phaser** runs the real-time combat loop (physics, spawning, weapons, in-run inventory) on a
+  canvas mounted inside the React app.
+- The two sides never reach into each other's internals. They communicate only through custom
+  DOM events on `window` (e.g. `VS_UPDATE_HP`, `VS_LEVEL_UP`, `VS_SHOW_BOSS_BAR`).
+- **Game content is data-driven.** Heroes, monsters, weapons, items, level-up rewards and the
+  spawn timeline all live in `frontend/src/data/*DB.js`. Entity and weapon classes read their
+  numbers from those files, so balancing the game rarely means touching engine code.
+- **The FastAPI backend** is the only thing that talks to Supabase with privileged credentials.
+  It verifies the player's JWT and handles purchases, unlocks, end-of-run rewards and stats.
+
+## Project structure
+
+```
+backend/
+  main.py              FastAPI app, CORS, /health
+  run_server.py        Local dev entry point (Uvicorn on port 5000)
+  app/api/routes/      auth, shop, game, stats endpoints
+  app/core/            settings (.env loading) and JWT verification
+  app/db/              Supabase clients
+frontend/
+  src/pages/           React screens (landing, auth, character select, shop, bestiary, ...)
+  src/game/scenes/     Phaser scenes (MainScene = the combat loop)
+  src/game/entities/   Player, heroes, monsters, bosses
+  src/game/managers/   Wave director, weapons, items, loot, meta-stats
+  src/game/weapons/    One file per weapon, grouped by hero
+  src/data/            Game content and balance tables
+supabase/
+  migrations/          Database schema, RPC functions and access rules (run in order)
+start_dev.bat          Launches backend + frontend together (Windows)
+```
+
+## Running locally
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (a current LTS release) and npm
+- Python 3 (the project is developed on Python 3.14)
+- A [Supabase](https://supabase.com/) project
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/MaiSlan/capstone-game-vs.git
+cd capstone-game-vs
+```
+
+### 2. Configure the backend
+
+Create `backend/.env`:
+
+```env
+SUPABASE_URL=https://<your-project>.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
+```
+
+The service-role key bypasses Supabase row-level security. Keep it server-side only and never
+commit it (`.env` is already gitignored).
+
+Then create the database schema: in the Supabase SQL editor, run the files in
+`supabase/migrations/` in order. See [`supabase/README.md`](supabase/README.md) for details.
+
+### 3. Install and run
+
+**One command (Windows):** after installing dependencies once (see below), run this from the repo
+root:
+
+```bat
+start_dev.bat
+```
+
+It opens two terminal windows, one for the backend and one for the frontend.
+
+**Manual setup (any OS):**
+
+Backend, from `backend/`:
+
+```bash
+python -m venv venv
+# Windows:        venv\Scripts\activate
+# macOS / Linux:  source venv/bin/activate
+pip install -r requirements.txt
+python run_server.py
+```
+
+This serves the API at `http://localhost:5000` with hot reload. Check it's up at
+`http://localhost:5000/health`.
+
+Frontend, from `frontend/`:
+
+```bash
+npm install
+npm run dev
+```
+
+Vite serves the game at `http://localhost:5173`. In dev mode, the frontend automatically talks to
+the local backend on port 5000. Production builds point to the deployed Render API instead.
+
+## Credits
+
+Solo capstone project by **Basile Herquelle**, Master's in Data Engineering at ECE Paris.
