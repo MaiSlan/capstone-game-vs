@@ -211,6 +211,15 @@ export default class BaseMonster extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  // Damage from weapons that hit outside MainScene's projectile overlap (splash,
+  // damage-over-time, auras: Musket, Molotov, Chilling Aura, Trail Grenades...).
+  // Uses the same path as projectile hits, so kills drop XP/loot and count in the bestiary.
+  takeDamage(amount) {
+    if (this.deadTriggered || this.isDying || !this.active || !this.scene) return;
+    this.scene.applyEnemyDamage(this, amount);
+    this.scene.resolveEnemyHit(this);
+  }
+
   hurt() {
     if (this.deadTriggered || this.isDying) return;
     this.isHurt = true;

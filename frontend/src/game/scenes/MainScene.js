@@ -3,6 +3,12 @@ import Phaser from 'phaser';
 import Witch from '../entities/characters/Witch';
 import Viking from '../entities/characters/Viking';
 import Berserker from '../entities/characters/Berserker';
+import Pirate from '../entities/characters/Pirate';
+import Paladin from '../entities/characters/Paladin';
+import Drifter from '../entities/characters/Drifter';
+
+// Every hero selectable in character select must be listed here
+const HERO_CLASSES = { witch: Witch, viking: Viking, berserker: Berserker, pirate: Pirate, paladin: Paladin, drifter: Drifter };
 import WaveManager from '../managers/WaveManager';
 import AnimationManager from '../managers/AnimationManager';
 import LootManager from '../managers/LootManager';
@@ -115,13 +121,9 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.enemies, this.enemies);    
 
     // --- SPAWN SELECTION ---
-    if (this.selectedCharacter === 'witch') {
-      this.player = new Witch(this, 4000, 4000, this.userUpgrades);
-    } else if (this.selectedCharacter === 'viking') {
-      this.player = new Viking(this, 4000, 4000, this.userUpgrades);
-    } else if (this.selectedCharacter === 'berserker') {
-      this.player = new Berserker(this, 4000, 4000, this.userUpgrades); 
-    }
+    // Unknown ids fall back to the Witch instead of leaving this.player undefined
+    const HeroClass = HERO_CLASSES[this.selectedCharacter] || Witch;
+    this.player = new HeroClass(this, 4000, 4000, this.userUpgrades);
     
     // Dev Mode (admin accounts only): god mode, max weapons and time skip are
     // triggered at runtime from the Dev Panel (² key or DEV badge). See DevToolsManager.
@@ -141,79 +143,13 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.overlap(this.playerProjectiles, this.enemies, (projectile, enemy) => {
       if (enemy.isDying || !enemy.active || !projectile.active) return;
 
-      // Calculate and apply damage
-      const damageDealt = Math.floor(projectile.damage || 10);
-      enemy.hp -= damageDealt;
-
-      // --- FLOATING DAMAGE TEXT ---
-      const dmgText = this.add.text(enemy.x + Phaser.Math.Between(-10, 10), enemy.y - 15, damageDealt.toString(), {
-        fontSize: '14px',
-        fontFamily: 'monospace',
-        fontStyle: 'bold',
-        fill: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 3
-      });
-      
-      dmgText.setDepth(50); // Ensure the text renders above characters
-
-      this.tweens.add({
-        targets: dmgText,
-        y: enemy.y - 40,
-        alpha: 0,
-        duration: 600,
-        ease: 'Power1',
-        onComplete: () => dmgText.destroy()
-      });
-
-      if (enemy.isBoss) {
-        window.dispatchEvent(new CustomEvent('VS_UPDATE_BOSS_HP', { 
-          detail: { hp: enemy.hp, maxHp: enemy.maxHp } 
-        }));
-      }
+      this.applyEnemyDamage(enemy, projectile.damage || 10);
 
       if (projectile.onHit) {
         projectile.onHit(enemy);
       }
 
-      if (enemy.hp <= 0) {        
-        
-        const targetId = enemy.monsterId || (enemy.dbStats ? enemy.dbStats.id : null);
-        if (this.waveManager && targetId) {
-          this.waveManager.logKill(targetId, enemy.isBoss || false);
-        }
-
-        // DELEGATE TO LOOT MANAGER
-        this.lootManager.spawnXP(enemy.x, enemy.y, enemy.xpValue || 1);
-        
-        // 5% chance for a standard enemy to drop a coin
-        if (Math.random() < 0.05) {
-          this.lootManager.spawnCoin(enemy.x, enemy.y, 1, 'standard');
-        }
-        
-        if (this.player.lifesteal > 0 && this.player.hp < this.player.maxHp) {
-          this.player.hp = Math.min(this.player.maxHp, this.player.hp + this.player.lifesteal);
-          window.dispatchEvent(new CustomEvent('VS_UPDATE_HP', { detail: { hp: this.player.hp, maxHp: this.player.maxHp } }));
-        }
-        
-        if (typeof enemy.die === 'function') {
-          enemy.die(); 
-        } else {
-          enemy.isDying = true; 
-          enemy.destroy();  
-        }
-      } else {
-        if (typeof enemy.hurt === 'function') {
-          enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
-          this.time.delayedCall(100, () => { 
-            if (enemy && enemy.active && !enemy.deadTriggered) enemy.clearTint() 
-          });
-          enemy.hurt(); 
-        } else {
-          enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
-          this.time.delayedCall(100, () => { if (enemy && enemy.active && !enemy.isDying) enemy.clearTint() });
-        }
-      }
+      this.resolveEnemyHit(enemy);
     });
 
     // --- PLAYER HIT BY ENEMY ---
@@ -411,6 +347,88 @@ export default class MainScene extends Phaser.Scene {
     });
   }
   
+  // ==========================================
+  // ENEMY DAMAGE (shared by projectile hits and BaseMonster.takeDamage)
+  // ==========================================
+  // Weapons that damage outside the projectile overlap (splash, damage-over-time,
+  // auras) call enemy.takeDamage(), which routes here so kills get the same
+  // XP / loot / lifesteal / bestiary handling as projectile hits.
+
+  applyEnemyDamage(enemy, amount) {
+    const damageDealt = Math.floor(amount);
+    enemy.hp -= damageDealt;
+
+    // --- FLOATING DAMAGE TEXT ---
+    const dmgText = this.add.text(enemy.x + Phaser.Math.Between(-10, 10), enemy.y - 15, damageDealt.toString(), {
+      fontSize: '14px',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+      fill: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 3
+    });
+
+    dmgText.setDepth(50); // Ensure the text renders above characters
+
+    this.tweens.add({
+      targets: dmgText,
+      y: enemy.y - 40,
+      alpha: 0,
+      duration: 600,
+      ease: 'Power1',
+      onComplete: () => dmgText.destroy()
+    });
+
+    if (enemy.isBoss) {
+      window.dispatchEvent(new CustomEvent('VS_UPDATE_BOSS_HP', {
+        detail: { hp: enemy.hp, maxHp: enemy.maxHp }
+      }));
+    }
+  }
+
+  resolveEnemyHit(enemy) {
+    if (enemy.isDying || !enemy.active) return; // Already killed (e.g. by a projectile's onHit)
+
+    if (enemy.hp <= 0) {
+
+      const targetId = enemy.monsterId || (enemy.dbStats ? enemy.dbStats.id : null);
+      if (this.waveManager && targetId) {
+        this.waveManager.logKill(targetId, enemy.isBoss || false);
+      }
+
+      // DELEGATE TO LOOT MANAGER
+      this.lootManager.spawnXP(enemy.x, enemy.y, enemy.xpValue || 1);
+
+      // 5% chance for a standard enemy to drop a coin
+      if (Math.random() < 0.05) {
+        this.lootManager.spawnCoin(enemy.x, enemy.y, 1, 'standard');
+      }
+
+      if (this.player.lifesteal > 0 && this.player.hp < this.player.maxHp) {
+        this.player.hp = Math.min(this.player.maxHp, this.player.hp + this.player.lifesteal);
+        window.dispatchEvent(new CustomEvent('VS_UPDATE_HP', { detail: { hp: this.player.hp, maxHp: this.player.maxHp } }));
+      }
+
+      if (typeof enemy.die === 'function') {
+        enemy.die();
+      } else {
+        enemy.isDying = true;
+        enemy.destroy();
+      }
+    } else {
+      if (typeof enemy.hurt === 'function') {
+        enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
+        this.time.delayedCall(100, () => {
+          if (enemy && enemy.active && !enemy.deadTriggered) enemy.clearTint()
+        });
+        enemy.hurt();
+      } else {
+        enemy.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
+        this.time.delayedCall(100, () => { if (enemy && enemy.active && !enemy.isDying) enemy.clearTint() });
+      }
+    }
+  }
+
   update(time, delta) {
     if (this.isDead) return;
 
